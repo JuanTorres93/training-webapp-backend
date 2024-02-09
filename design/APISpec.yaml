@@ -201,6 +201,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Workout'
+              
+  /workouts/{id}/exercise/{exerciseId}:
+    get:
+      tags:
+        - Workouts
+      description: returns a single exercise from a workout
+      operationId: getWorkoutExerciseByIds
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: exerciseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: single workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutExercise'
+              examples: 
+                WorkoutExercise:
+                  $ref: '#/components/examples/WorkoutExercise'
                 
                 
 components:
@@ -320,8 +348,6 @@ components:
           type: integer
           description: Time in seconds that the set spanned
           
-      example: 
-        $ref: '#/components/examples/WorkoutExercise'
       
     Workout:
       type: object
@@ -386,5 +412,3 @@ components:
         reps: 9
         weight: 7.5
         time_in_seconds: Null
-      
-      summary: Example of a workout exercise
