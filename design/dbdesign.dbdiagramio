@@ -21,6 +21,13 @@ Table workouts {
   description VARCHAR(500)
 }
 
+Table workout_template {
+  id SERIAL [PK, increment]
+  workout_id INTEGER [ref: - workouts.id]
+
+  Note: 'Used for saving templates, executed workouts are stored in workouts_exercises'
+}
+
 Table users_workouts {
   user_id SERIAL [ref: > users.id]
   workout_id SERIAL [ref: > workouts.id]
@@ -36,6 +43,17 @@ Table exercises {
   id SERIAL [PK, increment]
   alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
+}
+
+Table workout_template_exercises {
+  workout_template_id SERIAL [ref: > workout_template.id]
+  exercise_id SERIAL [ref: > exercises.id]
+  exercise_order integer [NOT NULL]
+  exercise_sets INTEGER [not null, Note: 'Number of the sets to perform']
+
+  indexes {
+    (workout_template_id, exercise_id, exercise_order) [pk]
+  }
 }
 
 Table workouts_exercises {
