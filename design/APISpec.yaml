@@ -118,8 +118,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+
         '400':
           $ref: '#/components/responses/400'
+
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
               
   /exercises:
     get:
@@ -161,17 +171,17 @@ paths:
               $ref: '#/components/schemas/CreateExercise'
               
   /exercises/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
     get:
       tags:
         - Exercises
       description: returns the exercise specified by id
       operationId: getExerciseById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: single exercise
@@ -184,6 +194,59 @@ paths:
           $ref: '#/components/responses/400'
 
         # TODO add 401?
+
+        '404':
+          $ref: '#/components/responses/404'
+    put:
+      tags:
+        - Exercises
+      operationId: updateExercise
+      responses:
+        '200':
+          description: successfully updated exercise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateExercise'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+                
+        '404':
+          $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExercise'
+
+    delete:
+      tags:
+        - Exercises
+      description: 'Delete the exercise specified by id'
+      responses:
+        '200':
+          description: deletes exercise and returns it
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+
+        '400':
+          $ref: '#/components/responses/400'
+
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
 
         '404':
           $ref: '#/components/responses/404'
@@ -438,12 +501,18 @@ components:
         second_last_name:
           type: string
           description: User second last name
+        img:
+          type: string
+          description: User profile image
+
       example:
         alias: "John"
         email: 'John.Doe@domain.com'
         last_name: 'Doe'
         password: 'secure_password'
         second_last_name: 'Smith'
+        # TODO research about how to handle it from server. This is susceptible of beign changed
+        img: "Link to img"
       description: Info needed to update user object
       
     Exercise:
@@ -468,6 +537,20 @@ components:
       type: object
       required:
         - alias
+      properties:
+        alias:
+          type: string
+          description: Exercise name
+        description:
+          type: string
+          description: Exercise email
+      example:
+        alias: "Bicep curl"
+        description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
+      description: Exercise object
+      
+    UpdateExercise:
+      type: object
       properties:
         alias:
           type: string
