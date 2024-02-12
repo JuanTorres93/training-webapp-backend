@@ -188,19 +188,52 @@ paths:
                 type: array
                 items:
                     $ref: '#/components/schemas/Workout'
+    post:
+      tags:
+        - Workouts
+      operationId: createNewWorkout
+      responses:
+        '201':
+          description: successfully created workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/CreateWorkout'
+                
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: Only registered users can create new workouts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkout'
               
   /workouts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
     get:
       tags:
         - Workouts
       description: returns a single workout
       operationId: getWorkoutById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: single workout
@@ -224,6 +257,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error403'
                   
+        '404':
+          description: Resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+    post:
+      tags:
+        - Workouts
+      operationId: addExerciseToWorkout
+      responses:
+        '201':
+          description: successfully added exercise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddExerciseToWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/AddExerciseToWorkout'
+                
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: Only registered users can create new workouts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: Not having permissions to access information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
         '404':
           description: Resource was not found
           content:
@@ -437,6 +509,27 @@ components:
         time_in_seconds:
           type: integer
           description: Time in seconds that the set spanned
+      
+    AddExerciseToWorkout:
+      type: object
+      required:
+        - ExerciseId
+        - ExerciseSet
+      properties:
+        ExerciseId:
+          type: integer
+        ExerciseSet:
+          type: integer
+          description: Number of the set in which the exercise was performed
+        reps:
+          type: integer
+          description: Number of reps performed
+        weight:
+          type: number
+          description: weight used
+        time_in_seconds:
+          type: integer
+          description: Time in seconds that the exercise spanned
           
     Workout:
       type: object
@@ -448,11 +541,27 @@ components:
           description: Exercise name
         description:
           type: string
-          description: Exercise email
+          description: Exercise description
         exercises:
           type: array
           items:
             $ref: '#/components/schemas/WorkoutExercise'
+            
+    CreateWorkout:
+      type: object
+      required:
+        - alias
+      properties:
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
           
     WorkoutTemplate:
       type: object
@@ -581,3 +690,18 @@ components:
             alias: Biceps curl
             order: 3
             sets: 3
+            
+    CreateWorkout:
+      value:
+        id: 6
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+        exercises: []
+            
+    AddExerciseToWorkout:
+      value:
+        ExerciseId: 6
+        ExerciseSet: 2
+        reps: 7
+        weight: 80
+        time_in_seconds: null
