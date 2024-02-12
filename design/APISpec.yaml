@@ -5,7 +5,7 @@ servers:
     url: https://virtserver.swaggerhub.com/KASHYR26/training-webapp/1.0.0
 info:
   version: "1.0.0"
-  title: home-iot-api
+  title: training-webapp
   description: The API for the EatBacon IOT project
 paths:
   /users:
@@ -23,12 +23,10 @@ paths:
                 type: array
                 items:
                     $ref: '#/components/schemas/User'
+
         '403':
-          description: Not having permissions to access information
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error403'
+          $ref: '#/components/responses/403'
+
     post:
       tags:
         - Users
@@ -43,11 +41,7 @@ paths:
                 $ref: '#/components/schemas/User'
                 
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
+          $ref: '#/components/responses/400'
                 
       requestBody:
         content:
@@ -56,17 +50,17 @@ paths:
               $ref: '#/components/schemas/CreateUser'
               
   /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
     get:
       tags:
         - Users
       description: returns the user specified by id
       operationId: getUserById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: single user
@@ -74,25 +68,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+                
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
-        # TODO add 401?
-        '404':
-          description: Resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
+          $ref: '#/components/responses/400'
+
         '403':
-          description: Not having permissions to access information
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+    put:
+      tags:
+        - Users
+      operationId: updateUser
+      description: Update existing user
+      responses:
+        '200':
+          description: successfully updated user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error403'
+                $ref: '#/components/schemas/User'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+    delete:
+      tags:
+        - Users
+      description: 'Delete the user specified by id'
+      responses:
+        '200':
+          description: deletes users and returns it
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
               
   /exercises:
     get:
@@ -122,17 +149,10 @@ paths:
                 $ref: '#/components/schemas/Exercise'
                 
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
+          $ref: '#/components/responses/400'
+
         '403':
-          description: Not having permissions to access information. Only registered users can create new exercises.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error403'
+          $ref: '#/components/responses/403'
                 
       requestBody:
         content:
@@ -159,19 +179,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Exercise'
+                
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
+          $ref: '#/components/responses/400'
+
         # TODO add 401?
+
         '404':
-          description: Resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
+          $ref: '#/components/responses/404'
               
   /workouts:
     get:
@@ -204,17 +219,10 @@ paths:
                   $ref: '#/components/examples/CreateWorkout'
                 
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
+          $ref: '#/components/responses/400'
+                
         '401':
-          description: Only registered users can create new workouts.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
+          $ref: '#/components/responses/401'
                 
       requestBody:
         content:
@@ -244,25 +252,16 @@ paths:
               examples:
                 Workout:
                   $ref: '#/components/examples/Workout'
+                
         '401':
-          description: Not logged in
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
+          $ref: '#/components/responses/401'
+
         '403':
-          description: Not having permissions to access information.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-                  
+          $ref: '#/components/responses/403'
+
         '404':
-          description: Resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
+          $ref: '#/components/responses/404'
+
     post:
       tags:
         - Workouts
@@ -279,29 +278,16 @@ paths:
                   $ref: '#/components/examples/AddExerciseToWorkout'
                 
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
+          $ref: '#/components/responses/400'
+                
         '401':
-          description: Only registered users can create new workouts.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
+          $ref: '#/components/responses/401'
+
         '403':
-          description: Not having permissions to access information.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error403'
+          $ref: '#/components/responses/403'
+
         '404':
-          description: Resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
+          $ref: '#/components/responses/404'
               
   /workouts/{id}/exercise/{exerciseId}:
     get:
@@ -330,25 +316,15 @@ paths:
               examples: 
                 WorkoutExercise:
                   $ref: '#/components/examples/WorkoutExercise'
+                
         '401':
-          description: Not logged in
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
+          $ref: '#/components/responses/401'
+
         '403':
-          description: Not having permissions to access information.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-                  
+          $ref: '#/components/responses/403'
+
         '404':
-          description: Resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
+          $ref: '#/components/responses/404'
               
   /workouts/templates/{id}:
     get:
@@ -372,26 +348,15 @@ paths:
               examples:
                 Workout:
                   $ref: '#/components/examples/WorkoutTemplate'
-        '401':
-          description: Not logged in
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        '403':
-          description: Not having permissions to access information.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-                  
-        '404':
-          description: Resource was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
                 
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
                 
 components:
   schemas:
@@ -454,6 +419,32 @@ components:
         password: 'secure_password'
         second_last_name: 'Smith'
       description: Info needed to create user object
+      
+    UpdateUser:
+      type: object
+      properties:
+        alias:
+          type: string
+          description: User name
+        email:
+          type: string
+          description: User email
+        password:
+          type: string
+          description: user password
+        last_name:
+          type: string
+          description: User last name
+        second_last_name:
+          type: string
+          description: User second last name
+      example:
+        alias: "John"
+        email: 'John.Doe@domain.com'
+        last_name: 'Doe'
+        password: 'secure_password'
+        second_last_name: 'Smith'
+      description: Info needed to update user object
       
     Exercise:
       type: object
@@ -578,46 +569,61 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WorkoutTemplate'
-      
-    Error400:
-      type: object
-      properties:
-        msg:
-          type: string
-          description: Error messagge. 
-          
-      example:
-        msg: Wrong or missing parameter
     
-    Error401:
-      type: object
-      properties:
-        msg:
-          type: string
-          description: Error messagge. 
-          
-      example:
-        msg: Need to log in
+  responses:
+    400:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error messagge. 
+            example:
+              msg: Wrong or missing parameter
+
+    401:
+      description: Not logged in
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error messagge. 
+
+            example:
+              msg: Need to log in
+
+    403:
+      description: Not having permissions to access information
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error messagge. 
+          example:
+            msg: Don't have permissions to access information
     
-    Error403:
-      type: object
-      properties:
-        msg:
-          type: string
-          description: Error messagge. 
-          
-      example:
-        msg: Don't have permissions to access information
-      
-    Error404:
-      type: object
-      properties:
-        msg:
-          type: string
-          description: Error messagge. 
-          
-      example:
-        msg: Resource was not found
+    404:
+      description: Resource was not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error messagge. 
+
+            example:
+              msg: Resource was not found
           
   examples:
     WorkoutExercise:
