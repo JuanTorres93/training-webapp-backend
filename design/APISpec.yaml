@@ -33,6 +33,7 @@ paths:
       tags:
         - Users
       operationId: registerUser
+      description: Create new user
       responses:
         '201':
           description: successfully registered user
@@ -126,6 +127,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error400'
+        '403':
+          description: Not having permissions to access information. Only registered users can create new exercises.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
                 
       requestBody:
         content:
@@ -201,6 +208,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Workout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/Workout'
+        '401':
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: Not having permissions to access information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+                  
+        '404':
+          description: Resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
               
   /workouts/{id}/exercise/{exerciseId}:
     get:
@@ -221,7 +250,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: single workout
+          description: single exercise in workout
           content:
             application/json:
               schema:
@@ -229,6 +258,67 @@ paths:
               examples: 
                 WorkoutExercise:
                   $ref: '#/components/examples/WorkoutExercise'
+        '401':
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: Not having permissions to access information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+                  
+        '404':
+          description: Resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+              
+  /workouts/templates/{id}:
+    get:
+      tags:
+        - Workouts
+      description: returns a single workout template
+      operationId: getWorkoutTemplateById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: single workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutTemplate'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/WorkoutTemplate'
+        '401':
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: Not having permissions to access information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+                  
+        '404':
+          description: Resource was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
                 
                 
 components:
@@ -348,7 +438,6 @@ components:
           type: integer
           description: Time in seconds that the set spanned
           
-      
     Workout:
       type: object
       properties:
@@ -364,14 +453,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WorkoutExercise'
-            
-      example:
-        id: 2
-        alias: Pull
-        description: "Pull training routine"
+          
+    WorkoutTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+        alias:
+          type: string
+          description: Exercise name
+        description:
+          type: string
+          description: Exercise email
         exercises:
-          $ref: '#/components/examples/WorkoutExercise'
-        # TODO Add exercises
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutTemplate'
       
     Error400:
       type: object
@@ -382,8 +479,8 @@ components:
           
       example:
         msg: Wrong or missing parameter
-      
-    Error404:
+    
+    Error401:
       type: object
       properties:
         msg:
@@ -391,7 +488,7 @@ components:
           description: Error messagge. 
           
       example:
-        msg: Resource was not found
+        msg: Need to log in
     
     Error403:
       type: object
@@ -402,6 +499,16 @@ components:
           
       example:
         msg: Don't have permissions to access information
+      
+    Error404:
+      type: object
+      properties:
+        msg:
+          type: string
+          description: Error messagge. 
+          
+      example:
+        msg: Resource was not found
           
   examples:
     WorkoutExercise:
@@ -412,3 +519,65 @@ components:
         reps: 9
         weight: 7.5
         time_in_seconds: Null
+        
+    Workout:
+      value:
+        id: 2
+        alias: Pull
+        description: "Pull training routine"
+        exercises:
+          - id: 4
+            alias: Pull up
+            set: 1
+            reps: 9
+            weight: 7.5
+            time_in_seconds: Null
+          - id: 4
+            alias: Pull up
+            set: 2
+            reps: 9
+            weight: 7.5
+            time_in_seconds: Null
+          - id: 4
+            alias: Pull up
+            set: 3
+            reps: 8
+            weight: 7.5
+            time_in_seconds: Null
+          - id: 5
+            alias: Barbell row
+            set: 1
+            reps: 8
+            weight: 75
+            time_in_seconds: Null
+          - id: 5
+            alias: Barbell row
+            set: 2
+            reps: 8
+            weight: 75
+            time_in_seconds: Null
+          - id: 5
+            alias: Barbell row
+            set: 3
+            reps: 7
+            weight: 75
+            time_in_seconds: Null
+            
+    WorkoutTemplate:
+      value:
+        id: 2
+        alias: Pull
+        description: "Pull training routine"
+        exercises:
+          - id: 4
+            alias: Pull up
+            order: 1
+            sets: 3
+          - id: 5
+            alias: Barbell rows
+            order: 2
+            sets: 3
+          - id: 5
+            alias: Biceps curl
+            order: 3
+            sets: 3
