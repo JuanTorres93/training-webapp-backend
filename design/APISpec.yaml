@@ -149,6 +149,7 @@ paths:
     post:
       tags:
         - Exercises
+      description: Create new exercise
       operationId: createNewExercise
       responses:
         '201':
@@ -200,6 +201,7 @@ paths:
     put:
       tags:
         - Exercises
+      description: Update exercise specified by id
       operationId: updateExercise
       responses:
         '200':
@@ -269,6 +271,7 @@ paths:
     post:
       tags:
         - Workouts
+      description: Create new workout
       operationId: createNewWorkout
       responses:
         '201':
@@ -328,6 +331,7 @@ paths:
     post:
       tags:
         - Workouts
+      description: adds exercise to workout
       operationId: addExerciseToWorkout
       responses:
         '201':
