@@ -54,6 +54,7 @@ paths:
       - name: id
         in: path
         required: true
+        description: User id
         schema:
           type: integer
     get:
@@ -176,6 +177,7 @@ paths:
       - name: id
         in: path
         required: true
+        description: Exercise id
         schema:
           type: integer
     get:
@@ -301,6 +303,7 @@ paths:
       - name: id
         in: path
         required: true
+        description: workout id
         schema:
           type: integer
     get:
@@ -355,34 +358,25 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
-              
-  /workouts/{id}/exercise/{exerciseId}:
-    get:
+
+    put:
       tags:
         - Workouts
-      description: returns a single exercise from a workout
-      operationId: getWorkoutExerciseByIds
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: exerciseId
-          in: path
-          required: true
-          schema:
-            type: integer
+      description: Update workout
+      operationId: updateWorkout
       responses:
         '200':
-          description: single exercise in workout
+          description: successfully updated workout
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkoutExercise'
-              examples: 
-                WorkoutExercise:
-                  $ref: '#/components/examples/WorkoutExercise'
+                $ref: '#/components/schemas/UpdateWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/CreateWorkout'
+                
+        '400':
+          $ref: '#/components/responses/400'
                 
         '401':
           $ref: '#/components/responses/401'
@@ -392,6 +386,167 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+
+    delete:
+      tags:
+        - Workouts
+      description: Delete workout
+      operationId: deleteWorkout
+      responses:
+        '200':
+          description: successfully deleted workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/Workout'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+
+
+
+
+
+
+
+
+              
+  /workouts/{id}/exercises/{exerciseId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: workout id
+        schema:
+          type: integer
+      - name: exerciseId
+        in: path
+        required: true
+        description: exercise id
+        schema:
+          type: integer
+
+    put:
+      tags:
+        - Workouts
+      description: Update exercise from workout
+      operationId: updateExerciseFromWorkout
+      responses:
+        '200':
+          description: successfully updated exercise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddExerciseToWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/AddExerciseToWorkout'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+
+    delete:
+      tags:
+        - Workouts
+      description: Delete exercise from workout
+      operationId: deleteWorkoutExercise
+      responses:
+        '200':
+          description: successfully deleted exercise from workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddExerciseToWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/AddExerciseToWorkout'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+              
+  /workouts/templates:
+    get:
+      tags:
+        - Workouts
+      description: returns all templates
+      operationId: getWorkoutAllTemplates
+      responses:
+        '200':
+          description: returns all templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllWorkoutTemplates'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/AllWorkoutTemplates'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+    post:
+      tags:
+        - Workouts
+      description: adds exercise to workout template
+      operationId: addExerciseToWorkoutTemplate
+      responses:
+        '201':
+          description: successfully added exercise to template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutTemplate'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/WorkoutTemplate'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddExerciseToWorkoutTemplate'
+            examples:
+              CreateWorkoutTemplate:
+                $ref: '#/components/examples/AddExerciseToWorkoutTemplate'
               
   /workouts/templates/{id}:
     get:
@@ -403,6 +558,7 @@ paths:
         - name: id
           in: path
           required: true
+          description: Template id
           schema:
             type: integer
       responses:
@@ -591,11 +747,8 @@ components:
     AddExerciseToWorkout:
       type: object
       required:
-        - ExerciseId
         - ExerciseSet
       properties:
-        ExerciseId:
-          type: integer
         ExerciseSet:
           type: integer
           description: Number of the set in which the exercise was performed
@@ -608,6 +761,27 @@ components:
         time_in_seconds:
           type: integer
           description: Time in seconds that the exercise spanned
+    
+    AddExerciseToWorkoutTemplate:
+      type: object
+      required:
+        - WorkoutId
+        - ExerciseId
+        - ExerciseOrder
+        - ExerciseSets
+      properties:
+        WorkoutId:
+          type: integer
+          description: Workout associated with the template
+        ExerciseId:
+          type: integer
+          description: Id of the exercise to include in the template
+        ExerciseOrder:
+          type: integer
+          description: Order of the exercise in the template
+        ExerciseSets:
+          type: integer
+          description: Number of sets of the exercise to perform
           
     Workout:
       type: object
@@ -640,6 +814,20 @@ components:
         alias: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
+            
+    UpdateWorkout:
+      type: object
+      properties:
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
           
     WorkoutTemplate:
       type: object
@@ -656,6 +844,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WorkoutTemplate'
+          
+    AllWorkoutTemplates:
+      type: array
+      items:
+        $ref: '#/components/schemas/WorkoutTemplate'
     
   responses:
     400:
@@ -784,6 +977,41 @@ components:
             order: 3
             sets: 3
             
+    AllWorkoutTemplates:
+      value:
+        - id: 1
+          alias: Push
+          description: "Push training routine"
+          exercises:
+            - id: 1
+              alias: Bench press
+              order: 1
+              sets: 3
+            - id: 2
+              alias: Military press
+              order: 2
+              sets: 3
+            - id: 3
+              alias: Dips
+              order: 3
+              sets: 3
+        - id: 2
+          alias: Pull
+          description: "Pull training routine"
+          exercises:
+            - id: 4
+              alias: Pull up
+              order: 1
+              sets: 3
+            - id: 5
+              alias: Barbell rows
+              order: 2
+              sets: 3
+            - id: 5
+              alias: Biceps curl
+              order: 3
+              sets: 3
+            
     CreateWorkout:
       value:
         id: 6
@@ -793,8 +1021,14 @@ components:
             
     AddExerciseToWorkout:
       value:
-        ExerciseId: 6
         ExerciseSet: 2
         reps: 7
         weight: 80
         time_in_seconds: null
+            
+    AddExerciseToWorkoutTemplate:
+      value:
+        WorkoutId: 6
+        ExerciseId: 2
+        ExerciseOrder: 7
+        ExerciseSets: 80
