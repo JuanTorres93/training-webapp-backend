@@ -23,7 +23,7 @@ Table workouts {
 
 Table workout_template {
   id SERIAL [PK, increment]
-  workout_id INTEGER [ref: - workouts.id]
+  workout_id INTEGER [ref: - workouts.id, NOT NULL]
 
   Note: 'Used for saving templates, executed workouts are stored in workouts_exercises'
 }
