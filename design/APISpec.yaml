@@ -12,7 +12,7 @@ paths:
     get:
       tags:
         - Users
-      description: returns all registered users
+      description: Returns all registered users
       operationId: getAllUsers
       responses:
         '200':
@@ -22,7 +22,7 @@ paths:
               schema:
                 type: array
                 items:
-                    $ref: '#/components/schemas/User'
+                    $ref: '#/components/schemas/ResponseUser'
 
         '403':
           $ref: '#/components/responses/403'
@@ -34,11 +34,11 @@ paths:
       description: Create new user
       responses:
         '201':
-          description: successfully registered user
+          description: Successfully registered user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ResponseUser'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -47,7 +47,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUser'
+              $ref: '#/components/schemas/ReqBodyCreateUser'
               
   /users/{id}:
     parameters:
@@ -60,15 +60,15 @@ paths:
     get:
       tags:
         - Users
-      description: returns the user specified by id
+      description: Returns the user specified by id
       operationId: getUserById
       responses:
         '200':
-          description: single user
+          description: Single user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ResponseUser'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -85,11 +85,11 @@ paths:
       description: Update existing user
       responses:
         '200':
-          description: successfully updated user
+          description: Successfully updated user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ResponseUser'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -107,18 +107,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUser'
+              $ref: '#/components/schemas/ReqBodyUpdateUser'
     delete:
       tags:
         - Users
       description: 'Delete the user specified by id'
       responses:
         '200':
-          description: deletes users and returns it
+          description: Deletes users and returns it
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ResponseUser'
 
         '400':
           $ref: '#/components/responses/400'
@@ -136,17 +136,17 @@ paths:
     get:
       tags:
         - Exercises
-      description: returns all exercises
+      description: Returns all exercises
       operationId: getAllExercises
       responses:
         '200':
-          description: list of all exercises
+          description: List of all exercises
           content:
             application/json:
               schema:
                 type: array
                 items:
-                    $ref: '#/components/schemas/Exercise'
+                    $ref: '#/components/schemas/ResponseExercise'
     post:
       tags:
         - Exercises
@@ -154,11 +154,11 @@ paths:
       operationId: createNewExercise
       responses:
         '201':
-          description: successfully created exercise
+          description: Successfully created exercise
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Exercise'
+                $ref: '#/components/schemas/ResponseExercise'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -170,7 +170,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateExercise'
+              $ref: '#/components/schemas/ReqBodyCreateExercise'
               
   /exercises/{id}:
     parameters:
@@ -183,23 +183,22 @@ paths:
     get:
       tags:
         - Exercises
-      description: returns the exercise specified by id
+      description: Returns the exercise specified by id
       operationId: getExerciseById
       responses:
         '200':
-          description: single exercise
+          description: Single exercise
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Exercise'
+                $ref: '#/components/schemas/ResponseExercise'
                 
         '400':
           $ref: '#/components/responses/400'
 
-        # TODO add 401?
-
         '404':
           $ref: '#/components/responses/404'
+
     put:
       tags:
         - Exercises
@@ -207,11 +206,11 @@ paths:
       operationId: updateExercise
       responses:
         '200':
-          description: successfully updated exercise
+          description: Successfully updated exercise
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateExercise'
+                $ref: '#/components/schemas/ResponseExercise'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -229,7 +228,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateExercise'
+              $ref: '#/components/schemas/ReqBodyUpdateExercise'
 
     delete:
       tags:
@@ -237,11 +236,11 @@ paths:
       description: 'Delete the exercise specified by id'
       responses:
         '200':
-          description: deletes exercise and returns it
+          description: Deletes exercise and returns it
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Exercise'
+                $ref: '#/components/schemas/ResponseExercise'
 
         '400':
           $ref: '#/components/responses/400'
@@ -259,17 +258,18 @@ paths:
     get:
       tags:
         - Workouts
-      description: returns all workouts
+      description: Returns all workouts
       operationId: getAllWorkouts
       responses:
         '200':
-          description: list of all workouts
+          description: List of all workouts
           content:
             application/json:
               schema:
                 type: array
                 items:
-                    $ref: '#/components/schemas/Workout'
+                    $ref: '#/components/schemas/ResponseWorkout'
+
     post:
       tags:
         - Workouts
@@ -277,11 +277,11 @@ paths:
       operationId: createNewWorkout
       responses:
         '201':
-          description: successfully created workout
+          description: Successfully created workout
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateWorkout'
+                $ref: '#/components/schemas/ResponseCreateWorkout'
               examples:
                 Workout:
                   $ref: '#/components/examples/CreateWorkout'
@@ -296,28 +296,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateWorkout'
+              $ref: '#/components/schemas/ReqBodyCreateWorkout'
               
   /workouts/{id}:
     parameters:
       - name: id
         in: path
         required: true
-        description: workout id
+        description: Workout id
         schema:
           type: integer
     get:
       tags:
         - Workouts
-      description: returns a single workout
+      description: Returns a single workout
       operationId: getWorkoutById
       responses:
         '200':
-          description: single workout
+          description: Single workout
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Workout'
+                $ref: '#/components/schemas/ResponseWorkout'
               examples:
                 Workout:
                   $ref: '#/components/examples/Workout'
@@ -334,18 +334,18 @@ paths:
     post:
       tags:
         - Workouts
-      description: adds exercise to workout
+      description: Adds exercise to workout
       operationId: addExerciseToWorkout
       responses:
         '201':
-          description: successfully added exercise
+          description: Successfully added exercise
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddExerciseToWorkout'
+                $ref: '#/components/schemas/ResponseAddExerciseToWorkout'
               examples:
-                Workout:
-                  $ref: '#/components/examples/AddExerciseToWorkout'
+                AddedExercise:
+                  $ref: '#/components/examples/ExerciseFromWorkout'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -363,10 +363,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddExerciseToWorkout'
+              $ref: '#/components/schemas/ReqBodyAddExerciseToWorkout'
             examples:
               AddExerciseToWorkout:
-                $ref: '#/components/examples/AddExerciseToWorkout'
+                $ref: '#/components/examples/ExerciseFromWorkout'
 
     put:
       tags:
@@ -375,13 +375,13 @@ paths:
       operationId: updateWorkout
       responses:
         '200':
-          description: successfully updated workout
+          description: Successfully updated workout
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateWorkout'
+                $ref: '#/components/schemas/ResponseWorkout'
               examples:
-                Workout:
+                UpdatedWorkout:
                   $ref: '#/components/examples/CreateWorkout'
                 
         '400':
@@ -395,6 +395,16 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqBodyUpdateWorkout'
+            examples:
+              UpdateWorkout:
+                $ref: '#/components/examples/CreateWorkout'
+
 
     delete:
       tags:
@@ -403,13 +413,13 @@ paths:
       operationId: deleteWorkout
       responses:
         '200':
-          description: successfully deleted workout
+          description: Successfully deleted workout
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Workout'
+                $ref: '#/components/schemas/ResponseWorkout'
               examples:
-                Workout:
+                DeletedWorkout:
                   $ref: '#/components/examples/Workout'
                 
         '401':
@@ -426,13 +436,13 @@ paths:
       - name: id
         in: path
         required: true
-        description: workout id
+        description: Workout id
         schema:
           type: integer
       - name: exerciseId
         in: path
         required: true
-        description: exercise id
+        description: Exercise id
         schema:
           type: integer
 
@@ -443,7 +453,7 @@ paths:
       operationId: updateExerciseFromWorkout
       responses:
         '200':
-          description: successfully updated exercise
+          description: Successfully updated exercise
           content:
             application/json:
               schema:
@@ -463,22 +473,32 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqBodyUpdateExerciseFromWorkout'
+            examples:
+              UpdateWorkoutExercise:
+                $ref: '#/components/examples/UpdateExerciseFromWorkout'
 
     delete:
       tags:
         - Workouts
-      description: Delete exercise from workout
+      description: Delete exercise with all of its sets from workout
       operationId: deleteWorkoutExercise
       responses:
         '200':
-          description: successfully deleted exercise from workout
+          description: Successfully deleted exercise from workout
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddExerciseToWorkout'
+                $ref: '#/components/schemas/ResponseAddExerciseToWorkout'
               examples:
-                Workout:
-                  $ref: '#/components/examples/AddExerciseToWorkout'
+                ExerciseWithAllItsSets:
+                  type: array
+                  $ref: '#/components/examples/ExerciseWithMultipleSets'
                 
         '401':
           $ref: '#/components/responses/401'
@@ -488,27 +508,62 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+              
+  /workouts/{id}/exercises/{exerciseId}/{exerciseSet}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Workout id
+        schema:
+          type: integer
+      - name: exerciseId
+        in: path
+        required: true
+        description: Exercise id
+        schema:
+          type: integer
+      - name: exerciseSet
+        in: path
+        required: true
+        description: Exercise set
+        schema:
+          type: integer
+
+    delete:
+      tags:
+        - Workouts
+      description: Delete exercise set from workout
+      operationId: deleteWorkoutExerciseSet
+      responses:
+        '200':
+          description: Successfully deleted exercise set from workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseAddExerciseToWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/ExerciseFromWorkout'
                 
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteExerciseFromWorkout'
-            examples:
-              RemoveOneSet:
-                $ref: '#/components/examples/RemoveOneSetFromExerciseWorkout'
-              RemoveAllSets:
-                $ref: '#/components/examples/RemoveAllSetsFromExerciseWorkout'
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
               
   /workouts/templates:
     get:
       tags:
         - Workouts
-      description: returns all templates
+      description: Returns all templates
       operationId: getWorkoutAllTemplates
       responses:
         '200':
-          description: returns all templates
+          description: Returns all templates
           content:
             application/json:
               schema:
@@ -526,11 +581,78 @@ paths:
     post:
       tags:
         - Workouts
-      description: adds exercise to workout template
+      description: Creates new workout template
+      operationId: createNewWorkoutTemplate
+      responses:
+        '201':
+          description: Successfully created template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseCreateWorkoutTemplate'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/CreateWorkoutTemplate'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqBodyCreateWorkoutTemplate'
+            examples:
+              CreateWorkoutTemplate:
+                $ref: '#/components/examples/CreateWorkoutTemplate'
+              
+  /workouts/templates/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Template id
+        schema:
+          type: integer
+    get:
+      tags:
+        - Workouts
+      description: Returns a single workout template
+      operationId: getWorkoutTemplateById
+      responses:
+        '200':
+          description: Single workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutTemplate'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/WorkoutTemplate'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+
+    post:
+      tags:
+        - Workouts
+      description: Adds exercise to workout template
       operationId: addExerciseToWorkoutTemplate
       responses:
         '201':
-          description: successfully added exercise to template
+          description: Successfully added exercise to template
           content:
             application/json:
               schema:
@@ -555,47 +677,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddExerciseToWorkoutTemplate'
+              $ref: '#/components/schemas/ReqBodyAddExerciseToWorkoutTemplate'
             examples:
               CreateWorkoutTemplate:
                 $ref: '#/components/examples/AddExerciseToWorkoutTemplate'
-              
-  /workouts/templates/{id}:
-    get:
-      tags:
-        - Workouts
-      description: returns a single workout template
-      operationId: getWorkoutTemplateById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Template id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: single workout
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkoutTemplate'
-              examples:
-                Workout:
-                  $ref: '#/components/examples/WorkoutTemplate'
-                
-        '401':
-          $ref: '#/components/responses/401'
-
-        '403':
-          $ref: '#/components/responses/403'
-
-        '404':
-          $ref: '#/components/responses/404'
                 
 components:
   schemas:
-    User:
+    ResponseUser:
       type: object
       properties:
         id:
@@ -625,7 +714,7 @@ components:
         second_last_name: 'Smith'
       description: User object
       
-    CreateUser:
+    ReqBodyCreateUser:
       type: object
       required:
         - alias
@@ -640,7 +729,7 @@ components:
           description: User email
         password:
           type: string
-          description: user password
+          description: User password
         last_name:
           type: string
           description: User last name
@@ -655,7 +744,7 @@ components:
         second_last_name: 'Smith'
       description: Info needed to create user object
       
-    UpdateUser:
+    ReqBodyUpdateUser:
       type: object
       properties:
         alias:
@@ -666,7 +755,7 @@ components:
           description: User email
         password:
           type: string
-          description: user password
+          description: User password
         last_name:
           type: string
           description: User last name
@@ -687,7 +776,7 @@ components:
         img: "Link to img"
       description: Info needed to update user object
       
-    Exercise:
+    ResponseExercise:
       type: object
       properties:
         id:
@@ -705,10 +794,24 @@ components:
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
       
-    CreateExercise:
+    ReqBodyCreateExercise:
       type: object
       required:
         - alias
+      properties:
+        alias:
+          type: string
+          description: Exercise name
+        description:
+          type: string
+          description: Exercise email
+      example:
+        alias: "Bicep curl"
+        description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
+      description: Exercise object
+      
+    ReqBodyUpdateExercise:
+      type: object
       properties:
         alias:
           type: string
@@ -756,7 +859,7 @@ components:
           type: integer
           description: Time in seconds that the set spanned
       
-    AddExerciseToWorkout:
+    ReqBodyAddExerciseToWorkout:
       type: object
       required:
         - ExerciseId
@@ -773,7 +876,47 @@ components:
           description: Number of reps performed
         weight:
           type: number
-          description: weight used
+          description: Weight used
+        time_in_seconds:
+          type: integer
+          description: Time in seconds that the exercise spanned
+      
+    ReqBodyUpdateExerciseFromWorkout:
+      type: object
+      required:
+        - ExerciseSet
+      properties:
+        ExerciseSet:
+          type: integer
+          description: Number of the set in which the exercise was performed
+        reps:
+          type: integer
+          description: Number of reps performed
+        weight:
+          type: number
+          description: Weight used
+        time_in_seconds:
+          type: integer
+          description: Time in seconds that the exercise spanned
+      
+    ResponseAddExerciseToWorkout:
+      type: object
+      required:
+        - ExerciseId
+        - ExerciseSet
+      properties:
+        ExerciseId:
+          type: integer
+          description: Id of the exercise
+        ExerciseSet:
+          type: integer
+          description: Number of the set in which the exercise was performed
+        reps:
+          type: integer
+          description: Number of reps performed
+        weight:
+          type: number
+          description: Weight used
         time_in_seconds:
           type: integer
           description: Time in seconds that the exercise spanned
@@ -791,12 +934,12 @@ components:
           description: Number of reps performed
         weight:
           type: number
-          description: weight used
+          description: Weight used
         time_in_seconds:
           type: integer
           description: Time in seconds that the exercise spanned
       
-    DeleteExerciseFromWorkout:
+    ReqBodyDeleteExerciseFromWorkout:
       type: object
       properties:
         ExerciseSet:
@@ -826,8 +969,29 @@ components:
         ExerciseSets:
           type: integer
           description: Number of sets of the exercise to perform
+    
+    ReqBodyAddExerciseToWorkoutTemplate:
+      type: object
+      required:
+        - WorkoutId
+        - ExerciseId
+        - ExerciseOrder
+        - ExerciseSets
+      properties:
+        WorkoutId:
+          type: integer
+          description: Workout associated with the template
+        ExerciseId:
+          type: integer
+          description: Id of the exercise to include in the template
+        ExerciseOrder:
+          type: integer
+          description: Order of the exercise in the template
+        ExerciseSets:
+          type: integer
+          description: Number of sets of the exercise to perform
           
-    Workout:
+    ResponseWorkout:
       type: object
       properties:
         id:
@@ -843,11 +1007,81 @@ components:
           items:
             $ref: '#/components/schemas/WorkoutExercise'
             
-    CreateWorkout:
+    ReqBodyCreateWorkout:
       type: object
       required:
         - alias
       properties:
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
+            
+    ResponseCreateWorkout:
+      type: object
+      required:
+        - alias
+      properties:
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
+            
+    ReqBodyUpdateWorkout:
+      type: object
+      properties:
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
+            
+    ReqBodyCreateWorkoutTemplate:
+      type: object
+      required:
+        - userId
+        - alias
+      properties:
+        userId:
+          type: integer
+          description: Id of the user that owns the template
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
+            
+    ResponseCreateWorkoutTemplate:
+      type: object
+      required:
+        - userId
+        - alias
+      properties:
+        userId:
+          type: integer
+          description: Id of the user that owns the template
         alias:
           type: string
           description: Workout name
@@ -1063,13 +1297,37 @@ components:
         description: "Pulling routine for back and bicep strenghtening"
         exercises: []
             
-    AddExerciseToWorkout:
+    CreateWorkoutTemplate:
+      value:
+        userId: 2
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+            
+    ExerciseFromWorkout:
       value:
         ExerciseId: 1
         ExerciseSet: 2
         reps: 7
         weight: 80
         time_in_seconds: null
+            
+    ExerciseWithMultipleSets:
+      value:
+        - ExerciseId: 1
+          ExerciseSet: 1
+          reps: 7
+          weight: 80
+          time_in_seconds: null
+        - ExerciseId: 1
+          ExerciseSet: 2
+          reps: 7
+          weight: 80
+          time_in_seconds: null
+        - ExerciseId: 1
+          ExerciseSet: 3
+          reps: 6
+          weight: 80
+          time_in_seconds: null
             
     UpdateExerciseFromWorkout:
       value:
