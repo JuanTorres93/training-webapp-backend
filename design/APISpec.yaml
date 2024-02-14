@@ -6,7 +6,7 @@ servers:
 info:
   version: "1.0.0"
   title: training-webapp
-  description: The API for the EatBacon IOT project
+  description: The API for the training tracker webapp
 paths:
   /users:
     get:
@@ -405,7 +405,6 @@ paths:
               UpdateWorkout:
                 $ref: '#/components/examples/CreateWorkout'
 
-
     delete:
       tags:
         - Workouts
@@ -567,7 +566,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AllWorkoutTemplates'
+                $ref: '#/components/schemas/ResponseAllWorkoutTemplates'
               examples:
                 Workout:
                   $ref: '#/components/examples/AllWorkoutTemplates'
@@ -589,10 +588,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseCreateWorkoutTemplate'
+                $ref: '#/components/schemas/ResponseWorkoutTemplate'
               examples:
-                Workout:
-                  $ref: '#/components/examples/CreateWorkoutTemplate'
+                NewWorkoutTemplate:
+                  $ref: '#/components/examples/NewWorkoutTemplate'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -656,10 +655,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkoutTemplate'
+                $ref: '#/components/schemas/ResponseWorkoutTemplateExercise'
               examples:
                 Workout:
-                  $ref: '#/components/examples/WorkoutTemplate'
+                  $ref: '#/components/examples/WorkoutTemplateExercise'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -679,8 +678,70 @@ paths:
             schema:
               $ref: '#/components/schemas/ReqBodyAddExerciseToWorkoutTemplate'
             examples:
-              CreateWorkoutTemplate:
+              AddExerciseToWorkoutTemplate:
                 $ref: '#/components/examples/AddExerciseToWorkoutTemplate'
+
+    put:
+      tags:
+        - Workouts
+      description: Updates exercise from workout template
+      operationId: updateExerciseToWorkoutTemplate
+      responses:
+        '201':
+          description: Successfully updated exercise to template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWorkoutTemplateExercise'
+              examples:
+                UpdatedExercise:
+                  $ref: '#/components/examples/WorkoutTemplateExercise'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqBodyUpdateExerciseFromWorkoutTemplate'
+            examples:
+              AddExerciseToWorkoutTemplate:
+                $ref: '#/components/examples/AddExerciseToWorkoutTemplate'
+
+    delete:
+      tags:
+        - Workouts
+      description: Delete workout template
+      operationId: deleteWorkoutTemplate
+      responses:
+        '200':
+          description: Successfully deleted workout template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWorkoutTemplate'
+              examples:
+                DeletedWorkoutTemplate:
+                  $ref: '#/components/examples/WorkoutTemplate'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
                 
 components:
   schemas:
@@ -794,6 +855,27 @@ components:
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
       
+    ResponseWorkoutTemplateExercise:
+      type: object
+      properties:
+        workoutTemplateId:
+          type: integer
+          description: Workout template's id that owns the exercise
+        exerciseId:
+          type: integer
+          description: Exercise id
+        exerciseOrder:
+          type: integer
+          description: Order in which the exercise is performed
+        exerciseSets:
+          type: integer
+          description: Number of sets of the exercise to perform
+      example:
+        id: 3
+        alias: "Bicep curl"
+        description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
+      description: Exercise object
+      
     ReqBodyCreateExercise:
       type: object
       required:
@@ -811,20 +893,6 @@ components:
       description: Exercise object
       
     ReqBodyUpdateExercise:
-      type: object
-      properties:
-        alias:
-          type: string
-          description: Exercise name
-        description:
-          type: string
-          description: Exercise email
-      example:
-        alias: "Bicep curl"
-        description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
-      description: Exercise object
-      
-    UpdateExercise:
       type: object
       properties:
         alias:
@@ -938,28 +1006,14 @@ components:
         time_in_seconds:
           type: integer
           description: Time in seconds that the exercise spanned
-      
-    ReqBodyDeleteExerciseFromWorkout:
-      type: object
-      properties:
-        ExerciseSet:
-          type: integer
-          description: Number of the set to remove
-        RemoveAll:
-          type: boolean
-          description: If true, deletes all sets of the exercise
     
-    AddExerciseToWorkoutTemplate:
+    ReqBodyAddExerciseToWorkoutTemplate:
       type: object
       required:
-        - WorkoutId
         - ExerciseId
         - ExerciseOrder
         - ExerciseSets
       properties:
-        WorkoutId:
-          type: integer
-          description: Workout associated with the template
         ExerciseId:
           type: integer
           description: Id of the exercise to include in the template
@@ -970,17 +1024,11 @@ components:
           type: integer
           description: Number of sets of the exercise to perform
     
-    ReqBodyAddExerciseToWorkoutTemplate:
+    ReqBodyUpdateExerciseFromWorkoutTemplate:
       type: object
       required:
-        - WorkoutId
         - ExerciseId
-        - ExerciseOrder
-        - ExerciseSets
       properties:
-        WorkoutId:
-          type: integer
-          description: Workout associated with the template
         ExerciseId:
           type: integer
           description: Id of the exercise to include in the template
@@ -1073,7 +1121,7 @@ components:
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
             
-    ResponseCreateWorkoutTemplate:
+    ResponseWorkoutTemplate:
       type: object
       required:
         - userId
@@ -1082,20 +1130,6 @@ components:
         userId:
           type: integer
           description: Id of the user that owns the template
-        alias:
-          type: string
-          description: Workout name
-        description:
-          type: string
-          description: Workout description
-      example:
-        alias: "Pull"
-        description: "Pulling routine for back and bicep strenghtening"
-      description: Workout object
-            
-    UpdateWorkout:
-      type: object
-      properties:
         alias:
           type: string
           description: Workout name
@@ -1123,7 +1157,7 @@ components:
           items:
             $ref: '#/components/schemas/WorkoutTemplate'
           
-    AllWorkoutTemplates:
+    ResponseAllWorkoutTemplates:
       type: array
       items:
         $ref: '#/components/schemas/WorkoutTemplate'
@@ -1254,6 +1288,13 @@ components:
             alias: Biceps curl
             order: 3
             sets: 3
+
+    WorkoutTemplateExercise:
+      value:
+        workoutTemplateId: 2
+        exerciseId: 7
+        exerciseOrder: 2
+        exerciseSets: 3
             
     AllWorkoutTemplates:
       value:
@@ -1303,6 +1344,13 @@ components:
         alias: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
             
+    NewWorkoutTemplate:
+      value:
+        id: 1
+        userId: 2
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+            
     ExerciseFromWorkout:
       value:
         ExerciseId: 1
@@ -1348,7 +1396,6 @@ components:
 
     AddExerciseToWorkoutTemplate:
       value:
-        WorkoutId: 6
         ExerciseId: 2
-        ExerciseOrder: 7
-        ExerciseSets: 80
+        ExerciseOrder: 6
+        ExerciseSets: 4
