@@ -610,7 +610,7 @@ paths:
             examples:
               CreateWorkoutTemplate:
                 $ref: '#/components/examples/CreateWorkoutTemplate'
-              
+
   /workouts/templates/{id}:
     parameters:
       - name: id
@@ -684,6 +684,80 @@ paths:
     put:
       tags:
         - Workouts
+      description: Updates workout template
+      operationId: updateNewWorkoutTemplate
+      responses:
+        '201':
+          description: Successfully updated template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWorkoutTemplate'
+              examples:
+                NewWorkoutTemplate:
+                  $ref: '#/components/examples/WorkoutTemplate'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqBodyUpdateWorkoutTemplate'
+            examples:
+              UpdateWorkoutTemplate:
+                $ref: '#/components/examples/UpdateWorkoutTemplate'
+
+    delete:
+      tags:
+        - Workouts
+      description: Delete workout template
+      operationId: deleteWorkoutTemplate
+      responses:
+        '200':
+          description: Successfully deleted workout template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWorkoutTemplate'
+              examples:
+                DeletedWorkoutTemplate:
+                  $ref: '#/components/examples/WorkoutTemplate'
+                
+        '401':
+          $ref: '#/components/responses/401'
+
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
+              
+  /workouts/templates/{id}/exercises/{exerciseId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Template id
+        schema:
+          type: integer
+      - name: exerciseId
+        in: path
+        required: true
+        description: Exercise id
+        schema:
+          type: integer
+
+    put:
+      tags:
+        - Workouts
       description: Updates exercise from workout template
       operationId: updateExerciseToWorkoutTemplate
       responses:
@@ -715,24 +789,24 @@ paths:
             schema:
               $ref: '#/components/schemas/ReqBodyUpdateExerciseFromWorkoutTemplate'
             examples:
-              AddExerciseToWorkoutTemplate:
-                $ref: '#/components/examples/AddExerciseToWorkoutTemplate'
+              UpdateExerciseToWorkoutTemplate:
+                $ref: '#/components/examples/UpdateExerciseToWorkoutTemplate'
 
     delete:
       tags:
         - Workouts
-      description: Delete workout template
-      operationId: deleteWorkoutTemplate
+      description: Deletes exercise from workout template
+      operationId: deleteExerciseToWorkoutTemplate
       responses:
         '200':
-          description: Successfully deleted workout template
+          description: Successfully deleted exercise to template
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseWorkoutTemplate'
+                $ref: '#/components/schemas/ResponseWorkoutTemplateExercise'
               examples:
-                DeletedWorkoutTemplate:
-                  $ref: '#/components/examples/WorkoutTemplate'
+                UpdatedExercise:
+                  $ref: '#/components/examples/WorkoutTemplateExercise'
                 
         '401':
           $ref: '#/components/responses/401'
@@ -1026,12 +1100,7 @@ components:
     
     ReqBodyUpdateExerciseFromWorkoutTemplate:
       type: object
-      required:
-        - ExerciseId
       properties:
-        ExerciseId:
-          type: integer
-          description: Id of the exercise to include in the template
         ExerciseOrder:
           type: integer
           description: Order of the exercise in the template
@@ -1110,6 +1179,20 @@ components:
         userId:
           type: integer
           description: Id of the user that owns the template
+        alias:
+          type: string
+          description: Workout name
+        description:
+          type: string
+          description: Workout description
+      example:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+      description: Workout object
+            
+    ReqBodyUpdateWorkoutTemplate:
+      type: object
+      properties:
         alias:
           type: string
           description: Workout name
@@ -1344,6 +1427,11 @@ components:
         alias: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
             
+    UpdateWorkoutTemplate:
+      value:
+        alias: "Pull"
+        description: "Pulling routine for back and bicep strenghtening"
+            
     NewWorkoutTemplate:
       value:
         id: 1
@@ -1397,5 +1485,10 @@ components:
     AddExerciseToWorkoutTemplate:
       value:
         ExerciseId: 2
+        ExerciseOrder: 6
+        ExerciseSets: 4
+
+    UpdateExerciseToWorkoutTemplate:
+      value:
         ExerciseOrder: 6
         ExerciseSets: 4
