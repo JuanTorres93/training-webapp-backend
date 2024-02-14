@@ -358,6 +358,15 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddExerciseToWorkout'
+            examples:
+              AddExerciseToWorkout:
+                $ref: '#/components/examples/AddExerciseToWorkout'
 
     put:
       tags:
@@ -411,14 +420,6 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
-
-
-
-
-
-
-
-
               
   /workouts/{id}/exercises/{exerciseId}:
     parameters:
@@ -446,10 +447,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddExerciseToWorkout'
+                $ref: '#/components/schemas/UpdateExerciseFromWorkout'
               examples:
                 Workout:
-                  $ref: '#/components/examples/AddExerciseToWorkout'
+                  $ref: '#/components/examples/UpdateExerciseFromWorkout'
                 
         '400':
           $ref: '#/components/responses/400'
@@ -487,6 +488,17 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+                
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteExerciseFromWorkout'
+            examples:
+              RemoveOneSet:
+                $ref: '#/components/examples/RemoveOneSetFromExerciseWorkout'
+              RemoveAllSets:
+                $ref: '#/components/examples/RemoveAllSetsFromExerciseWorkout'
               
   /workouts/templates:
     get:
@@ -747,6 +759,28 @@ components:
     AddExerciseToWorkout:
       type: object
       required:
+        - ExerciseId
+        - ExerciseSet
+      properties:
+        ExerciseId:
+          type: integer
+          description: Id of the exercise
+        ExerciseSet:
+          type: integer
+          description: Number of the set in which the exercise was performed
+        reps:
+          type: integer
+          description: Number of reps performed
+        weight:
+          type: number
+          description: weight used
+        time_in_seconds:
+          type: integer
+          description: Time in seconds that the exercise spanned
+      
+    UpdateExerciseFromWorkout:
+      type: object
+      required:
         - ExerciseSet
       properties:
         ExerciseSet:
@@ -761,6 +795,16 @@ components:
         time_in_seconds:
           type: integer
           description: Time in seconds that the exercise spanned
+      
+    DeleteExerciseFromWorkout:
+      type: object
+      properties:
+        ExerciseSet:
+          type: integer
+          description: Number of the set to remove
+        RemoveAll:
+          type: boolean
+          description: If true, deletes all sets of the exercise
     
     AddExerciseToWorkoutTemplate:
       type: object
@@ -1021,11 +1065,29 @@ components:
             
     AddExerciseToWorkout:
       value:
+        ExerciseId: 1
         ExerciseSet: 2
         reps: 7
         weight: 80
         time_in_seconds: null
             
+    UpdateExerciseFromWorkout:
+      value:
+        ExerciseSet: 2
+        reps: 7
+        weight: 80
+        time_in_seconds: null
+
+    RemoveOneSetFromExerciseWorkout:
+      value:
+        ExerciseSet: 2
+        RemoveAll: false
+
+    RemoveAllSetsFromExerciseWorkout:
+      value:
+        ExerciseSet: null
+        RemoveAll: true
+
     AddExerciseToWorkoutTemplate:
       value:
         WorkoutId: 6
