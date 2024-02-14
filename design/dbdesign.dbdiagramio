@@ -23,10 +23,13 @@ Table workouts {
 
 Table workout_template {
   id SERIAL [PK, increment]
-  workout_id INTEGER [ref: - workouts.id, NOT NULL]
+  user_id INTEGER [ref: > users.id, not null]
+  alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
+  description VARCHAR(500)
 
   Note: 'Used for saving templates, executed workouts are stored in workouts_exercises'
 }
+
 
 Table users_workouts {
   user_id SERIAL [ref: > users.id]
