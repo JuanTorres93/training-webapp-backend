@@ -56,21 +56,21 @@ const localStrategy = new LocalStrategy((username, password, done) => {
     })
 })
 
-const googleStrategy = new GoogleStrategy({
-    // TODO configurar los valores en google y ponerlos en .env
-    clientID: process.env.GOOGLE_API,
-    clientSecret: process.env.GOOGLE_SECRET,
-    callbackURL: 'http://localhost:54321/login/google/callback',
-    scope: ['email'],
-}, (accessToken, refreshToken, profile, done) => {
-    // TODO Adaptar a mi base de datos y seleccionar y/o crear nuevo usuario
-    // User.findOrCreate({ googleId: profile.id }, (err, user) => {
-        // return done(err, user);
-    // });
-
-    // TODO UPDATE. THIS IS REALLY BASIC
-    return done(null, profile);
-});
+// const googleStrategy = new GoogleStrategy({
+//     // TODO configurar los valores en google y ponerlos en .env
+//     clientID: process.env.GOOGLE_API,
+//     clientSecret: process.env.GOOGLE_SECRET,
+//     callbackURL: 'http://localhost:54321/login/google/callback',
+//     scope: ['email'],
+// }, (accessToken, refreshToken, profile, done) => {
+//     // TODO Adaptar a mi base de datos y seleccionar y/o crear nuevo usuario
+//     // User.findOrCreate({ googleId: profile.id }, (err, user) => {
+//         // return done(err, user);
+//     // });
+// 
+//     // TODO UPDATE. THIS IS REALLY BASIC
+//     return done(null, profile);
+// });
 
 const serializeUser = (user, done) => {
     // TODO research about what exactly this function does
@@ -97,7 +97,7 @@ const deserializeUser = (id, done) => {
 // local strategy for passport
 passport.use(localStrategy);
 // google strategy for passport
-passport.use(googleStrategy);
+// passport.use(googleStrategy);
 
 // The serializeUser() function sets an id as the cookie in the user’s browser, 
 // and the deserializeUser() function uses the id to look up the user in the 
