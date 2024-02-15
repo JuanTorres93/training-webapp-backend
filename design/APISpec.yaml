@@ -43,6 +43,9 @@ paths:
         '400':
           $ref: '#/components/responses/400'
                 
+        '409':
+          $ref: '#/components/responses/409'
+                
       requestBody:
         content:
           application/json:
@@ -1299,6 +1302,20 @@ components:
 
             example:
               msg: Resource was not found
+    
+    409:
+      description: Already existing
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error messagge. 
+
+            example:
+              msg: Already existing resource
           
   examples:
     WorkoutExercise:
