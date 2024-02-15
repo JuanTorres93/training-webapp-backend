@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const query = require('../db/index').query;
-const utils = require('../utils.js');
+const utils = require('../utils/utils.js');
 
 const logoutRouter = express.Router();
 logoutRouter.use(bodyParser.json());

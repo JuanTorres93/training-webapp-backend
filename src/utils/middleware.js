@@ -1,9 +1,5 @@
-const query = require('./db/index').query;
-
-const checkKeysInObject = (keysArray, obj) => {
-    // Returns true if every key in keysArray is contained in obj keys
-    return keysArray.every(key => Object.keys(obj).includes(key))
-};
+const query = require('../db/index').query;
+const utils = require('./utils');
 
 const validateCustomerData = (req, res, next) => {
     // TODO hash password (it is already hashed in another part of the code, not sure if needed here)
@@ -111,11 +107,29 @@ const processIntegerURLParameter = category => {
     }
 };
 
+const checkKeysInBodyRequest = mandatoryBodyParametersArray => {
+    // Middleware used for compliying with API spec. It checks that all required parameters
+    // are included in the body request
+    return (req, res, next) => {
+        const parametersAreIncluded = utils.checkKeysInObject(
+            mandatoryBodyParametersArray,
+            req.body
+        );
+
+        if (parametersAreIncluded) return next();
+
+        const msg = `At least one of this parameters is missing: ${mandatoryBodyParametersArray.join(', ')}`
+
+        res.status(400).json({
+            msg,
+        });
+    }
+};
 
 module.exports = {
-    checkKeysInObject,
     validateCustomerData,
     checkEmailInUse,
     processIntegerURLParameter,
     authenticatedUser,
+    checkKeysInBodyRequest,
 }

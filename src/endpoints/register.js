@@ -2,13 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const query = require('../db/index').query;
-const utils = require('../utils');
+const mw = require('../utils/middleware');
 const hashing = require('../hashing');
 
 const registerRouter = express.Router();
 registerRouter.use(bodyParser.json());
 
-registerRouter.post('/', utils.validateCustomerData, utils.checkEmailInUse,
+registerRouter.post('/', mw.validateCustomerData, mw.checkEmailInUse,
     async (req, res, next) => {
         const { first_name, last_name, second_last_name, email } = req;
         const password = await hashing.plainTextHash(req.password);

@@ -5,7 +5,7 @@ require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../app.js');
 
-const utils = require('../utils.js');
+const utils = require('../utils/utils.js');
 
 const app = createApp();
 const BASE_ENDPOINT = '/users'
@@ -37,6 +37,12 @@ describe(`${BASE_ENDPOINT}`, () => {
 
             it("status code of 200", async () => {
                 expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
+                const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
+                const userObject = response.body[0];
+                expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
             });
         });
 
@@ -77,8 +83,38 @@ describe(`${BASE_ENDPOINT}`, () => {
             });
         });
 
-        // describe('unhappy paths', () => {
-            // it('unhappy path example', () => {});
-        // });
+        describe('unhappy paths', () => {
+            it('400 response when mandatory parameter is missing', async () => {
+                // alias is missing
+                let response = await request.post(BASE_ENDPOINT).send({
+                    email: "John.Doe@domain.com",
+                    last_name: "Doe",
+                    password: "secure_password",
+                    second_last_name: "Smith",
+                })
+
+                expect(response.statusCode).toStrictEqual(400);
+
+                // email is missing
+                response = await request.post(BASE_ENDPOINT).send({
+                    alias: "John",
+                    last_name: "Doe",
+                    password: "secure_password",
+                    second_last_name: "Smith",
+                })
+
+                expect(response.statusCode).toStrictEqual(400);
+
+                // password is missing
+                response = await request.post(BASE_ENDPOINT).send({
+                    alias: "John",
+                    email: "John.Doe@domain.com",
+                    last_name: "Doe",
+                    second_last_name: "Smith",
+                })
+
+                expect(response.statusCode).toStrictEqual(400);
+            });
+        });
     });
 });
