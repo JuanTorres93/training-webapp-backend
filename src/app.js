@@ -1,32 +1,31 @@
+// Regular imports
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
 const morgan = require('morgan');
-
 const passport = require('./passport-config.js');
-const apiRouter = require('./endpoints/api.js');
+
+// Create server and enable body parser in order not to import it
+// in every router
+const app = express();
+// Parse HTTP request body to JSON
+app.use(bodyParser.json());
+
+// Routers imports
 const registerRouter = require('./endpoints/register.js');
 const loginRouter = require('./endpoints/login.js');
 const logoutRouter = require('./endpoints/logout.js');
-const cartRouter = require('./endpoints/cart.js');
 const checkoutRouter = require('./endpoints/checkout.js');
-
-// Create server
-app = express();
 
 // Enable request logs
 app.use(morgan('short'));
 
-// Parse HTTP request body to JSON
-app.use(bodyParser.json());
-
 // CORS configuration
 const corsOptions = {
-    // TODO add real server url
-    origin: ["http://localhost:54321",
-        "http://localhost:3000",
-        "https://ecommerce-server-codecademy-portfolio.onrender.com",
+    // TODO add real client url. Maybe change value in .env
+    origin: [
+        process.env.CLIENT_URL,
     ],
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
@@ -45,11 +44,12 @@ const store = new session.MemoryStore();
 // Cookie for the browser to be able to send session ID back to the server
 const cookie = {
     maxAge: 24 * 60 * 60 * 1000, // milliseconds until cookie expires, in this case 24h
-    // TODO uncomment in production, it is now disabled due to not using https in development
+    // TODO uncomment in production (secure), it is now disabled due to not using https in development
     // secure: true, // It's only sent to the server via HTTPS
     sameSite: "none", // Allow cross-site cookie through different browsers
-    httpOnly: true, // Specifies whether or not the cookies should be accessible via JavaScript in the browser (Document.cookie). 
-    // This setting is forced to true, because it ensures that any cross-site scripting attack (XSS) is impossible
+    httpOnly: true, // Specifies whether or not the cookies should be accessible via 
+                    // JavaScript in the browser (Document.cookie). This setting is set 
+                    // to true, because it ensures that any cross-site scripting attack (XSS) is impossible
     // Other properties can be 'expires' or 'httpOnly', amongst others
 };
 
@@ -57,8 +57,7 @@ app.use(session({
     // secret is used as a key for signing and/or encrypting cookies
     // to protect the session ID. Should be a random string NOT INCLUDED in code,
     // but in an ENVIRONMENT VARIABLE
-    // TODO store in an environment variable
-    secret: "33c5ddc51abb31b1cca3c145ede3b544dca2de115a155c4d55ab1b12eb544de5415e12b5b3b24c52e2a135c5e1cacd4b13444cea51ebe3d5c1ebbab411aaa4314115a5ce2a52244cad4a4eba44ca353d1d1beced1b1c53de55cbde52d2b4a42dc4aa3dcc53d4b2c4315ecaa31a4ebdac2c2ecdebbdac5d2ecd451a1ac112bda4",
+    secret: process.env.EXPRESS_SESSION_SECRET,
     // Setting resave to true will force a session to be saved back to 
     // the session data store, even when no data was modified. Typically, 
     // this option should be false, but also depends on your session storage strategy.
@@ -90,16 +89,12 @@ app.use(passport.session());
 // Mount endpoints routers
 // =======================
 
-// Mount API endpoints
-app.use('/api', apiRouter);
 // Mount register endpoint
 app.use('/register', registerRouter);
 // Mount login endpoint
 app.use('/login', loginRouter);
 // Mount logout endpoint
 app.use('/logout', logoutRouter);
-// Mount cart endpoint
-app.use('/cart', cartRouter)
 // Mount checkout endpoint
 app.use('/checkout', checkoutRouter)
 
