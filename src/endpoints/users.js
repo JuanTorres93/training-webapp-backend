@@ -13,10 +13,7 @@ const router = express.Router();
 
 // Get all customers
 router.get('/', (req, res, next) => {
-    console.log('Selecting all users');
-    // const q = "SELECT * FROM customers;";
-
-    return res.status(200).send(['Hello', 'World']);
+    const q = "SELECT * FROM users;";
 
     query(q, [], (error, results) => {
         if (error) throw error;

@@ -6,7 +6,11 @@ const pool = new Pool({
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_USER_PASSWORD,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT,
+    // These 3 parameters below have allowed to connect to the database without errors
+    idleTimeoutMillis: 10000,
+    keepAlive: true,
+    ssl: true,
 });
  
 const query = (text, params, callback) => {
