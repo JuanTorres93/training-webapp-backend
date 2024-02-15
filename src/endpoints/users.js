@@ -22,4 +22,26 @@ router.get('/', (req, res, next) => {
     })
 });
 
+// ===================================
+// ========== POST requests ==========
+// ===================================
+router.post('/', (req, res, next) => {
+    return res.status(201).json({
+        id: 3,
+        alias: "John",
+        email: "John.Doe@domain.com",
+        last_name: "Doe",
+        img: "https://i.pinimg.com/736x/7f/64/3f/7f643f0db514d7971349c416e29e42a8.jpg",
+        second_last_name: "Smith",
+    });
+
+    const q = "SELECT * FROM users;";
+
+    query(q, [], (error, results) => {
+        if (error) throw error;
+
+        res.json(results.rows)
+    })
+});
+
 module.exports = router;
