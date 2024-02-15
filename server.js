@@ -1,8 +1,9 @@
+require('dotenv').config();
 // Server is started in its own file for testing purposes
 const app = require('./src/app.js');
 
-const PORT = process.env.PORT || 54321;
+const PORT = process.env.SERVER_PORT;
 
 app.listen(PORT, () => {
-    console.log('Listening');
+    console.log('Server is listening');
 });

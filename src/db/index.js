@@ -1,14 +1,12 @@
 // TODO all calls to database should be async?
 const { Pool } = require('pg');
-
-const dbConfig = require('./dbconfig');
- 
+  
 const pool = new Pool({
-    user: dbConfig.USER,
-    host: dbConfig.HOST,
-    database: dbConfig.DATABASE,
-    password: dbConfig.PASSWORD,
-    port: dbConfig.PORT
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_USER_PASSWORD,
+    port: process.env.DB_PORT
 });
  
 const query = (text, params, callback) => {
