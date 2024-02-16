@@ -1,5 +1,6 @@
 const query = require('../db/index').query;
 const utils = require('./utils');
+const { validationResult } = require('express-validator');
 
 const validateCustomerData = (req, res, next) => {
     // TODO hash password (it is already hashed in another part of the code, not sure if needed here)
@@ -107,6 +108,20 @@ const processIntegerURLParameter = category => {
     }
 };
 
+const validateResult = errorCodeToSend => {
+    return (req, res, next) => {
+        // DOCS: Source https://www.youtube.com/watch?v=VMRgFfmv6j0
+        const result = validationResult(req)
+
+        // This means that there were no errors
+        if (result.isEmpty()) {
+            return next();
+        }
+
+        res.status(errorCodeToSend).send({ errors: result.array() });
+    }
+};
+
 const checkKeysInBodyRequest = mandatoryBodyParametersArray => {
     // Middleware used for compliying with API spec. It checks that all required parameters
     // are included in the body request
@@ -132,4 +147,5 @@ module.exports = {
     processIntegerURLParameter,
     authenticatedUser,
     checkKeysInBodyRequest,
+    validateResult,
 }
