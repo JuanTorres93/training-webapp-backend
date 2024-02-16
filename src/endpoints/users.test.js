@@ -58,9 +58,9 @@ describe(`${BASE_ENDPOINT}`, () => {
     // =============
     describe('post requests', () => {
         const successfullRequest = {
-            alias: "John",
-            email: "John.Doe@domain.com",
-            last_name: "Doe",
+            alias: "Tastycless",
+            email: "Test.Tesies@sdmain.com",
+            last_name: "Testies",
             password: "secure_password",
             second_last_name: "Smith",
         }
@@ -72,17 +72,18 @@ describe(`${BASE_ENDPOINT}`, () => {
                 response = await request.post(BASE_ENDPOINT).send(successfullRequest);
             });
 
-            it("returns user object", async () => {
+            it("returns user object", () => {
                 const expectedKeys = ['id', 'alias', 'email', 
                                       'last_name', 'img',
                                       'second_last_name'];
 
+                console.log(response.body);
                 const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
                     response.body)
                 expect(allKeysIncluded).toBe(true);
             });
 
-            it("status code of 201", async () => {
+            it("status code of 201", () => {
                 expect(response.statusCode).toStrictEqual(201);
             });
         });

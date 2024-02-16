@@ -71,25 +71,13 @@ router.post('/', validateRegisterUserParams,
         const q = `INSERT INTO users ${fields} ` +
                   `VALUES ${values} ` + 
                   'RETURNING id, alias, email, last_name, img, second_last_name;';
-        
-        // TODO DELETE
-        console.log(q);
-        console.log(params);
 
         query(q, params, (error, results) => {
             if (error) throw error;
 
             const createdUser = results.rows[0];
-            console.log(createdUser);
-            const newUser = {
-                id: createdUser[0],
-                alias: createdUser[1],
-                email: createdUser[2],
-                last_name: createdUser[3],
-                img: createdUser[4],
-                second_last_name: createdUser[5],
-            };
-            res.status(201).json(newUser)
+            
+            res.status(201).json(createdUser);
 
             //return res.status(201).json({
             //    id: 3,
