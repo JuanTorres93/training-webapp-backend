@@ -17,6 +17,8 @@ function logErrors (err, req, res, next) {
 
 const request = supertest(app.use(logErrors))
 
+const warning = '|IMPERFECT SUITE. NEEDED A TEST TEMP DATABASE|';
+
 // TODO Could be usefull to use a test database for a real project
 
 describe(`${BASE_ENDPOINT}`, () => {
@@ -55,19 +57,21 @@ describe(`${BASE_ENDPOINT}`, () => {
     // POST requests
     // =============
     describe('post requests', () => {
-        let response;
+        const successfullRequest = {
+            alias: "John",
+            email: "John.Doe@domain.com",
+            last_name: "Doe",
+            password: "secure_password",
+            second_last_name: "Smith",
+        }
 
-        beforeEach(async () => {
-            response = await request.post(BASE_ENDPOINT).send({
-                alias: "John",
-                email: "John.Doe@domain.com",
-                last_name: "Doe",
-                password: "secure_password",
-                second_last_name: "Smith",
+        describe("register user successfully" + warning, () => {
+            let response;
+
+            beforeAll(async () => {
+                response = await request.post(BASE_ENDPOINT).send(successfullRequest);
             });
-        });
 
-        describe("register user", () => {
             it("returns user object", async () => {
                 const expectedKeys = ['id', 'alias', 'email', 
                                       'last_name', 'img',
@@ -83,7 +87,7 @@ describe(`${BASE_ENDPOINT}`, () => {
             });
         });
 
-        describe('unhappy paths', () => {
+        describe('unhappy paths' + warning, () => {
             it('400 response when mandatory parameter is missing', async () => {
                 // alias is missing
                 let response = await request.post(BASE_ENDPOINT).send({
@@ -114,6 +118,11 @@ describe(`${BASE_ENDPOINT}`, () => {
                 })
 
                 expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('409 response when email already exists in db', async () => {
+                const response = await request.post(BASE_ENDPOINT).send(successfullRequest);
+                expect(response.statusCode).toStrictEqual(409);
             });
         });
     });

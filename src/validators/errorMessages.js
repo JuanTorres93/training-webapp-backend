@@ -1,3 +1,4 @@
+// DOCS: express validator docs https://github.com/validatorjs/validator.js#sanitizers
 const parameterMissingMsg = (parameterName) => {
     return `Parameter ${parameterName} is missing`;
 }
