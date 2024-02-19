@@ -9,18 +9,46 @@ const checkStringInFieldInUse = async (field, value) => {
     // Must return a promise to be able to await when calling from another file
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
-            if (error) reject(error);
+            if (error) reject({
+                error,
+                exists: null,
+            });
 
             if (results.rows.length > 0) {
                 resolve(true);
             } else {
-                reject(false);
+                reject({
+                    error: null,
+                    exists: false,
+                });
             }
         });
     });
-}
+};
 
-const registerNewUser = (alias, email, password, 
+const checkEmailInUse = async (email) => {
+    try {
+        // checkStringInFieldInUse only resolves to true
+        return await checkStringInFieldInUse('email', email);
+    } catch (error) {
+        if (error.error !== null) throw error;
+
+        return false;
+    }
+};
+
+const checkAliasInUse = async (alias) => {
+    try {
+        // checkStringInFieldInUse only resolves to true
+        return await checkStringInFieldInUse('alias', alias);
+    } catch (error) {
+        if (error.error !== null) throw error;
+
+        return false;
+    }
+};
+
+const registerNewUser = async (alias, email, password, 
                          last_name = undefined, 
                          second_last_name = undefined) => {
     // Build query
@@ -51,5 +79,7 @@ const registerNewUser = (alias, email, password,
 
 module.exports = {
     checkStringInFieldInUse,
+    checkEmailInUse,
+    checkAliasInUse,
     registerNewUser,
 };

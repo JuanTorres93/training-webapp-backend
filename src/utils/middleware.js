@@ -1,4 +1,4 @@
-const query = require('../db/index').query;
+const dbUsers = require('../db/users');
 const utils = require('./utils');
 const { validationResult } = require('express-validator');
 
@@ -68,23 +68,6 @@ const authorizedUser = (req, res, next) => {
   }
 };
 
-const checkEmailInUse = (req, res, next) => {
-    // THIS MIDDLEWARE MUST BE USED AFTER validateCustomerData
-    const { email } = req;
-
-    const q = "SELECT email FROM customers WHERE email = $1";
-    const params = [email];
-
-    query(q, params, (error, results) => {
-        if (error) throw error;
-
-        // If the email does not exist in the database, then can continue the middleware chain
-        if (Object.values(results.rows).length === 0) return next();
-
-        res.status(409).send("email already in use.");
-    });
-};
-
 const processIntegerURLParameter = category => {
     // Category is just a string appended to the id at the end of the middleware.
     // Its purpose is to differentiate different ids processed in the same
@@ -141,11 +124,30 @@ const checkKeysInBodyRequest = mandatoryBodyParametersArray => {
     }
 };
 
+const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
+    // IMPORTANT: This middleware must be called after validating user parameter
+    const { alias, email } = req.body;
+    // TODO DRY this code
+    if (await dbUsers.checkEmailInUse(email) === true) {
+        return res.status(409).json({
+            msg: 'Email already in use',
+        });
+    }
+
+    if (await dbUsers.checkAliasInUse(alias) === true) {
+        return res.status(409).json({
+            msg: 'Alias already in use',
+        });
+    }
+
+    next();
+}
+
 module.exports = {
     validateCustomerData,
-    checkEmailInUse,
     processIntegerURLParameter,
     authenticatedUser,
     checkKeysInBodyRequest,
     validateResult,
+    checkUserEmailAndAliasAlreadyExist,
 }

@@ -58,8 +58,8 @@ describe(`${BASE_ENDPOINT}`, () => {
     // =============
     describe('post requests', () => {
         const successfullRequest = {
-            alias: "Tstycl",
-            email: "Tst.Tees@smain.com",
+            alias: "a9d6vs",
+            email: "s98uyafges@smain.com",
             last_name: "Testies",
             password: "secure_password",
             second_last_name: "Smith",

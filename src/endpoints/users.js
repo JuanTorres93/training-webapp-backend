@@ -3,6 +3,7 @@ const express = require('express');
 const { validateRegisterUserParams } = require('../validators/users.js');
 const query = require('../db/index').query;
 const dbUsers = require('../db/users.js');
+const mw = require('../utils/middleware.js');
 
 const router = express.Router();
 
@@ -26,36 +27,10 @@ router.get('/', (req, res, next) => {
 // ===================================
 // ========== POST requests ==========
 // ===================================
-router.post('/', validateRegisterUserParams, 
+router.post('/', validateRegisterUserParams,
+    mw.checkUserEmailAndAliasAlreadyExist,
     async (req, res, next) => {
         const { alias, email, password, last_name, second_last_name } = req.body;
-
-        // TODO DRY this code
-        let isEmailAlreadyInUse;
-        try {
-            isEmailAlreadyInUse = await dbUsers.checkStringInFieldInUse('email', email);
-        } catch (error) {
-            isEmailAlreadyInUse = false;
-        }
-
-        if (isEmailAlreadyInUse) {
-            return res.status(409).json({
-                msg: 'Email already in use',
-            });
-        }
-
-        let isAliasAlreadyInUse;
-        try {
-            isAliasAlreadyInUse = await dbUsers.checkStringInFieldInUse('alias', alias);
-        } catch (error) {
-            isAliasAlreadyInUse = false;
-        }
-
-        if (isAliasAlreadyInUse) {
-            return res.status(409).json({
-                msg: 'Alias already in use',
-            });
-        }
 
         try {
             const createdUser = await dbUsers.registerNewUser(alias, email, password, last_name, second_last_name);

@@ -16,7 +16,6 @@ const createApp = () => {
 
     // Routers imports
     const usersRouter = require('./endpoints/users.js');
-    const registerRouter = require('./endpoints/register.js');
     const loginRouter = require('./endpoints/login.js');
     const logoutRouter = require('./endpoints/logout.js');
     const checkoutRouter = require('./endpoints/checkout.js');
@@ -94,8 +93,6 @@ const createApp = () => {
 
     // Mount users endpoint
     app.use('/users', usersRouter);
-    // Mount register endpoint
-    app.use('/register', registerRouter);
     // Mount login endpoint
     app.use('/login', loginRouter);
     // Mount logout endpoint
