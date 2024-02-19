@@ -1,8 +1,10 @@
 const { query } = require('./index');
+const utils = require('../utils/utils.js');
 
-const checkEmailInUse = async (email) => {
-    const q = "SELECT email FROM users WHERE LOWER(email) = LOWER($1);";
-    const params = [email];
+const checkStringInFieldInUse = async (field, value) => {
+    const q = "SELECT " + field + 
+              " FROM users WHERE LOWER(" + field + ") = LOWER($1);";
+    const params = [value];
 
     // Must return a promise to be able to await when calling from another file
     return new Promise((resolve, reject) => {
@@ -18,26 +20,36 @@ const checkEmailInUse = async (email) => {
     });
 }
 
-const checkAliasInUse = async (alias) => {
-    const q = "SELECT alias FROM users WHERE LOWER(alias) = LOWER($1);";
-    const params = [alias];
+const registerNewUser = (alias, email, password, 
+                         last_name = undefined, 
+                         second_last_name = undefined) => {
+    // Build query
+    // TODO Hash password
+    let requiredFields = ['alias', 'email', 'password'];
+    let requiredValues = [alias, email, password];
 
-    // Must return a promise to be able to await when calling from another file
+    let optionalFields = ['last_name', 'second_last_name'];
+    let optionalValues = [last_name, second_last_name];
+
+    const {fields, values, params} = utils.buildFieldsAndValuesSQLQuery(requiredFields, requiredValues, optionalFields, optionalValues);
+
+    const q = `INSERT INTO users ${fields} ` +
+              `VALUES ${values} ` + 
+              'RETURNING id, alias, email, last_name, img, second_last_name;';
+
     return new Promise((resolve, reject) => {
+
         query(q, params, (error, results) => {
             if (error) reject(error);
 
-            if (results.rows.length > 0) {
-                resolve(true);
-            } else {
-                reject(false);
-            }
-        });
+            const createdUser = results.rows[0];
+            resolve(createdUser)
+        })
     });
 }
 
 
 module.exports = {
-    checkEmailInUse,
-    checkAliasInUse,
+    checkStringInFieldInUse,
+    registerNewUser,
 };

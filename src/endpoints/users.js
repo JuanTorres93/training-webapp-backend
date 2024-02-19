@@ -3,7 +3,6 @@ const express = require('express');
 const { validateRegisterUserParams } = require('../validators/users.js');
 const query = require('../db/index').query;
 const dbUsers = require('../db/users.js');
-const utils = require('../utils/utils.js');
 
 const router = express.Router();
 
@@ -34,7 +33,7 @@ router.post('/', validateRegisterUserParams,
         // TODO DRY this code
         let isEmailAlreadyInUse;
         try {
-            isEmailAlreadyInUse = await dbUsers.checkEmailInUse(email);
+            isEmailAlreadyInUse = await dbUsers.checkStringInFieldInUse('email', email);
         } catch (error) {
             isEmailAlreadyInUse = false;
         }
@@ -47,7 +46,7 @@ router.post('/', validateRegisterUserParams,
 
         let isAliasAlreadyInUse;
         try {
-            isAliasAlreadyInUse = await dbUsers.checkAliasInUse(alias);
+            isAliasAlreadyInUse = await dbUsers.checkStringInFieldInUse('alias', alias);
         } catch (error) {
             isAliasAlreadyInUse = false;
         }
@@ -58,36 +57,14 @@ router.post('/', validateRegisterUserParams,
             });
         }
 
-        // TODO MOVE THIS CODE TO ITS FILE IN DB
-        // Build query
-        let requiredFields = ['alias', 'email', 'password'];
-        let requiredValues = [alias, email, password];
-
-        let optionalFields = ['last_name', 'second_last_name'];
-        let optionalValues = [last_name, second_last_name];
-
-        const {fields, values, params} = utils.buildFieldsAndValuesSQLQuery(requiredFields, requiredValues, optionalFields, optionalValues);
-
-        const q = `INSERT INTO users ${fields} ` +
-                  `VALUES ${values} ` + 
-                  'RETURNING id, alias, email, last_name, img, second_last_name;';
-
-        query(q, params, (error, results) => {
-            if (error) throw error;
-
-            const createdUser = results.rows[0];
-            
-            res.status(201).json(createdUser);
-
-            //return res.status(201).json({
-            //    id: 3,
-            //    alias: "John",
-            //    email: "John.Doe@domain.com",
-            //    last_name: "Doe",
-            //    img: "https://i.pinimg.com/736x/7f/64/3f/7f643f0db514d7971349c416e29e42a8.jpg",
-            //    second_last_name: "Smith",
-            //});
-        })
+        try {
+            const createdUser = await dbUsers.registerNewUser(alias, email, password, last_name, second_last_name);
+            return res.status(201).json(createdUser);
+        } catch (error) {
+            return res.status(400).json({
+                msg: "Error when registering user in db"
+            });
+        }
 });
 
 module.exports = router;
