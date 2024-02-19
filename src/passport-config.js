@@ -26,9 +26,6 @@ const localStrategy = new LocalStrategy((username, password, done) => {
     const q = "SELECT * FROM customers WHERE email = $1;";
     const params = [username]   // Read note above for username
 
-    // TODO BORRAR this print
-    console.log("Using local strategy");
-
     // TODO DEBUGGAR TODO ESTE MIDDLEWARE
     query(q, params, async (error, results) => {
         if (error) return done(error);

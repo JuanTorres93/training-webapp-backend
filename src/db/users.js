@@ -1,7 +1,7 @@
 const { query } = require('./index');
 const utils = require('../utils/utils.js');
 
-const checkStringInFieldInUse = async (field, value) => {
+const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
     const q = "SELECT " + field + 
               " FROM users WHERE LOWER(" + field + ") = LOWER($1);";
     const params = [value];
@@ -22,14 +22,14 @@ const checkStringInFieldInUse = async (field, value) => {
                     exists: false,
                 });
             }
-        });
+        }, appIsBeingTested);
     });
 };
 
-const checkEmailInUse = async (email) => {
+const checkEmailInUse = async (email, appIsBeignTested) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        return await checkStringInFieldInUse('email', email);
+        return await checkStringInFieldInUse('email', email, appIsBeignTested);
     } catch (error) {
         if (error.error !== null) throw error;
 
@@ -37,10 +37,10 @@ const checkEmailInUse = async (email) => {
     }
 };
 
-const checkAliasInUse = async (alias) => {
+const checkAliasInUse = async (alias, appIsBeignTested) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        return await checkStringInFieldInUse('alias', alias);
+        return await checkStringInFieldInUse('alias', alias, appIsBeignTested);
     } catch (error) {
         if (error.error !== null) throw error;
 
@@ -50,7 +50,8 @@ const checkAliasInUse = async (alias) => {
 
 const registerNewUser = async (alias, email, password, 
                          last_name = undefined, 
-                         second_last_name = undefined) => {
+                         second_last_name = undefined,
+                         appIsBeingTested = undefined) => {
     // Build query
     // TODO Hash password
     let requiredFields = ['alias', 'email', 'password'];
@@ -66,13 +67,12 @@ const registerNewUser = async (alias, email, password,
               'RETURNING id, alias, email, last_name, img, second_last_name;';
 
     return new Promise((resolve, reject) => {
-
         query(q, params, (error, results) => {
             if (error) reject(error);
 
             const createdUser = results.rows[0];
             resolve(createdUser)
-        })
+        }, appIsBeingTested)
     });
 }
 

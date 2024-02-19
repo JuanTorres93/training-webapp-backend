@@ -34,10 +34,15 @@ const query = (text, params, callback, appIsBeingTested) => {
     //                  throw error
     //              }
     //          })
-	
-    if (appIsBeingTested) return testPool.query(text, params, callback);
-    
-    return pool.query(text, params, callback);
+
+    if (appIsBeingTested === true || appIsBeingTested === false) {
+        // TODO uncomment
+        //if (appIsBeingTested) return testPool.query(text, params, callback);
+
+        return pool.query(text, params, callback);
+    };
+
+    throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
 };
 
 module.exports = {

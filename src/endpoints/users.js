@@ -21,7 +21,7 @@ router.get('/', (req, res, next) => {
         if (error) throw error;
 
         res.json(results.rows)
-    })
+    }, req.appIsBeingTested)
 });
 
 // ===================================
@@ -33,7 +33,12 @@ router.post('/', validateRegisterUserParams,
         const { alias, email, password, last_name, second_last_name } = req.body;
 
         try {
-            const createdUser = await dbUsers.registerNewUser(alias, email, password, last_name, second_last_name);
+            const createdUser = await dbUsers.registerNewUser(alias, 
+                                                              email, 
+                                                              password, 
+                                                              last_name, 
+                                                              second_last_name,
+                                                              req.appIsBeingTested);
             return res.status(201).json(createdUser);
         } catch (error) {
             return res.status(400).json({

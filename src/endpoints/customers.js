@@ -35,7 +35,7 @@ customersRouter.get('/', (req, res, next) => {
         if (error) throw error;
 
         res.json(results.rows)
-    })
+    }, req.appIsBeingTested)
 });
 
 // Get single customer
@@ -52,7 +52,7 @@ customersRouter.get('/:id', (req, res, next) => {
         } else {
             res.status(404).send(`No customer with id ${id}`);
         }
-    });
+    }, req.appIsBeingTested);
 });
 
 // ===================================
@@ -84,7 +84,7 @@ customersRouter.put('/:id', utils.validateCustomerData, (req, res, next) => {
                 email: results.rows[0].email,
             }
         );
-    })
+    }, req.appIsBeingTested)
 });
 
 // =====================================
@@ -103,7 +103,7 @@ customersRouter.delete('/:id', (req, res, next) => {
         res.json({
             msg: `Deleted customer with id ${results.rows[0].id}`,
         });
-    });
+    }, req.appIsBeingTested);
 });
 
 
