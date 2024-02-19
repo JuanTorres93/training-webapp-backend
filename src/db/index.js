@@ -12,8 +12,20 @@ const pool = new Pool({
     keepAlive: true,
     ssl: true,
 });
+  
+const testPool = new Pool({
+    user: process.env.DB_TEST_USER,
+    host: process.env.DB_TEST_HOST,
+    database: process.env.DB_TEST_NAME,
+    password: process.env.DB_TEST_USER_PASSWORD,
+    port: process.env.DB_TEST_PORT,
+    // These 3 parameters below have allowed to connect to the database without errors
+    idleTimeoutMillis: 10000,
+    keepAlive: true,
+    ssl: true,
+});
  
-const query = (text, params, callback) => {
+const query = (text, params, callback, appIsBeingTested) => {
     // Example of using params. This is done instead of concatenating strings to prevent SQL injection
     // query("INSERT INTO customers (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)" ,
     //          [first_name, last_name, email, password],   // Values stored in variables
@@ -23,7 +35,9 @@ const query = (text, params, callback) => {
     //              }
     //          })
 	
-    return pool.query(text, params, callback)
+    if (appIsBeingTested) return testPool.query(text, params, callback);
+    
+    return pool.query(text, params, callback);
 };
 
 module.exports = {

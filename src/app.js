@@ -7,12 +7,17 @@ const morgan = require('morgan');
 const passport = require('./passport-config.js');
 
 // Function to create the express app. Its main use is for testing
-const createApp = () => {
+const createApp = (appIsBeingTested = false) => {
     // Create server and enable body parser in order not to import it
     // in every router
     const app = express();
     // Parse HTTP request body to JSON
     app.use(bodyParser.json());
+    // Flag to know when the app is being tested by jest or in production
+    app.use((req, res, next) => {
+        req.appIsBeingTested = appIsBeingTested;
+        next();
+    });
 
     // Routers imports
     const usersRouter = require('./endpoints/users.js');
