@@ -19,10 +19,6 @@ const testPool = new Pool({
     database: process.env.DB_TEST_NAME,
     password: process.env.DB_TEST_USER_PASSWORD,
     port: process.env.DB_TEST_PORT,
-    // These 3 parameters below have allowed to connect to the database without errors
-    idleTimeoutMillis: 10000,
-    keepAlive: true,
-    ssl: true,
 });
  
 const query = (text, params, callback, appIsBeingTested) => {
@@ -36,8 +32,7 @@ const query = (text, params, callback, appIsBeingTested) => {
     //          })
 
     if (appIsBeingTested === true || appIsBeingTested === false) {
-        // TODO uncomment
-        //if (appIsBeingTested) return testPool.query(text, params, callback);
+        if (appIsBeingTested) return testPool.query(text, params, callback);
 
         return pool.query(text, params, callback);
     };

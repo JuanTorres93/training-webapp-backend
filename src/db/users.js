@@ -14,7 +14,7 @@ const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
                 exists: null,
             });
 
-            if (results.rows.length > 0) {
+            if (results !== undefined && results.rows.length > 0) {
                 resolve(true);
             } else {
                 reject({
@@ -29,7 +29,8 @@ const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
 const checkEmailInUse = async (email, appIsBeignTested) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        return await checkStringInFieldInUse('email', email, appIsBeignTested);
+        const exists = await checkStringInFieldInUse('email', email, appIsBeignTested);
+        return exists
     } catch (error) {
         if (error.error !== null) throw error;
 
