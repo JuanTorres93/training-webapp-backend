@@ -26,10 +26,10 @@ const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
     });
 };
 
-const checkEmailInUse = async (email, appIsBeignTested) => {
+const checkEmailInUse = async (email, appIsBeingTested) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        const exists = await checkStringInFieldInUse('email', email, appIsBeignTested);
+        const exists = await checkStringInFieldInUse('email', email, appIsBeingTested);
         return exists
     } catch (error) {
         if (error.error !== null) throw error;
@@ -38,10 +38,10 @@ const checkEmailInUse = async (email, appIsBeignTested) => {
     }
 };
 
-const checkAliasInUse = async (alias, appIsBeignTested) => {
+const checkAliasInUse = async (alias, appIsBeingTested) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        return await checkStringInFieldInUse('alias', alias, appIsBeignTested);
+        return await checkStringInFieldInUse('alias', alias, appIsBeingTested);
     } catch (error) {
         if (error.error !== null) throw error;
 
@@ -77,10 +77,29 @@ const registerNewUser = async (alias, email, password,
     });
 }
 
+const selectAllUsers = () => {
+
+};
+
+const selectUserById = async (id, appIsBeingTested) => {
+    const q = "SELECT id, alias, email, last_name, img, second_last_name FROM " +
+              "users WHERE id = $1;";
+    const params = [id];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const user = results.rows[0];
+            resolve(user)
+        }, appIsBeingTested)
+    });
+};
+
 
 module.exports = {
     checkStringInFieldInUse,
     checkEmailInUse,
     checkAliasInUse,
     registerNewUser,
+    selectUserById,
 };

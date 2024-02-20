@@ -9,7 +9,6 @@ const password = 'password'
 const lastName = 'last_name'
 const secondLastName = 'second_last_name'
 
-// TODO add trim to all cases
 const validateRegisterUserParams = [
     check(alias)
         .exists().withMessage(msgs.parameterMissingMsg(alias))

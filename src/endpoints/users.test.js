@@ -24,18 +24,18 @@ const truncateUsersAndRelatedTables = async () => {
     await query("TRUNCATE users CASCADE;", [], () => {}, true);
 }
 
+const successfullRequest = {
+    alias: "first_test_user",
+    email: "first_user@domain.com",
+    last_name: "Manacle",
+    password: "secure_password",
+    second_last_name: "Sanches",
+}
+
 describe(`${BASE_ENDPOINT}`,  () => {
     beforeAll(async () => {
         await truncateUsersAndRelatedTables();
     });
-
-    const successfullRequest = {
-        alias: "first_test_user",
-        email: "first_user@domain.com",
-        last_name: "Manacle",
-        password: "secure_password",
-        second_last_name: "Sanches",
-    }
 
     // =============
     // POST requests
@@ -54,7 +54,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                                       'last_name', 'img',
                                       'second_last_name'];
 
-                console.log(response.body);
+
                 const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
                     response.body)
                 expect(allKeysIncluded).toBe(true);
@@ -151,7 +151,42 @@ describe(`${BASE_ENDPOINT}`,  () => {
         });
 
         // describe('unhappy paths', () => {
+            // TODO test for 403 response
             // it('unhappy path example', () => {});
         // });
+    });
+});
+
+describe(`${BASE_ENDPOINT}/{id}`,  () => {
+    // Already existing user from previous suite
+    describe('Returns user', () => {
+        let response;
+
+        beforeAll(async () => {
+            await truncateUsersAndRelatedTables();
+            await request.post(BASE_ENDPOINT).send(successfullRequest);
+
+            // get id of the user in db, since it changes every time the suite is run
+            const id = await new Promise((resolve, reject) => {
+                query("SELECT id FROM users;", [], (error, results) => {
+                    if (error) reject(error);
+
+                    resolve(results.rows[0].id);
+                }, true);
+            })
+
+            response = await request.get(BASE_ENDPOINT + `/${id}`);
+        });
+
+        it("status code of 200", async () => {
+            expect(response.statusCode).toStrictEqual(200);
+        });
+
+        it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
+            const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
+            const userObject = response.body;
+            expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
+        });
+
     });
 });

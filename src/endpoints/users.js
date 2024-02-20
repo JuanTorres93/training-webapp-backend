@@ -7,14 +7,30 @@ const mw = require('../utils/middleware.js');
 
 const router = express.Router();
 
+// TODO uncomment and implement
+//router.param('id', (req, res, next, id) => {
+//    let intId;
+//
+//    try {
+//        intId = parseInt(id);
+//    } catch (error) {
+//        console.log(error);
+//        res.status(400).send("Invalid id");
+//    }
+//
+//    req.customerId = intId;
+//    next();
+//});
+
 // ==================================
 // ========== GET requests ==========
 // ==================================
 
 // TODO add authentication and authorization for customer endpoints
 
-// Get all customers
+// Get all users
 router.get('/', (req, res, next) => {
+    // TODO implement 403 response case
     const q = "SELECT * FROM users;";
 
     query(q, [], (error, results) => {
@@ -23,6 +39,17 @@ router.get('/', (req, res, next) => {
         res.json(results.rows)
     }, req.appIsBeingTested)
 });
+
+// Get user by id
+router.get('/:id', async (req, res, next) => {
+    // TODO implement 403 response case
+    const { id } = req.params;
+
+    const user = await dbUsers.selectUserById(id, req.appIsBeingTested);
+
+    res.status(200).json(user);
+});
+
 
 // ===================================
 // ========== POST requests ==========
