@@ -52,9 +52,9 @@ paths:
             schema:
               $ref: '#/components/schemas/ReqBodyCreateUser'
               
-  /users/{id}:
+  /users/{userId}:
     parameters:
-      - name: id
+      - name: userId
         in: path
         required: true
         description: User id
@@ -175,9 +175,9 @@ paths:
             schema:
               $ref: '#/components/schemas/ReqBodyCreateExercise'
               
-  /exercises/{id}:
+  /exercises/{exerciseId}:
     parameters:
-      - name: id
+      - name: exerciseId
         in: path
         required: true
         description: Exercise id
@@ -301,9 +301,9 @@ paths:
             schema:
               $ref: '#/components/schemas/ReqBodyCreateWorkout'
               
-  /workouts/{id}:
+  /workouts/{workoutId}:
     parameters:
-      - name: id
+      - name: workoutId
         in: path
         required: true
         description: Workout id
@@ -433,9 +433,9 @@ paths:
         '404':
           $ref: '#/components/responses/404'
               
-  /workouts/{id}/exercises/{exerciseId}:
+  /workouts/{workoutId}/exercises/{exerciseId}:
     parameters:
-      - name: id
+      - name: workoutId
         in: path
         required: true
         description: Workout id
@@ -511,9 +511,9 @@ paths:
         '404':
           $ref: '#/components/responses/404'
               
-  /workouts/{id}/exercises/{exerciseId}/{exerciseSet}:
+  /workouts/{workoutId}/exercises/{exerciseId}/{exerciseSet}:
     parameters:
-      - name: id
+      - name: workoutId
         in: path
         required: true
         description: Workout id
@@ -614,9 +614,9 @@ paths:
               CreateWorkoutTemplate:
                 $ref: '#/components/examples/CreateWorkoutTemplate'
 
-  /workouts/templates/{id}:
+  /workouts/templates/{templateId}:
     parameters:
-      - name: id
+      - name: templateId
         in: path
         required: true
         description: Template id
@@ -743,9 +743,9 @@ paths:
         '404':
           $ref: '#/components/responses/404'
               
-  /workouts/templates/{id}/exercises/{exerciseId}:
+  /workouts/templates/{templateId}/exercises/{exerciseId}:
     parameters:
-      - name: id
+      - name: templateId
         in: path
         required: true
         description: Template id
