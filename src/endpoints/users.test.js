@@ -158,16 +158,16 @@ describe(`${BASE_ENDPOINT}`,  () => {
 });
 
 describe(`${BASE_ENDPOINT}/{id}`,  () => {
-    // Already existing user from previous suite
     describe('Returns user', () => {
         let response;
+        let id;
 
         beforeAll(async () => {
             await truncateUsersAndRelatedTables();
             await request.post(BASE_ENDPOINT).send(successfullRequest);
 
             // get id of the user in db, since it changes every time the suite is run
-            const id = await new Promise((resolve, reject) => {
+            id = await new Promise((resolve, reject) => {
                 query("SELECT id FROM users;", [], (error, results) => {
                     if (error) reject(error);
 
@@ -189,4 +189,32 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
         });
 
     });
+
+    describe('uphappy paths', () => {
+        describe('400 response when', () => {
+            it('userid is string', async () => {
+                const response = await request.get(BASE_ENDPOINT + '/wrongId');
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('userid is boolean', async () => {
+                const response = await request.get(BASE_ENDPOINT + '/true');
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('userid is not positive', async () => {
+                const response = await request.get(BASE_ENDPOINT + '/-34');
+                expect(response.statusCode).toStrictEqual(400);
+            });
+        });
+
+        describe('404 response when', () => {
+            it('userid is valid but user with that id does not exist', async () => {
+                const response = await request.get(BASE_ENDPOINT + '/1');
+                expect(response.statusCode).toStrictEqual(404);
+            });
+
+        });
+    });
+
 });

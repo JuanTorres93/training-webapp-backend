@@ -1,26 +1,12 @@
 const express = require('express');
 
 const { validateRegisterUserParams } = require('../validators/users.js');
-const query = require('../db/index').query;
+const { validateIntegerParameter } = require('../validators/generalPurpose.js');
 const dbUsers = require('../db/users.js');
 const mw = require('../utils/middleware.js');
 
 const router = express.Router();
 
-// TODO uncomment and implement
-//router.param('id', (req, res, next, id) => {
-//    let intId;
-//
-//    try {
-//        intId = parseInt(id);
-//    } catch (error) {
-//        console.log(error);
-//        res.status(400).send("Invalid id");
-//    }
-//
-//    req.customerId = intId;
-//    next();
-//});
 
 // ==================================
 // ========== GET requests ==========
@@ -29,23 +15,26 @@ const router = express.Router();
 // TODO add authentication and authorization for customer endpoints
 
 // Get all users
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
     // TODO implement 403 response case
-    const q = "SELECT * FROM users;";
 
-    query(q, [], (error, results) => {
-        if (error) throw error;
+    const users = await dbUsers.selectAllUsers(req.appIsBeingTested);
 
-        res.json(results.rows)
-    }, req.appIsBeingTested)
+    res.status(200).send(users);
 });
 
 // Get user by id
-router.get('/:id', async (req, res, next) => {
+router.get('/:userId', validateIntegerParameter('userId'), async (req, res, next) => {
     // TODO implement 403 response case
-    const { id } = req.params;
+    const { userId } = req.params;
 
-    const user = await dbUsers.selectUserById(id, req.appIsBeingTested);
+    const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
+
+    if (user === undefined) {
+        return res.status(404).json({
+            msg: "User not found",
+        });
+    }
 
     res.status(200).json(user);
 });

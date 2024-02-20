@@ -31,11 +31,13 @@ const validateRegisterUserParams = [
         .trim()
         .escape(),
     check(lastName)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
     check(secondLastName)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()

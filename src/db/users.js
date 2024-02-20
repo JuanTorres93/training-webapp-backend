@@ -77,8 +77,17 @@ const registerNewUser = async (alias, email, password,
     });
 }
 
-const selectAllUsers = () => {
+const selectAllUsers = (appIsBeingTested) => {
+    const q = "SELECT id, alias, email, last_name, img, second_last_name FROM users;";
+    const params = [];
 
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const users = results.rows;
+            resolve(users)
+        }, appIsBeingTested)
+    });
 };
 
 const selectUserById = async (id, appIsBeingTested) => {
@@ -101,5 +110,6 @@ module.exports = {
     checkEmailInUse,
     checkAliasInUse,
     registerNewUser,
+    selectAllUsers,
     selectUserById,
 };
