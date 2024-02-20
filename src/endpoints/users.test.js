@@ -24,7 +24,7 @@ const truncateUsersAndRelatedTables = async () => {
     await query("TRUNCATE users CASCADE;", [], () => {}, true);
 }
 
-const successfullRequest = {
+const successfulPostRequest = {
     alias: "first_test_user",
     email: "first_user@domain.com",
     last_name: "Manacle",
@@ -37,16 +37,16 @@ describe(`${BASE_ENDPOINT}`,  () => {
         await truncateUsersAndRelatedTables();
     });
 
-    // =============
-    // POST requests
-    // =============
     describe('post requests', () => {
+        // =============
+        // POST requests
+        // =============
 
         describe("register user successfully", () => {
             let response;
 
             beforeAll(async () => {
-                response = await request.post(BASE_ENDPOINT).send(successfullRequest);
+                response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
             });
 
             it("returns user object", () => {
@@ -100,7 +100,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
 
             it('409 response when email already exists in db', async () => {
                 const response = await request.post(BASE_ENDPOINT).send({
-                    ...successfullRequest,
+                    ...successfulPostRequest,
                     // email same as successfulRequest
                     alias: "another_alias",
                     last_name: "another_last_name",
@@ -112,7 +112,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
 
             it('409 response when alias already exists in db', async () => {
                 const response = await request.post(BASE_ENDPOINT).send({
-                    ...successfullRequest,
+                    ...successfulPostRequest,
                     // alias same as successfulRequest
                     email: "another_mail@domain.com",
                     last_name: "another_last_name",
@@ -124,10 +124,10 @@ describe(`${BASE_ENDPOINT}`,  () => {
         });
     });
 
-    // ============
-    // GET requests
-    // ============
     describe('get requests', () => {
+        // ============
+        // GET requests
+        // ============
         let response;
 
         beforeEach(async () => {
@@ -158,62 +158,65 @@ describe(`${BASE_ENDPOINT}`,  () => {
 });
 
 describe(`${BASE_ENDPOINT}/{id}`,  () => {
-    describe('Returns user', () => {
-        let response;
-        let id;
+    let response;
+    let id;
 
-        beforeAll(async () => {
-            await truncateUsersAndRelatedTables();
-            await request.post(BASE_ENDPOINT).send(successfullRequest);
+    beforeAll(async () => {
+        // Test's set up
+        await truncateUsersAndRelatedTables();
+        await request.post(BASE_ENDPOINT).send(successfulPostRequest);
 
-            // get id of the user in db, since it changes every time the suite is run
-            id = await new Promise((resolve, reject) => {
-                query("SELECT id FROM users;", [], (error, results) => {
-                    if (error) reject(error);
+        // get id of the user in db, since it changes every time the suite is run
+        id = await new Promise((resolve, reject) => {
+            query("SELECT id FROM users;", [], (error, results) => {
+                if (error) reject(error);
 
-                    resolve(results.rows[0].id);
-                }, true);
-            })
+                resolve(results.rows[0].id);
+            }, true);
+        })
 
-            response = await request.get(BASE_ENDPOINT + `/${id}`);
-        });
-
-        it("status code of 200", async () => {
-            expect(response.statusCode).toStrictEqual(200);
-        });
-
-        it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
-            const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
-            const userObject = response.body;
-            expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
-        });
-
+        // Test response
+        response = await request.get(BASE_ENDPOINT + `/${id}`);
     });
 
-    describe('uphappy paths', () => {
-        describe('400 response when', () => {
-            it('userid is string', async () => {
-                const response = await request.get(BASE_ENDPOINT + '/wrongId');
-                expect(response.statusCode).toStrictEqual(400);
+    describe('get requests', () => {
+        describe('happy path', () => {
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('userid is boolean', async () => {
-                const response = await request.get(BASE_ENDPOINT + '/true');
-                expect(response.statusCode).toStrictEqual(400);
-            });
-
-            it('userid is not positive', async () => {
-                const response = await request.get(BASE_ENDPOINT + '/-34');
-                expect(response.statusCode).toStrictEqual(400);
+            it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
+                const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
+                const userObject = response.body;
+                expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
             });
         });
 
-        describe('404 response when', () => {
-            it('userid is valid but user with that id does not exist', async () => {
-                const response = await request.get(BASE_ENDPOINT + '/1');
-                expect(response.statusCode).toStrictEqual(404);
+        describe('uphappy paths', () => {
+            describe('400 response when', () => {
+                it('userid is string', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/wrongId');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('userid is boolean', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/true');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('userid is not positive', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/-34');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
             });
 
+            describe('404 response when', () => {
+                it('userid is valid but user with that id does not exist', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/1');
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+
+            });
         });
     });
 
