@@ -3,47 +3,6 @@ const utils = require('./utils');
 const { validationResult } = require('express-validator');
 const hash = require('../hashing');
 
-const validateCustomerData = (req, res, next) => {
-    // TODO hash password (it is already hashed in another part of the code, not sure if needed here)
-    const neededKeys = ['first_name', 'last_name', 'email', 'password'];
-    const allKeysArePresent = checkKeysInObject(neededKeys, req.body)
-
-    let first_name, last_name, email, password;
-
-    if (allKeysArePresent) {
-        first_name = req.body.first_name;
-        last_name = req.body.last_name;
-        email = req.body.email;
-        password = req.body.password;
-    } else {
-        return res.status(400).send("first_name, last_name, email or password parameter is missing.");
-    }
-
-    if (typeof first_name !== 'string' || typeof last_name !== "string" || 
-        typeof email !== 'string'  || typeof password !== "string") {
-        return res.status(400).send("first_name, last_name, email and password must be strings.");
-    }
-
-    // TODO ensure password length = 256
-
-    let second_last_name = null;
-    if (Object.keys(req.body).includes('second_last_name')) {
-        if (typeof req.body.second_last_name !== 'string') {
-            return res.status(400).send("second_last_name must be a string.");
-        }
-
-        second_last_name = req.body.second_last_name;
-    }
-
-    req.first_name = first_name;
-    req.last_name = last_name;
-    req.second_last_name = second_last_name;
-    req.email = email;
-    req.password = password;
-
-    next();
-}
-
 const authenticatedUser = (req, res, next) => {
     try {
         const user = req.session.passport.user;
@@ -158,7 +117,6 @@ const hashPassword = async (req, res, next) => {
 }
 
 module.exports = {
-    validateCustomerData,
     processIntegerURLParameter,
     authenticatedUser,
     checkKeysInBodyRequest,
