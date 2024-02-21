@@ -54,7 +54,6 @@ const registerNewUser = async (alias, email, password,
                          second_last_name = undefined,
                          appIsBeingTested = undefined) => {
     // Build query
-    // TODO Hash password
     let requiredFields = ['alias', 'email', 'password'];
     let requiredValues = [alias, email, password];
 
