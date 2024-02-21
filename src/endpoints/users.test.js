@@ -217,22 +217,22 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                     const response = await request.get(BASE_ENDPOINT + '/1');
                     expect(response.statusCode).toStrictEqual(404);
                 });
-
             });
         });
     });
 
     describe('put requests', () => {
+        const putBodyRequest = {
+            alias: "updated alias with put",
+            email: "updated_email_with_put@domain.com",
+            last_name: "updated_last_name_with_put",
+            password: "updated_pasword_with_put",
+            second_last_name: "updated_second_last_with_put",
+            img: "img",
+        };
+
         describe('happy path', () => {
             let response;
-            const putBodyRequest = {
-                alias: "updated alias with put",
-                email: "updated_email_with_put@domain.com",
-                last_name: "updated_last_name_with_put",
-                password: "updated_pasword_with_put",
-                second_last_name: "updated_second_last_with_put",
-                img: "img",
-            };
 
             beforeAll(async () => {
                 response = await request.put(BASE_ENDPOINT + `/${id}`).send(putBodyRequest);
@@ -240,8 +240,6 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
 
             it('returns updated user', () => {
                 const updatedUser = response.body;
-
-                console.log(updatedUser);
 
                 expect(updatedUser.id).toStrictEqual(id);
                 expect(updatedUser.alias).toStrictEqual(putBodyRequest.alias);
@@ -253,6 +251,123 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 // Do NOT return user password
                 expect(response.body).not.toHaveProperty('password');
             });
+
+            it('changes are reflected in db', async () => {
+                const updatedUserFromDb = await new Promise((resolve, reject) => {
+                    query("SELECT * FROM users WHERE id = $1;", [id], (error, results) => {
+                        if (error) reject(error);
+
+                        resolve(results.rows[0]);
+                    }, true);
+                })
+
+                expect(updatedUserFromDb.id).toStrictEqual(id);
+                expect(updatedUserFromDb.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedUserFromDb.email).toStrictEqual(putBodyRequest.email);
+                expect(updatedUserFromDb.last_name).toStrictEqual(putBodyRequest.last_name);
+                expect(updatedUserFromDb.second_last_name).toStrictEqual(putBodyRequest.second_last_name);
+                expect(updatedUserFromDb.img).toStrictEqual(putBodyRequest.img);
+                // TODO update test when hashing password
+                expect(updatedUserFromDb.password.trim()).toStrictEqual(putBodyRequest.password);
+            });
+        });
+
+        describe('unhappy paths', () => {
+            describe('returns 400 error code when', () => {
+                it('userid is string', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('userid is boolean', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/true').send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('userid is not positive', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('userid is valid but user with that id does not exist', async () => {
+                    // alias and email need to be modified again to avoid 409 conflict
+                    // response due to violating unique constraints.
+                    const response = await request.put(BASE_ENDPOINT + '/1').send({
+                        ...putBodyRequest,
+                        alias: 'updated alias with put modified',
+                        email: 'updated_email_with_put_modified@domain.com',
+                    });
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+        });
+    });
+
+    describe('delete requests', () => {
+        // In this suite unhappy path is tested first in order to preserve the
+        // entry in the database
+        describe('unhappy path', () => {
+            describe('returns 400 error code when', () => {
+                it('userid is string', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/wrongId');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('userid is boolean', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/true');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('userid is not positive', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/-23');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('userid is valid but user with that id does not exist', async () => {
+                    // alias and email need to be modified again to avoid 409 conflict
+                    // response due to violating unique constraints.
+                    const response = await request.delete(BASE_ENDPOINT + '/1');
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+            
+        });
+
+        describe('happy path', () => {
+            let response;
+
+            beforeAll(async () => {
+                // return db registry to its original state
+                await request.put(BASE_ENDPOINT + `/${id}`).send({
+                    ...successfulPostRequest,
+                    img: null,
+                });
+                response = await request.delete(BASE_ENDPOINT + `/${id}`)
+            });
+
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it('returns deleted user', () => {
+                const deletedUser = response.body;
+
+                expect(deletedUser.id).toStrictEqual(id);
+                expect(deletedUser.alias).toStrictEqual(successfulPostRequest.alias);
+                expect(deletedUser.email).toStrictEqual(successfulPostRequest.email);
+                expect(deletedUser.last_name).toStrictEqual(successfulPostRequest.last_name);
+                expect(deletedUser.second_last_name).toStrictEqual(successfulPostRequest.second_last_name);
+
+                expect(response.body).toHaveProperty('img');
+
+                // Do NOT return user password
+                expect(response.body).not.toHaveProperty('password');
+            });
+            
         });
     });
 });

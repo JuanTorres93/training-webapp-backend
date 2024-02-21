@@ -74,23 +74,55 @@ router.put('/:userId',
     validateIntegerParameter('userId'), 
     mw.checkUserEmailAndAliasAlreadyExist,
     async (req, res, next) => {
-    // TODO implement 403 response case
+        // TODO implement 403 and 401 response cases
 
-    const { userId } = req.params;
-    const { alias, email, password, last_name, second_last_name, img } = req.body;
+        const { userId } = req.params;
+        const { alias, email, password, last_name, second_last_name, img } = req.body;
 
-    const newUserInfo = {
-        alias,
-        email,
-        password,
-        last_name,
-        second_last_name,
-        img,
-    };
+        const newUserInfo = {
+            alias,
+            email,
+            password,
+            last_name,
+            second_last_name,
+            img,
+        };
 
-    const updatedUser = await dbUsers.updateUser(userId, newUserInfo, req.appIsBeingTested);
+        const updatedUser = await dbUsers.updateUser(userId, newUserInfo, req.appIsBeingTested);
 
-    res.status(200).json(updatedUser);
-});
+        if (updatedUser === undefined) {
+            return res.status(404).json({
+                msg: "User not found",
+            });
+        }
+
+        res.status(200).json(updatedUser);
+    }
+);
+
+
+// =====================================
+// ========== DELETE requests ==========
+// =====================================
+
+// update user by id
+router.delete('/:userId', 
+    validateIntegerParameter('userId'), 
+    async (req, res, next) => {
+        // TODO implement 403 and 401 response cases
+
+        const { userId } = req.params;
+
+        const deletedUser = await dbUsers.deleteUser(userId, req.appIsBeingTested);
+
+        if (deletedUser === undefined) {
+            return res.status(404).json({
+                msg: "User not found",
+            });
+        }
+
+        res.status(200).json(deletedUser);
+    }
+);
 
 module.exports = router;

@@ -135,6 +135,21 @@ const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
     });
 }
 
+const deleteUser = async (id, appIsBeingTested = undefined) => {
+    let q = 'DELETE FROM users WHERE id = $1 ' + 
+            'RETURNING id, alias, email, last_name, img, second_last_name;';
+    const params = [id]
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const deletedUser = results.rows[0];
+            resolve(deletedUser)
+        }, appIsBeingTested)
+    });
+}
+
 
 module.exports = {
     checkStringInFieldInUse,
@@ -144,4 +159,5 @@ module.exports = {
     selectAllUsers,
     selectUserById,
     updateUser,
+    deleteUser,
 };
