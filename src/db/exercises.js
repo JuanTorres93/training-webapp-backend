@@ -27,6 +27,35 @@ const createExercise = async (alias, description = undefined,
     });
 }
 
+const selectAllExercises = (appIsBeingTested) => {
+    const q = "SELECT id, alias, description FROM exercises;";
+    const params = [];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const users = results.rows;
+            resolve(users)
+        }, appIsBeingTested)
+    });
+};
+
+const selectExerciseById = async (id, appIsBeingTested) => {
+    const q = "SELECT id, alias, description FROM " +
+              "exercises WHERE id = $1;";
+    const params = [id];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const user = results.rows[0];
+            resolve(user)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     createExercise,
+    selectAllExercises,
+    selectExerciseById,
 };

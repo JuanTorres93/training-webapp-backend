@@ -67,4 +67,28 @@ describe(`${BASE_ENDPOINT}`,  () => {
             });
         });
     });
+
+    describe('get requests', () => {
+        let response;
+
+        beforeEach(async () => {
+            response = await request.get(BASE_ENDPOINT);
+        });
+
+        describe("get all exercises", () => {
+            it("returns list", async () => {
+                expect(Array.isArray(response.body)).toBe(true);
+            });
+
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it('exercise object has id, alias, and description properties', () => {
+                const expectedKeys = ['id', 'alias', 'description'];
+                const exerciseObject = response.body[0];
+                expect(utils.checkKeysInObject(expectedKeys, exerciseObject)).toBe(true);
+            });
+        });
+    });
 });

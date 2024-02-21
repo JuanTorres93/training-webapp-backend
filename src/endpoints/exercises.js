@@ -8,11 +8,23 @@ const mw = require('../utils/middleware.js');
 
 const router = express.Router();
 
+// ==================================
+// ========== GET requests ==========
+// ==================================
+
+// Get all users
+router.get('/', async (req, res, next) => {
+    const exercises = await dbExercises.selectAllExercises(req.appIsBeingTested);
+
+    res.status(200).send(exercises);
+});
+
 // ===================================
 // ========== POST requests ==========
 // ===================================
 router.post('/', exerciseValidators.validateCreateExerciseParams,
     async (req, res, next) => {
+        // TODO implement 403 response
         const { alias, description } = req.body;
 
         try {
