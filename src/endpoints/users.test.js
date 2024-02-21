@@ -58,6 +58,8 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
                     response.body)
                 expect(allKeysIncluded).toBe(true);
+                // Do NOT return user password
+                expect(response.body).not.toHaveProperty('password');
             });
 
             it("status code of 201", () => {
@@ -220,4 +222,37 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
         });
     });
 
+    describe('put requests', () => {
+        describe('happy path', () => {
+            let response;
+            const putBodyRequest = {
+                alias: "updated alias with put",
+                email: "updated_email_with_put@domain.com",
+                last_name: "updated_last_name_with_put",
+                password: "updated_pasword_with_put",
+                second_last_name: "updated_second_last_with_put",
+                img: "img",
+            };
+
+            beforeAll(async () => {
+                response = await request.put(BASE_ENDPOINT + `/${id}`).send(putBodyRequest);
+            });
+
+            it('returns updated user', () => {
+                const updatedUser = response.body;
+
+                console.log(updatedUser);
+
+                expect(updatedUser.id).toStrictEqual(id);
+                expect(updatedUser.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedUser.email).toStrictEqual(putBodyRequest.email);
+                expect(updatedUser.last_name).toStrictEqual(putBodyRequest.last_name);
+                expect(updatedUser.second_last_name).toStrictEqual(putBodyRequest.second_last_name);
+                expect(updatedUser.img).toStrictEqual(putBodyRequest.img);
+
+                // Do NOT return user password
+                expect(response.body).not.toHaveProperty('password');
+            });
+        });
+    });
 });

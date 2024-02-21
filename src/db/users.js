@@ -104,6 +104,37 @@ const selectUserById = async (id, appIsBeingTested) => {
     });
 };
 
+const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
+    // TODO Hash password
+    let q = 'UPDATE users SET ';
+    const params = []
+    let variableCount = 1;
+
+    Object.keys(userObject).forEach(field => {
+
+        if (userObject[field] !== undefined) {
+            q += `${field} = $${variableCount}, `;
+            variableCount++;
+            params.push(userObject[field]);
+        }
+    });
+
+    q = q.substring(0, q.length - 2) + " ";
+    q += `WHERE id = $${variableCount} `; 
+    params.push(id);
+
+    q += 'RETURNING id, alias, email, last_name, img, second_last_name;';
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const updatedUser = results.rows[0];
+            resolve(updatedUser)
+        }, appIsBeingTested)
+    });
+}
+
 
 module.exports = {
     checkStringInFieldInUse,
@@ -112,4 +143,5 @@ module.exports = {
     registerNewUser,
     selectAllUsers,
     selectUserById,
+    updateUser,
 };

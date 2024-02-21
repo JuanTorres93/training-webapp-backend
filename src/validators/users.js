@@ -46,6 +46,47 @@ const validateRegisterUserParams = [
     mw.validateResult(400)
 ];
 
+const validateUpdateUserParams = [
+    check(alias)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        .trim()
+        .escape(),
+    check(email)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(email))
+        .isEmail().withMessage(msgs.parameterValidEmailyMsg())
+        // TODO normalize email
+        .trim()
+        .escape(),
+    check(password)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(password))
+        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        // TODO add isStrongPassword validator
+        .trim()
+        .escape(),
+    check(lastName)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        .trim()
+        .escape(),
+    check(secondLastName)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        .trim()
+        .escape(),
+    
+    mw.validateResult(400)
+];
+
 module.exports = {
     validateRegisterUserParams,
+    validateUpdateUserParams,
 };

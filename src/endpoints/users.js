@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { validateRegisterUserParams } = require('../validators/users.js');
+const { validateRegisterUserParams, validateUpdateUserParams } = require('../validators/users.js');
 const { validateIntegerParameter } = require('../validators/generalPurpose.js');
 const dbUsers = require('../db/users.js');
 const mw = require('../utils/middleware.js');
@@ -61,6 +61,36 @@ router.post('/', validateRegisterUserParams,
                 msg: "Error when registering user in db"
             });
         }
+});
+
+
+// ==================================
+// ========== PUT requests ==========
+// ==================================
+
+// update user by id
+router.put('/:userId', 
+    validateUpdateUserParams,
+    validateIntegerParameter('userId'), 
+    mw.checkUserEmailAndAliasAlreadyExist,
+    async (req, res, next) => {
+    // TODO implement 403 response case
+
+    const { userId } = req.params;
+    const { alias, email, password, last_name, second_last_name, img } = req.body;
+
+    const newUserInfo = {
+        alias,
+        email,
+        password,
+        last_name,
+        second_last_name,
+        img,
+    };
+
+    const updatedUser = await dbUsers.updateUser(userId, newUserInfo, req.appIsBeingTested);
+
+    res.status(200).json(updatedUser);
 });
 
 module.exports = router;
