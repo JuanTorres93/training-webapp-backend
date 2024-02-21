@@ -34,8 +34,8 @@ const selectAllExercises = (appIsBeingTested) => {
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            const users = results.rows;
-            resolve(users)
+            const exercises = results.rows;
+            resolve(exercises)
         }, appIsBeingTested)
     });
 };
@@ -48,8 +48,8 @@ const selectExerciseById = async (id, appIsBeingTested) => {
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            const user = results.rows[0];
-            resolve(user)
+            const exercise = results.rows[0];
+            resolve(exercise)
         }, appIsBeingTested)
     });
 };

@@ -19,6 +19,22 @@ router.get('/', async (req, res, next) => {
     res.status(200).send(exercises);
 });
 
+// Get exercise by id
+router.get('/:exerciseId', validateIntegerParameter('exerciseId'), async (req, res, next) => {
+    // TODO implement 403 response case
+    const { exerciseId } = req.params;
+
+    const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
+
+    if (exercise === undefined) {
+        return res.status(404).json({
+            msg: "Exercise not found",
+        });
+    }
+
+    res.status(200).json(exercise);
+});
+
 // ===================================
 // ========== POST requests ==========
 // ===================================

@@ -92,3 +92,68 @@ describe(`${BASE_ENDPOINT}`,  () => {
         });
     });
 });
+
+
+describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
+    let response;
+    let id;
+
+    beforeAll(async () => {
+        // Test's set up
+        await truncateExercisesAndRelatedTables();
+        await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+
+        // get id of the exercise in db, since it changes every time the suite is run
+        id = await new Promise((resolve, reject) => {
+            query("SELECT id FROM exercises;", [], (error, results) => {
+                if (error) reject(error);
+
+                resolve(results.rows[0].id);
+            }, true);
+        })
+
+        // Test response
+        response = await request.get(BASE_ENDPOINT + `/${id}`);
+    });
+
+    describe('get requests', () => {
+        describe('happy path', () => {
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it('exercise object has id, alias, and description properties', () => {
+                const expectedKeys = ['id', 'alias', 'description'];
+                const exerciseObject = response.body;
+
+                expect(utils.checkKeysInObject(expectedKeys, exerciseObject)).toBe(true);
+            });
+        });
+
+        describe('uphappy paths', () => {
+            describe('400 response when', () => {
+                it('exerciseId is string', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/wrongId');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseId is boolean', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/true');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseId is not positive', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/-34');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('exerciseId is valid but exercise with that id does not exist', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/1');
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+        });
+    });
+});
