@@ -45,6 +45,7 @@ router.get('/:userId', validateIntegerParameter('userId'), async (req, res, next
 // ===================================
 router.post('/', validateRegisterUserParams,
     mw.checkUserEmailAndAliasAlreadyExist,
+    mw.hashPassword,
     async (req, res, next) => {
         const { alias, email, password, last_name, second_last_name } = req.body;
 
@@ -73,6 +74,7 @@ router.put('/:userId',
     validateUpdateUserParams,
     validateIntegerParameter('userId'), 
     mw.checkUserEmailAndAliasAlreadyExist,
+    mw.hashPassword,
     async (req, res, next) => {
         // TODO implement 403 and 401 response cases
 

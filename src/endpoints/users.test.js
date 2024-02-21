@@ -7,6 +7,7 @@ const createApp = require('../app.js');
 
 const utils = require('../utils/utils.js');
 const query = require('../db/index.js').query;
+const hash = require('../hashing.js');
 
 // true means that it should connect to test db
 const app = createApp(true);
@@ -23,6 +24,16 @@ const request = supertest(app.use(logErrors))
 const truncateUsersAndRelatedTables = async () => {
     await query("TRUNCATE users CASCADE;", [], () => {}, true);
 }
+
+const selectEverythingFromUserId = (id) => {
+    return new Promise((resolve, reject) => {
+        query("SELECT * FROM users WHERE id = $1;", [id], (error, results) => {
+            if (error) reject(error);
+
+            resolve(results.rows[0]);
+        }, true);
+    });
+};
 
 const successfulPostRequest = {
     alias: "first_test_user",
@@ -64,6 +75,20 @@ describe(`${BASE_ENDPOINT}`,  () => {
 
             it("status code of 201", () => {
                 expect(response.statusCode).toStrictEqual(201);
+            });
+
+            it('does not store password as is submitted', async () => {
+                const userInDb = await selectEverythingFromUserId(response.body.id);
+
+                expect(userInDb.password.trim()).not.toEqual(successfulPostRequest.password.trim());
+            });
+
+            it('hashes password', async () => {
+                const userInDb = await selectEverythingFromUserId(response.body.id);
+
+                const passwordsMatch = await hash.comparePlainTextToHash(successfulPostRequest.password,
+                                                                   userInDb.password);
+                expect(passwordsMatch).toBe(true);
             });
         });
 
@@ -149,6 +174,8 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
                 const userObject = response.body[0];
                 expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
+
+                expect(userObject).not.toHaveProperty('password');
             });
         });
 
@@ -191,6 +218,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
                 const userObject = response.body;
                 expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
+                expect(userObject).not.toHaveProperty('password');
             });
         });
 
@@ -253,13 +281,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
             });
 
             it('changes are reflected in db', async () => {
-                const updatedUserFromDb = await new Promise((resolve, reject) => {
-                    query("SELECT * FROM users WHERE id = $1;", [id], (error, results) => {
-                        if (error) reject(error);
-
-                        resolve(results.rows[0]);
-                    }, true);
-                })
+                const updatedUserFromDb = await selectEverythingFromUserId(id);
 
                 expect(updatedUserFromDb.id).toStrictEqual(id);
                 expect(updatedUserFromDb.alias).toStrictEqual(putBodyRequest.alias);
@@ -267,8 +289,49 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 expect(updatedUserFromDb.last_name).toStrictEqual(putBodyRequest.last_name);
                 expect(updatedUserFromDb.second_last_name).toStrictEqual(putBodyRequest.second_last_name);
                 expect(updatedUserFromDb.img).toStrictEqual(putBodyRequest.img);
-                // TODO update test when hashing password
-                expect(updatedUserFromDb.password.trim()).toStrictEqual(putBodyRequest.password);
+            });
+
+            it('does not store password as is submitted', async () => {
+                const userInDb = await selectEverythingFromUserId(id);
+
+                expect(userInDb.password.trim()).not.toEqual(putBodyRequest.password.trim());
+            });
+
+            it('hashes password', async () => {
+                const userInDb = await selectEverythingFromUserId(id);
+
+                const passwordsMatch = await hash.comparePlainTextToHash(putBodyRequest.password,
+                                                                         userInDb.password);
+                expect(passwordsMatch).toBe(true);
+            });
+
+            it('does not crash for every possible field update', async () => {
+                const putReq = {
+                    alias: "new alias",
+                    email: "new-email@domain.com",
+                    last_name: "new last name",
+                    password: "new password",
+                    second_last_name: "new second last name",
+                    img: "new img",
+                };
+
+                Object.keys(putReq).forEach(async (field) => {
+                    const individualReq = {
+                        [field]: putReq[field],
+                    };
+
+                    const res = await request.put(BASE_ENDPOINT + `/${id}`).send(individualReq);
+
+                    if (field !== 'password') {
+                        expect(res.body[field]).toStrictEqual(individualReq[field]);
+                    } else {
+                        const userInDb = await selectEverythingFromUserId(id);
+
+                        const passwordsMatch = await hash.comparePlainTextToHash(individualReq.password,
+                                                                                 userInDb.password);
+                        expect(passwordsMatch).toBe(true);
+                    }
+                });
             });
         });
 

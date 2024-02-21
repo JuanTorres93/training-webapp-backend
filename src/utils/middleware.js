@@ -1,6 +1,7 @@
 const dbUsers = require('../db/users');
 const utils = require('./utils');
 const { validationResult } = require('express-validator');
+const hash = require('../hashing');
 
 const validateCustomerData = (req, res, next) => {
     // TODO hash password (it is already hashed in another part of the code, not sure if needed here)
@@ -144,6 +145,18 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
     next();
 }
 
+const hashPassword = async (req, res, next) => {
+    // IMPORTANT use this middleware after validating password
+    const { password } = req.body;
+
+    if (password) {
+        const hashedPassword = await hash.plainTextHash(password)
+        req.body.password = hashedPassword;
+    }
+
+    next();
+}
+
 module.exports = {
     validateCustomerData,
     processIntegerURLParameter,
@@ -151,4 +164,5 @@ module.exports = {
     checkKeysInBodyRequest,
     validateResult,
     checkUserEmailAndAliasAlreadyExist,
+    hashPassword,
 }
