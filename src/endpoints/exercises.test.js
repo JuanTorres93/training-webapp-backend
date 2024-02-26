@@ -233,4 +233,61 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
             });
         });
     });
+
+
+    describe('delete requests', () => {
+        // In this suite unhappy path is tested first in order to preserve the
+        // entry in the database
+        describe('unhappy path', () => {
+            describe('returns 400 error code when', () => {
+                it('exerciseid is string', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/wrongId');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is boolean', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/true');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is not positive', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/-23');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('exerciseid is valid but exercise with that id does not exist', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + '/1');
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+            
+        });
+
+        describe('happy path', () => {
+            let response;
+
+            beforeAll(async () => {
+                // return db registry to its original state
+                await request.put(BASE_ENDPOINT + `/${id}`).send({
+                    ...successfulPostRequest,
+                });
+                response = await request.delete(BASE_ENDPOINT + `/${id}`)
+            });
+
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it('returns deleted exercise', () => {
+                const deletedexercise = response.body;
+
+                expect(deletedexercise.id).toStrictEqual(id);
+                expect(deletedexercise.alias).toStrictEqual(successfulPostRequest.alias);
+                expect(deletedexercise.description).toStrictEqual(successfulPostRequest.description);
+            });
+            
+        });
+    });
 });

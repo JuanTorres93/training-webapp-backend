@@ -83,5 +83,28 @@ router.put('/:exerciseId',
     }
 );
 
+// =====================================
+// ========== DELETE requests ==========
+// =====================================
+
+// update user by id
+router.delete('/:exerciseId', 
+    validateIntegerParameter('exerciseId'), 
+    async (req, res, next) => {
+        // TODO implement 403 and 401 response cases
+        const { exerciseId } = req.params;
+
+        const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
+
+        if (deletedexercise === undefined) {
+            return res.status(404).json({
+                msg: "exercise not found",
+            });
+        }
+
+        res.status(200).json(deletedexercise);
+    }
+);
+
 
 module.exports = router;

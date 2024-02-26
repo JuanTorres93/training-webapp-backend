@@ -74,9 +74,25 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
     });
 }
 
+const deleteExercise = async (id, appIsBeingTested = undefined) => {
+    let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " + 
+            "RETURNING id, alias, description;";
+    const params = [id]
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const deletedExercise = results.rows[0];
+            resolve(deletedExercise)
+        }, appIsBeingTested)
+    });
+}
+
 module.exports = {
     createExercise,
     updateExercise,
+    deleteExercise,
     selectAllExercises,
     selectExerciseById,
 };
