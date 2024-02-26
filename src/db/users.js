@@ -1,5 +1,8 @@
 const { query } = require('./index');
 const utils = require('../utils/utils.js');
+const qh = require('./queryHelper.js');
+
+const TABLE_NAME = 'users';
 
 const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
     const q = "SELECT " + field + 
@@ -49,10 +52,8 @@ const checkAliasInUse = async (alias, appIsBeingTested) => {
     }
 };
 
-const registerNewUser = async (alias, email, password, 
-                         last_name = undefined, 
-                         second_last_name = undefined,
-                         appIsBeingTested = undefined) => {
+const registerNewUser = async ({ alias, email, password, last_name, second_last_name },
+                                appIsBeingTested = undefined) => {
     // Build query
     let requiredFields = ['alias', 'email', 'password'];
     let requiredValues = [alias, email, password];
@@ -60,11 +61,12 @@ const registerNewUser = async (alias, email, password,
     let optionalFields = ['last_name', 'second_last_name'];
     let optionalValues = [last_name, second_last_name];
 
-    const {fields, values, params} = utils.buildFieldsAndValuesSQLQuery(requiredFields, requiredValues, optionalFields, optionalValues);
+    let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name']
 
-    const q = `INSERT INTO users ${fields} ` +
-              `VALUES ${values} ` + 
-              'RETURNING id, alias, email, last_name, img, second_last_name;';
+    const { q, params } = qh.createInsertIntoTableStatment(TABLE_NAME, 
+                                                           requiredFields, requiredValues,
+                                                           optionalFields, optionalValues,
+                                                           returningFields);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {

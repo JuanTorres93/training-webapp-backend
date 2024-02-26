@@ -1,8 +1,10 @@
 const { query } = require('./index');
 const utils = require('../utils/utils.js');
+const qh = require('./queryHelper.js');
 
-const createExercise = async (alias, description = undefined, 
-                              appIsBeingTested = undefined) => {
+const TABLE_NAME = 'exercises';
+
+const createExercise = async ({ alias, description }, appIsBeingTested = undefined) => {
 
     // Build query
     let requiredFields = ['alias'];
@@ -11,11 +13,12 @@ const createExercise = async (alias, description = undefined,
     let optionalFields = ['description'];
     let optionalValues = [description];
 
-    const {fields, values, params} = utils.buildFieldsAndValuesSQLQuery(requiredFields, requiredValues, optionalFields, optionalValues);
+    let returningFields = ['id', 'alias', 'description'];
 
-    const q = `INSERT INTO exercises ${fields} ` +
-              `VALUES ${values} ` + 
-              'RETURNING id, alias, description;';
+    const { q, params } = qh.createInsertIntoTableStatment(TABLE_NAME, 
+                                                           requiredFields, requiredValues,
+                                                           optionalFields, optionalValues,
+                                                           returningFields);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {

@@ -47,15 +47,8 @@ router.post('/', validateRegisterUserParams,
     mw.checkUserEmailAndAliasAlreadyExist,
     mw.hashPassword,
     async (req, res, next) => {
-        const { alias, email, password, last_name, second_last_name } = req.body;
-
         try {
-            const createdUser = await dbUsers.registerNewUser(alias, 
-                                                              email, 
-                                                              password, 
-                                                              last_name, 
-                                                              second_last_name,
-                                                              req.appIsBeingTested);
+            const createdUser = await dbUsers.registerNewUser(req.body, req.appIsBeingTested);
             return res.status(201).json(createdUser);
         } catch (error) {
             return res.status(400).json({
