@@ -1,6 +1,6 @@
 const utils = require('../utils/utils.js');
 
-const createInsertIntoTableStatment = (tableName,
+const createInsertIntoTableStatement = (tableName,
                                        requiredFields, requiredValues,
                                        optionalFields, optionalValues,
                                        returningFields = []) => {
@@ -33,6 +33,38 @@ const createInsertIntoTableStatment = (tableName,
     };
 }
 
+const createUpdateTableStatement = (tableName, id, modelObject, returningFields = []) => {
+    let q = `UPDATE ${tableName} SET `;
+    const params = []
+    let variableCount = 1;
+
+    Object.keys(modelObject).forEach(field => {
+
+        if (modelObject[field] !== undefined) {
+            q += `${field} = $${variableCount}, `;
+            variableCount++;
+            params.push(modelObject[field]);
+        }
+    });
+
+    q = q.substring(0, q.length - 2) + " ";
+    q += `WHERE id = $${variableCount} `; 
+    params.push(id);
+
+    if (returningFields.length > 0) {
+        q += 'RETURNING '
+        q += returningFields.join(', ');
+    };
+
+    q += ';';
+
+    return {
+        q,
+        params,
+    };
+}
+
 module.exports = {
-    createInsertIntoTableStatment,
+    createInsertIntoTableStatement,
+    createUpdateTableStatement,
 };

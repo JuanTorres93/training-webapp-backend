@@ -6,7 +6,7 @@ const TABLE_NAME = 'users';
 
 const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
     const q = "SELECT " + field + 
-              " FROM users WHERE LOWER(" + field + ") = LOWER($1);";
+              " FROM " + TABLE_NAME + " WHERE LOWER(" + field + ") = LOWER($1);";
     const params = [value];
 
     // Must return a promise to be able to await when calling from another file
@@ -63,7 +63,7 @@ const registerNewUser = async ({ alias, email, password, last_name, second_last_
 
     let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name']
 
-    const { q, params } = qh.createInsertIntoTableStatment(TABLE_NAME, 
+    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
                                                            requiredFields, requiredValues,
                                                            optionalFields, optionalValues,
                                                            returningFields);
@@ -79,7 +79,7 @@ const registerNewUser = async ({ alias, email, password, last_name, second_last_
 }
 
 const selectAllUsers = (appIsBeingTested) => {
-    const q = "SELECT id, alias, email, last_name, img, second_last_name FROM users;";
+    const q = "SELECT id, alias, email, last_name, img, second_last_name FROM " + TABLE_NAME + ";";
     const params = [];
 
     return new Promise((resolve, reject) => {
@@ -93,7 +93,7 @@ const selectAllUsers = (appIsBeingTested) => {
 
 const selectUserById = async (id, appIsBeingTested) => {
     const q = "SELECT id, alias, email, last_name, img, second_last_name FROM " +
-              "users WHERE id = $1;";
+              TABLE_NAME + " WHERE id = $1;";
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -106,25 +106,11 @@ const selectUserById = async (id, appIsBeingTested) => {
 };
 
 const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
-    // TODO Hash password
-    let q = 'UPDATE users SET ';
-    const params = []
-    let variableCount = 1;
+    let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
 
-    Object.keys(userObject).forEach(field => {
-
-        if (userObject[field] !== undefined) {
-            q += `${field} = $${variableCount}, `;
-            variableCount++;
-            params.push(userObject[field]);
-        }
-    });
-
-    q = q.substring(0, q.length - 2) + " ";
-    q += `WHERE id = $${variableCount} `; 
-    params.push(id);
-
-    q += 'RETURNING id, alias, email, last_name, img, second_last_name;';
+    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id, 
+                                                        userObject,
+                                                        returningFields)
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -137,8 +123,8 @@ const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
 }
 
 const deleteUser = async (id, appIsBeingTested = undefined) => {
-    let q = 'DELETE FROM users WHERE id = $1 ' + 
-            'RETURNING id, alias, email, last_name, img, second_last_name;';
+    let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " + 
+            "RETURNING id, alias, email, last_name, img, second_last_name;";
     const params = [id]
 
     return new Promise((resolve, reject) => {

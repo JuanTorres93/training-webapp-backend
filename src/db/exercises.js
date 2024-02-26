@@ -15,7 +15,7 @@ const createExercise = async ({ alias, description }, appIsBeingTested = undefin
 
     let returningFields = ['id', 'alias', 'description'];
 
-    const { q, params } = qh.createInsertIntoTableStatment(TABLE_NAME, 
+    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
                                                            requiredFields, requiredValues,
                                                            optionalFields, optionalValues,
                                                            returningFields);
@@ -31,7 +31,7 @@ const createExercise = async ({ alias, description }, appIsBeingTested = undefin
 }
 
 const selectAllExercises = (appIsBeingTested) => {
-    const q = "SELECT id, alias, description FROM exercises;";
+    const q = "SELECT id, alias, description FROM " + TABLE_NAME + ";";
     const params = [];
 
     return new Promise((resolve, reject) => {
@@ -45,7 +45,7 @@ const selectAllExercises = (appIsBeingTested) => {
 
 const selectExerciseById = async (id, appIsBeingTested) => {
     const q = "SELECT id, alias, description FROM " +
-              "exercises WHERE id = $1;";
+              TABLE_NAME + " WHERE id = $1;";
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -58,24 +58,11 @@ const selectExerciseById = async (id, appIsBeingTested) => {
 };
 
 const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) => {
-    let q = 'UPDATE exercises SET ';
-    const params = []
-    let variableCount = 1;
+    const returningFields = ['id', 'alias', 'description'];
 
-    Object.keys(exerciseObject).forEach(field => {
-
-        if (exerciseObject[field] !== undefined) {
-            q += `${field} = $${variableCount}, `;
-            variableCount++;
-            params.push(exerciseObject[field]);
-        }
-    });
-
-    q = q.substring(0, q.length - 2) + " ";
-    q += `WHERE id = $${variableCount} `; 
-    params.push(id);
-
-    q += 'RETURNING id, alias, description;';
+    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id, 
+                                                        exerciseObject,
+                                                        returningFields)
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
