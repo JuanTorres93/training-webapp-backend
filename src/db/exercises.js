@@ -54,8 +54,39 @@ const selectExerciseById = async (id, appIsBeingTested) => {
     });
 };
 
+const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) => {
+    let q = 'UPDATE exercises SET ';
+    const params = []
+    let variableCount = 1;
+
+    Object.keys(exerciseObject).forEach(field => {
+
+        if (exerciseObject[field] !== undefined) {
+            q += `${field} = $${variableCount}, `;
+            variableCount++;
+            params.push(exerciseObject[field]);
+        }
+    });
+
+    q = q.substring(0, q.length - 2) + " ";
+    q += `WHERE id = $${variableCount} `; 
+    params.push(id);
+
+    q += 'RETURNING id, alias, description;';
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const updatedExercise = results.rows[0];
+            resolve(updatedExercise)
+        }, appIsBeingTested)
+    });
+}
+
 module.exports = {
     createExercise,
+    updateExercise,
     selectAllExercises,
     selectExerciseById,
 };

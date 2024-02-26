@@ -25,6 +25,16 @@ const truncateExercisesAndRelatedTables = async () => {
     await query("TRUNCATE exercises CASCADE;", [], () => {}, true);
 }
 
+const selectEverythingFromExerciseId = (id) => {
+    return new Promise((resolve, reject) => {
+        query("SELECT * FROM exercises WHERE id = $1;", [id], (error, results) => {
+            if (error) reject(error);
+
+            resolve(results.rows[0]);
+        }, true);
+    });
+};
+
 const successfulPostRequest = {
     alias: "first_test_exercise",
     description: "This is the description for a test exercise",
@@ -151,6 +161,73 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
             describe('404 response when', () => {
                 it('exerciseId is valid but exercise with that id does not exist', async () => {
                     const response = await request.get(BASE_ENDPOINT + '/1');
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+        });
+    });
+
+    describe('put request', () => {
+        const putBodyRequest = {
+            alias: "updated alias",
+            description: "updated description",
+        };
+
+        describe('happy path', () => {
+            let response;
+
+            beforeAll(async () => {
+                response = await request.put(BASE_ENDPOINT + `/${id}`).send(putBodyRequest);
+            });
+
+            it('returns updated exercise', () => {
+                const updatedExercise = response.body;
+
+                expect(updatedExercise.id).toStrictEqual(id);
+                expect(updatedExercise.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedExercise.description).toStrictEqual(putBodyRequest.description);
+
+            });
+
+            it('returns 200 status code', () => {
+                expect(response.statusCode).toStrictEqual(200);
+
+            });
+
+            it('changes are reflected in db', async () => {
+                const updatedExerciseFromDb = await selectEverythingFromExerciseId(id);
+
+                expect(updatedExerciseFromDb.id).toStrictEqual(id);
+                expect(updatedExerciseFromDb.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedExerciseFromDb.description).toStrictEqual(putBodyRequest.description);
+            });
+        });
+
+        describe('unhappy path', () => {
+            describe('returns 400 error code when', () => {
+                it('exerciseid is string', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is boolean', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/true').send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is not positive', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('exerciseid is valid but exercise with that id does not exist', async () => {
+                    const response = await request.put(BASE_ENDPOINT + '/1').send({
+                        ...putBodyRequest,
+                        alias: 'updated alias with put modified',
+                        description: 'updated_description_with_put_modified',
+                    });
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
