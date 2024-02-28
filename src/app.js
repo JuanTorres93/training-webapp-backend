@@ -22,6 +22,7 @@ const createApp = (appIsBeingTested = false) => {
     // Routers imports
     const usersRouter = require('./endpoints/users.js');
     const exercisesRouter = require('./endpoints/exercises.js');
+    const workoutsRouter = require('./endpoints/workouts.js');
     const loginRouter = require('./endpoints/login.js');
     const logoutRouter = require('./endpoints/logout.js');
     const checkoutRouter = require('./endpoints/checkout.js');
@@ -101,6 +102,8 @@ const createApp = (appIsBeingTested = false) => {
     app.use('/users', usersRouter);
     // Mount exercises endpoint
     app.use('/exercises', exercisesRouter);
+    // Mount workouts endpoint
+    app.use('/workouts', workoutsRouter);
     // Mount login endpoint
     app.use('/login', loginRouter);
     // Mount logout endpoint

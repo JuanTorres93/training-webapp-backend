@@ -1,0 +1,283 @@
+
+// Needed to access environment variables and for server not to crash.
+// if not included, then test will fail due to supertest not being able
+// to read EXPRESS_SESSION_SECRET
+require('dotenv').config();
+const supertest = require('supertest');
+const createApp = require('../app.js');
+
+const utils = require('../utils/utils.js');
+const query = require('../db/index.js').query;
+
+// true means that it should connect to test db
+const app = createApp(true);
+const BASE_ENDPOINT = '/workouts'
+
+function logErrors (err, req, res, next) {
+  console.error(err.stack)
+  next(err)
+}
+
+const request = supertest(app.use(logErrors))
+
+// Empty database before starting tests
+const truncateWorkoutsAndRelatedTables = async () => {
+    await query("TRUNCATE workouts CASCADE;", [], () => {}, true);
+}
+
+const successfulPostRequest = {
+    alias: "first_test_workout",
+    description: "This is the description for a test workout",
+}
+
+describe(`${BASE_ENDPOINT}`,  () => {
+    beforeAll(async () => {
+        await truncateWorkoutsAndRelatedTables();
+    });
+
+    describe('post requests', () => {
+        describe('happy path', () => {
+            let response;
+
+            beforeAll(async () => {
+                response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+            });
+
+            it("returns workout object", () => {
+                const expectedKeys = ['id', 'alias', 'description', 'exercises'];
+
+                const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
+                    response.body)
+                expect(allKeysIncluded).toBe(true);
+            });
+
+            it('returns 201 status code', () => {
+                expect(response.statusCode).toStrictEqual(201);
+            });
+        });
+
+        describe('unhappy paths', () => {
+            it('400 response when mandatory parameter is missing', async () => {
+                // alias is missing
+                let response = await request.post(BASE_ENDPOINT).send({
+                    description: "Smith",
+                })
+
+                expect(response.statusCode).toStrictEqual(400);
+            });
+        });
+    });
+
+    //describe('get requests', () => {
+    //    let response;
+
+    //    beforeEach(async () => {
+    //        response = await request.get(BASE_ENDPOINT);
+    //    });
+
+    //    describe("get all workouts", () => {
+    //        it("returns list", async () => {
+    //            expect(Array.isArray(response.body)).toBe(true);
+    //        });
+
+    //        it("status code of 200", async () => {
+    //            expect(response.statusCode).toStrictEqual(200);
+    //        });
+
+    //        it('workout object has id, alias, and description properties', () => {
+    //            const expectedKeys = ['id', 'alias', 'description'];
+    //            const workoutObject = response.body[0];
+    //            expect(utils.checkKeysInObject(expectedKeys, workoutObject)).toBe(true);
+    //        });
+    //    });
+    //});
+});
+
+
+//describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
+//    let response;
+//    let id;
+//
+//    beforeAll(async () => {
+//        // Test's set up
+//        await truncateWorkoutsAndRelatedTables();
+//        await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+//
+//        // get id of the workout in db, since it changes every time the suite is run
+//        id = await new Promise((resolve, reject) => {
+//            query("SELECT id FROM workouts;", [], (error, results) => {
+//                if (error) reject(error);
+//
+//                resolve(results.rows[0].id);
+//            }, true);
+//        })
+//
+//        // Test response
+//        response = await request.get(BASE_ENDPOINT + `/${id}`);
+//    });
+//
+//    describe('get requests', () => {
+//        describe('happy path', () => {
+//            it("status code of 200", async () => {
+//                expect(response.statusCode).toStrictEqual(200);
+//            });
+//
+//            it('workout object has id, alias, and description properties', () => {
+//                const expectedKeys = ['id', 'alias', 'description'];
+//                const workoutObject = response.body;
+//
+//                expect(utils.checkKeysInObject(expectedKeys, workoutObject)).toBe(true);
+//            });
+//        });
+//
+//        describe('uphappy paths', () => {
+//            describe('400 response when', () => {
+//                it('workoutId is string', async () => {
+//                    const response = await request.get(BASE_ENDPOINT + '/wrongId');
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//
+//                it('workoutId is boolean', async () => {
+//                    const response = await request.get(BASE_ENDPOINT + '/true');
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//
+//                it('workoutId is not positive', async () => {
+//                    const response = await request.get(BASE_ENDPOINT + '/-34');
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//            });
+//
+//            describe('404 response when', () => {
+//                it('workoutId is valid but workout with that id does not exist', async () => {
+//                    const response = await request.get(BASE_ENDPOINT + '/1');
+//                    expect(response.statusCode).toStrictEqual(404);
+//                });
+//            });
+//        });
+//    });
+//
+//    describe('put request', () => {
+//        const putBodyRequest = {
+//            alias: "updated alias",
+//            description: "updated description",
+//        };
+//
+//        describe('happy path', () => {
+//            let response;
+//
+//            beforeAll(async () => {
+//                response = await request.put(BASE_ENDPOINT + `/${id}`).send(putBodyRequest);
+//            });
+//
+//            it('returns updated workout', () => {
+//                const updatedworkout = response.body;
+//
+//                expect(updatedworkout.id).toStrictEqual(id);
+//                expect(updatedworkout.alias).toStrictEqual(putBodyRequest.alias);
+//                expect(updatedworkout.description).toStrictEqual(putBodyRequest.description);
+//
+//            });
+//
+//            it('returns 200 status code', () => {
+//                expect(response.statusCode).toStrictEqual(200);
+//
+//            });
+//
+//            it('changes are reflected in db', async () => {
+//                const updatedworkoutFromDb = await selectEverythingFromworkoutId(id);
+//
+//                expect(updatedworkoutFromDb.id).toStrictEqual(id);
+//                expect(updatedworkoutFromDb.alias).toStrictEqual(putBodyRequest.alias);
+//                expect(updatedworkoutFromDb.description).toStrictEqual(putBodyRequest.description);
+//            });
+//        });
+//
+//        describe('unhappy path', () => {
+//            describe('returns 400 error code when', () => {
+//                it('workoutid is string', async () => {
+//                    const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//
+//                it('workoutid is boolean', async () => {
+//                    const response = await request.put(BASE_ENDPOINT + '/true').send(putBodyRequest);
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//
+//                it('workoutid is not positive', async () => {
+//                    const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//            });
+//
+//            describe('404 response when', () => {
+//                it('workoutid is valid but workout with that id does not exist', async () => {
+//                    const response = await request.put(BASE_ENDPOINT + '/1').send({
+//                        ...putBodyRequest,
+//                        alias: 'updated alias with put modified',
+//                        description: 'updated_description_with_put_modified',
+//                    });
+//                    expect(response.statusCode).toStrictEqual(404);
+//                });
+//            });
+//        });
+//    });
+//
+//
+//    describe('delete requests', () => {
+//        // In this suite unhappy path is tested first in order to preserve the
+//        // entry in the database
+//        describe('unhappy path', () => {
+//            describe('returns 400 error code when', () => {
+//                it('workoutid is string', async () => {
+//                    const response = await request.delete(BASE_ENDPOINT + '/wrongId');
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//
+//                it('workoutid is boolean', async () => {
+//                    const response = await request.delete(BASE_ENDPOINT + '/true');
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//
+//                it('workoutid is not positive', async () => {
+//                    const response = await request.delete(BASE_ENDPOINT + '/-23');
+//                    expect(response.statusCode).toStrictEqual(400);
+//                });
+//            });
+//
+//            describe('404 response when', () => {
+//                it('workoutid is valid but workout with that id does not exist', async () => {
+//                    const response = await request.delete(BASE_ENDPOINT + '/1');
+//                    expect(response.statusCode).toStrictEqual(404);
+//                });
+//            });
+//            
+//        });
+//
+//        describe('happy path', () => {
+//            let response;
+//
+//            beforeAll(async () => {
+//                // return db registry to its original state
+//                await request.put(BASE_ENDPOINT + `/${id}`).send({
+//                    ...successfulPostRequest,
+//                });
+//                response = await request.delete(BASE_ENDPOINT + `/${id}`)
+//            });
+//
+//            it("status code of 200", async () => {
+//                expect(response.statusCode).toStrictEqual(200);
+//            });
+//
+//            it('returns deleted workout', () => {
+//                const deletedworkout = response.body;
+//
+//                expect(deletedworkout.id).toStrictEqual(id);
+//                expect(deletedworkout.alias).toStrictEqual(successfulPostRequest.alias);
+//                expect(deletedworkout.description).toStrictEqual(successfulPostRequest.description);
+//            });
+//            
+//        });
+//    });
+//});
