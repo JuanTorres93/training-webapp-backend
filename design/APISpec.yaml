@@ -1007,13 +1007,13 @@ components:
     ReqBodyAddExerciseToWorkout:
       type: object
       required:
-        - ExerciseId
-        - ExerciseSet
+        - exerciseId
+        - exerciseSet
       properties:
-        ExerciseId:
+        exerciseId:
           type: integer
           description: Id of the exercise
-        ExerciseSet:
+        exerciseSet:
           type: integer
           description: Number of the set in which the exercise was performed
         reps:
@@ -1029,9 +1029,9 @@ components:
     ReqBodyUpdateExerciseFromWorkout:
       type: object
       required:
-        - ExerciseSet
+        - exerciseSet
       properties:
-        ExerciseSet:
+        exerciseSet:
           type: integer
           description: Number of the set in which the exercise was performed
         reps:
@@ -1047,13 +1047,13 @@ components:
     ResponseAddExerciseToWorkout:
       type: object
       required:
-        - ExerciseId
-        - ExerciseSet
+        - exerciseId
+        - exerciseSet
       properties:
-        ExerciseId:
+        exerciseId:
           type: integer
           description: Id of the exercise
-        ExerciseSet:
+        exerciseSet:
           type: integer
           description: Number of the set in which the exercise was performed
         reps:
@@ -1069,9 +1069,9 @@ components:
     UpdateExerciseFromWorkout:
       type: object
       required:
-        - ExerciseSet
+        - exerciseSet
       properties:
-        ExerciseSet:
+        exerciseSet:
           type: integer
           description: Number of the set in which the exercise was performed
         reps:
@@ -1087,27 +1087,27 @@ components:
     ReqBodyAddExerciseToWorkoutTemplate:
       type: object
       required:
-        - ExerciseId
-        - ExerciseOrder
-        - ExerciseSets
+        - exerciseId
+        - exerciseOrder
+        - exerciseSets
       properties:
-        ExerciseId:
+        exerciseId:
           type: integer
           description: Id of the exercise to include in the template
-        ExerciseOrder:
+        exerciseOrder:
           type: integer
           description: Order of the exercise in the template
-        ExerciseSets:
+        exerciseSets:
           type: integer
           description: Number of sets of the exercise to perform
     
     ReqBodyUpdateExerciseFromWorkoutTemplate:
       type: object
       properties:
-        ExerciseOrder:
+        exerciseOrder:
           type: integer
           description: Order of the exercise in the template
-        ExerciseSets:
+        exerciseSets:
           type: integer
           description: Number of sets of the exercise to perform
           
@@ -1458,54 +1458,54 @@ components:
             
     ExerciseFromWorkout:
       value:
-        ExerciseId: 1
-        ExerciseSet: 2
+        exerciseId: 1
+        exerciseSet: 2
         reps: 7
         weight: 80
         time_in_seconds: null
             
     ExerciseWithMultipleSets:
       value:
-        - ExerciseId: 1
-          ExerciseSet: 1
+        - exerciseId: 1
+          exerciseSet: 1
           reps: 7
           weight: 80
           time_in_seconds: null
-        - ExerciseId: 1
-          ExerciseSet: 2
+        - exerciseId: 1
+          exerciseSet: 2
           reps: 7
           weight: 80
           time_in_seconds: null
-        - ExerciseId: 1
-          ExerciseSet: 3
+        - exerciseId: 1
+          exerciseSet: 3
           reps: 6
           weight: 80
           time_in_seconds: null
             
     UpdateExerciseFromWorkout:
       value:
-        ExerciseSet: 2
+        exerciseSet: 2
         reps: 7
         weight: 80
         time_in_seconds: null
 
     RemoveOneSetFromExerciseWorkout:
       value:
-        ExerciseSet: 2
+        exerciseSet: 2
         RemoveAll: false
 
     RemoveAllSetsFromExerciseWorkout:
       value:
-        ExerciseSet: null
+        exerciseSet: null
         RemoveAll: true
 
     AddExerciseToWorkoutTemplate:
       value:
-        ExerciseId: 2
-        ExerciseOrder: 6
-        ExerciseSets: 4
+        exerciseId: 2
+        exerciseOrder: 6
+        exerciseSets: 4
 
     UpdateExerciseToWorkoutTemplate:
       value:
-        ExerciseOrder: 6
-        ExerciseSets: 4
+        exerciseOrder: 6
+        exerciseSets: 4
