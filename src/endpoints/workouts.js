@@ -38,6 +38,8 @@ const router = express.Router();
 // ===================================
 // ========== POST requests ==========
 // ===================================
+
+// Create new workout
 router.post('/', workoutsValidators.validateCreateWorkoutParams,
     async (req, res, next) => {
         // TODO implement 401 response
@@ -47,7 +49,46 @@ router.post('/', workoutsValidators.validateCreateWorkoutParams,
             return res.status(201).json(createdWorkout);
         } catch (error) {
             return res.status(400).json({
-                msg: "Error when creating exercise in db"
+                msg: "Error when creating workout"
+            });
+        }
+});
+
+// Add exercise to workout
+router.post('/:workoutId', 
+    workoutsValidators.validateAddExerciseToWorkoutParams,
+    validateIntegerParameter('workoutId'),
+    async (req, res, next) => {
+        // TODO implement 401 and 403 response
+        const { workoutId } = req.params;
+
+        const exerciseData = {
+            ...req.body,
+            timeInSeconds: req.body.time_in_seconds,
+            exerciseId: req.body.exerciseId,
+            exerciseSet: req.body.exerciseSet,
+            workoutId,
+        };
+
+        try {
+            const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData, req.appIsBeingTested);
+
+            const capitalizedAddedExercise = {
+                exerciseId: addedExercise.exerciseid,
+                exerciseSet: addedExercise.exerciseset,
+                reps: addedExercise.reps,
+                weight: addedExercise.weight,
+                time_in_seconds: addedExercise.time_in_seconds,
+            };
+
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('capitalizedAddedExercise');
+            console.log(capitalizedAddedExercise);
+
+            return res.status(201).json(capitalizedAddedExercise);
+        } catch (error) {
+            return res.status(400).json({
+                msg: "Error when adding exercise to workout"
             });
         }
 });

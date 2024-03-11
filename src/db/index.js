@@ -21,7 +21,7 @@ const testPool = new Pool({
     port: process.env.DB_TEST_PORT,
 });
  
-const query = (text, params, callback, appIsBeingTested) => {
+const query = async (text, params, callback, appIsBeingTested) => {
     // Example of using params. This is done instead of concatenating strings to prevent SQL injection
     // query("INSERT INTO customers (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)" ,
     //          [first_name, last_name, email, password],   // Values stored in variables
@@ -34,7 +34,8 @@ const query = (text, params, callback, appIsBeingTested) => {
     if (appIsBeingTested === true || appIsBeingTested === false) {
         if (appIsBeingTested) return testPool.query(text, params, callback);
 
-        return pool.query(text, params, callback);
+        // IDE might warn about this function not returning a promise, but it does
+        return await pool.query(text, params, callback);
     };
 
     throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);

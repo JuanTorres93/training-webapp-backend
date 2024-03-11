@@ -119,48 +119,85 @@ describe(`${BASE_ENDPOINT}`,  () => {
 
 
 describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
-    let response;
     let id;
     let exercisesIds = {};
+
+    const createWorkoutRequest = {
+        alias: "workout_with_exercises",
+        description: "This is the description for a workout with exercises",
+    };
 
     beforeAll(async () => {
         // Test's set up
         await truncateWorkoutsExercisesAndRelatedTables();
         await initExercisesTableInDb();
-        
+
         // Create new workout
-        await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+        const response = await request.post(BASE_ENDPOINT).send(createWorkoutRequest);
 
-        // get id of the workout in db, since it changes every time the suite is run
-        id = await new Promise((resolve, reject) => {
-            query("SELECT id FROM workouts;", [], (error, results) => {
-                if (error) reject(error);
-
-                resolve(results.rows[0].id);
-            }, true);
-        })
+        id = response.body.id;
 
         // Get ids of the exercises
+        //const promiseArray = exercises.map(async exercise => {
         const promiseArray = exercises.map(async exercise => {
             const name = exercise[0];
-            const exerciseId = await new Promise((resolve, reject) => {
-                query(`SELECT id FROM exercises WHERE alias = '${name}';`, [], (error, results) => {
+
+            return new Promise(async (resolve, reject) => {
+                await query(`SELECT id FROM exercises WHERE alias = '${name}';`, [], (error, results) => {
                     if (error) reject(error);
 
-                    resolve(results.rows[0].id);
+                    resolve({
+                        name,
+                        exerciseId: results.rows[0].id,
+                    });
                 }, true);
             })
-            
-            exercisesIds[name] = exerciseId;
         });
 
-        await Promise.all(promiseArray);
+        let resolvedPromises;
+        try {
+            resolvedPromises = await Promise.all(promiseArray);
+        } catch (error) {
+            console.log(error);
+        }
 
-        // Test response
-        response = await request.get(BASE_ENDPOINT + `/${id}`);
+        resolvedPromises.forEach(rp => {
+            exercisesIds[rp.name] = rp.exerciseId;
+        });
     });
 
-    it('TODO DELTE ME', () => {});
+    describe('post requests', () => {
+        let response;
+
+        const addExerciseRequest = {
+            exerciseId: exercisesIds[exercises[0][0]],
+            exerciseSet: 1,
+            reps: 3,
+            weight: 40,
+            time_in_seconds: 70,
+        };
+
+        beforeAll(async () => {
+            // Added here due to async problems
+            addExerciseRequest.exerciseId = exercisesIds[exercises[0][0]];
+                
+            response = await request.post(BASE_ENDPOINT + `/${id}`).send(addExerciseRequest);
+        });
+
+        describe('happy path', () => {
+            it('returns exercise', () => {
+                expect(response.body).toHaveProperty('exerciseId');
+                expect(response.body).toHaveProperty('exerciseSet');
+                expect(response.body).toHaveProperty('reps');
+                expect(response.body).toHaveProperty('weight');
+                expect(response.body).toHaveProperty('time_in_seconds');
+            });
+
+            it('returns 201 status code', () => {
+                expect(response.statusCode).toStrictEqual(201);
+            });
+        });
+    });
 
     //describe('get requests', () => {
     //    describe('happy path', () => {
