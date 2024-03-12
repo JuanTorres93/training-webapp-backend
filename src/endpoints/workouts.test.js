@@ -197,6 +197,62 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 expect(response.statusCode).toStrictEqual(201);
             });
         });
+
+        describe('unhappy paths', () => {
+            describe('400 response when', () => {
+                it('workoutId is string', async () => {
+                    const response = await request.post(BASE_ENDPOINT + '/wrongId').send(addExerciseRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('workoutId is boolean', async () => {
+                    const response = await request.post(BASE_ENDPOINT + '/true').send(addExerciseRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('workoutId is not positive', async () => {
+                    const response = await request.post(BASE_ENDPOINT + '/-34').send(addExerciseRequest);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('mandatory body parameter is missing', async () => {
+                    // exerciseId is missing
+                    let res = await request.post(BASE_ENDPOINT + `/${id}`).send({
+                        exerciseSet: 1,
+                        reps: 1,
+                        weight: 1,
+                        time_in_seconds: 1,
+                    })
+
+                    expect(res.statusCode).toStrictEqual(400);
+
+                    // exerciseSet is missing
+                    res = await request.post(BASE_ENDPOINT + `/${id}`).send({
+                        exerciseId: 1,
+                        reps: 1,
+                        weight: 1,
+                        time_in_seconds: 1,
+                    })
+
+                    expect(res.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('workoutId is valid but it does not exist', async () => {
+                    const response = await request.post(BASE_ENDPOINT + `/1`).send(addExerciseRequest);
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+
+                it('workoutId is valid and exists, but exercise with that id does not exist', async () => {
+                    const response = await request.post(BASE_ENDPOINT + `/${id}`).send({
+                        ...addExerciseRequest,
+                        exerciseId: 1,
+                    });
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+        });
     });
 
     //describe('get requests', () => {

@@ -63,7 +63,28 @@ const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, 
     });
 }
 
+const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
+    let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
+    const params = [id]
+
+    const selectedWorkout = await new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const workoutId = results.rows[0];
+            resolve(workoutId)
+        }, appIsBeingTested)
+    });
+
+    if (!selectedWorkout) {
+        return false;
+    }
+
+    return Number.isInteger(selectedWorkout.id);
+}
+
 module.exports = {
     createWorkouts,
     addExerciseToWorkout,
+    checkWorkoutByIdExists,
 };

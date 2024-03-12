@@ -4,6 +4,7 @@ const express = require('express');
 const workoutsValidators = require('../validators/workouts.js');
 const { validateIntegerParameter } = require('../validators/generalPurpose.js');
 const dbWorkouts = require('../db/workouts.js');
+const dbExercises = require('../db/exercises.js');
 const mw = require('../utils/middleware.js');
 
 const router = express.Router();
@@ -70,6 +71,24 @@ router.post('/:workoutId',
             workoutId,
         };
 
+        const workoutIdExists = await dbWorkouts.checkWorkoutByIdExists(workoutId, req.appIsBeingTested);
+
+        if (!workoutIdExists) {
+            return res.status(404).json({
+                msg: `Workout with id ${workoutId} does not exist`,
+            });
+        }
+
+        const exerciseIdExists = await dbExercises.checkExerciseByIdExists(exerciseData.exerciseId, req.appIsBeingTested);
+
+        if (!exerciseIdExists) {
+            return res.status(404).json({
+                msg: `Exercise with id ${exerciseData.exerciseId} does not exist`,
+            });
+        }
+
+        // TODO CHECK primary key is not duplicated
+
         try {
             const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData, req.appIsBeingTested);
 
@@ -80,10 +99,6 @@ router.post('/:workoutId',
                 weight: addedExercise.weight,
                 time_in_seconds: addedExercise.time_in_seconds,
             };
-
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('capitalizedAddedExercise');
-            console.log(capitalizedAddedExercise);
 
             return res.status(201).json(capitalizedAddedExercise);
         } catch (error) {

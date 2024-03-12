@@ -5,7 +5,6 @@ const qh = require('./queryHelper.js');
 const TABLE_NAME = 'exercises';
 
 const createExercise = async ({ alias, description }, appIsBeingTested = undefined) => {
-
     // Build query
     let requiredFields = ['alias'];
     let requiredValues = [alias];
@@ -89,10 +88,31 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
     });
 }
 
+const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
+    let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
+    const params = [id]
+
+    const selectedExercise = await new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const exercise = results.rows[0];
+            resolve(exercise)
+        }, appIsBeingTested)
+    });
+
+    if (!selectedExercise) {
+        return false;
+    }
+
+    return Number.isInteger(selectedExercise.id);
+}
+
 module.exports = {
     createExercise,
     updateExercise,
     deleteExercise,
     selectAllExercises,
     selectExerciseById,
+    checkExerciseByIdExists,
 };
