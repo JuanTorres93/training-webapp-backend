@@ -9,31 +9,31 @@ const mw = require('../utils/middleware.js');
 
 const router = express.Router();
 
-//// ==================================
-//// ========== GET requests ==========
-//// ==================================
-//
-//// Get all exercises
-//router.get('/', async (req, res, next) => {
-//    const exercises = await dbExercises.selectAllExercises(req.appIsBeingTested);
-//
-//    res.status(200).send(exercises);
-//});
-//
-//// Get exercise by id
-//router.get('/:exerciseId', validateIntegerParameter('exerciseId'), async (req, res, next) => {
+// ==================================
+// ========== GET requests ==========
+// ==================================
+
+// Get all workouts
+router.get('/', async (req, res, next) => {
+    const workouts = await dbWorkouts.selectAllWorkouts(req.appIsBeingTested);
+
+    res.status(200).send(workouts);
+});
+
+//// Get workout by id
+//router.get('/:workoutId', validateIntegerParameter('workoutId'), async (req, res, next) => {
 //    // TODO implement 403 response case
-//    const { exerciseId } = req.params;
+//    const { workoutId } = req.params;
 //
-//    const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
+//    const workout = await dbworkouts.selectworkoutById(workoutId, req.appIsBeingTested);
 //
-//    if (exercise === undefined) {
+//    if (workout === undefined) {
 //        return res.status(404).json({
-//            msg: "Exercise not found",
+//            msg: "workout not found",
 //        });
 //    }
 //
-//    res.status(200).json(exercise);
+//    res.status(200).json(workout);
 //});
 
 // ===================================

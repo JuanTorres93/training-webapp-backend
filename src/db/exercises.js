@@ -108,6 +108,19 @@ const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
     return Number.isInteger(selectedExercise.id);
 }
 
+const selectIdForExerciseName = (name, appIsBeingTested) => {
+    const q = "SELECT id FROM " + TABLE_NAME + " WHERE alias = $1;";
+    const params = [name];
+
+    return new Promise(async (resolve, reject) => {
+        await query(q, params, (error, results) => {
+            if (error) reject(error);
+            const exerciseId = results.rows[0].id;
+            resolve(exerciseId)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     createExercise,
     updateExercise,
@@ -115,4 +128,5 @@ module.exports = {
     selectAllExercises,
     selectExerciseById,
     checkExerciseByIdExists,
+    selectIdForExerciseName,
 };

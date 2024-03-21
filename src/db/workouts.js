@@ -4,6 +4,23 @@ const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'workouts';
 
+const workoutsWithExercisesQuery = "SELECT  " +
+                                    "	wk.id AS workout_id,  " +
+                                    "	wk.alias AS workout_alias, 	 " +
+                                    "	wk.description AS workout_description, " +
+                                    "	e.id AS exercise_id, " +
+                                    "	e.alias AS exercise_alias, " +
+                                    "	w_e.exercise_set AS exercise_set, " +
+                                    "	w_e.exercise_reps AS exercise_reps, " +
+                                    "	w_e.exercise_weight AS exercise_weight, " +
+                                    "	w_e.exercise_time_in_seconds AS exercise_time_in_seconds " +
+                                    "FROM " + TABLE_NAME + " AS wk " +
+                                    "LEFT JOIN workouts_exercises AS w_e ON wk.id = w_e.workout_id " +
+                                    "LEFT JOIN exercises AS e ON w_e.exercise_id = e.id " +
+                                    "WHERE TRUE " + // This condition is here for DRYING the code replacing it where necessary
+                                    "ORDER BY workout_id, exercise_id, exercise_set " +
+                                    "; ";
+
 const createWorkouts = async ({ alias, description }, appIsBeingTested = undefined) => {
     // Build query
     let requiredFields = ['alias'];
@@ -30,7 +47,7 @@ const createWorkouts = async ({ alias, description }, appIsBeingTested = undefin
             resolve(createdWorkout)
         }, appIsBeingTested)
     });
-}
+};
 
 const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds }, 
                                       appIsBeingTested = undefined) => {
@@ -61,7 +78,7 @@ const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, 
             resolve(addedExercise)
         }, appIsBeingTested)
     });
-}
+};
 
 const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
     let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
@@ -81,10 +98,64 @@ const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
     }
 
     return Number.isInteger(selectedWorkout.id);
-}
+};
+
+const selectAllWorkouts = (appIsBeingTested) => {
+    const q = workoutsWithExercisesQuery;
+    const params = [];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const everyWorkout = results.rows;
+
+            const allWorkoutsFormatted = [];
+
+            // Group results by workout id
+            // Get unique workouts ids
+            // DOCS: Source https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
+            const distinctWorkoutIds = [...new Set(everyWorkout.map((workout) => {
+                return workout.workout_id;
+            }))];
+
+            if (distinctWorkoutIds.length === 0) {
+                resolve([]);
+            }
+
+            distinctWorkoutIds.forEach(workoutId => {
+                const workoutInfo = everyWorkout.filter((wk) => {
+                    return wk.workout_id === workoutId
+                })
+
+                const workoutSpec = {
+                    id: workoutId,
+                    alias: workoutInfo[0].workout_alias,
+                    description: workoutInfo[0].workout_description,
+                    exercises: [],
+                };
+
+                workoutInfo.forEach(info => {
+                    workoutSpec.exercises.push({
+                        id: info.exercise_id,
+                        alias: info.exercise_alias,
+                        set: info.exercise_set,
+                        reps: info.exercise_reps,
+                        weight: info.exercise_weight,
+                        time_in_seconds: info.exercise_time_in_seconds,
+                    });
+                });
+
+                allWorkoutsFormatted.push(workoutSpec);
+            });
+
+            resolve(allWorkoutsFormatted)
+        }, appIsBeingTested)
+    });
+};
 
 module.exports = {
     createWorkouts,
     addExerciseToWorkout,
     checkWorkoutByIdExists,
+    selectAllWorkouts,
 };
