@@ -15,26 +15,28 @@ const router = express.Router();
 
 // Get all workouts
 router.get('/', async (req, res, next) => {
+    // TODO modify spec and endpoint to need authenticated user
     const workouts = await dbWorkouts.selectAllWorkouts(req.appIsBeingTested);
 
     res.status(200).send(workouts);
 });
 
-//// Get workout by id
-//router.get('/:workoutId', validateIntegerParameter('workoutId'), async (req, res, next) => {
-//    // TODO implement 403 response case
-//    const { workoutId } = req.params;
-//
-//    const workout = await dbworkouts.selectworkoutById(workoutId, req.appIsBeingTested);
-//
-//    if (workout === undefined) {
-//        return res.status(404).json({
-//            msg: "workout not found",
-//        });
-//    }
-//
-//    res.status(200).json(workout);
-//});
+// Get workout by id
+router.get('/:workoutId', 
+    validateIntegerParameter('workoutId'), async (req, res, next) => {
+    // TODO implement 403 response case
+    const { workoutId } = req.params;
+
+    const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
+
+    if (workout === undefined) {
+        return res.status(404).json({
+            msg: "workout not found",
+        });
+    }
+
+    res.status(200).json(workout);
+});
 
 // ===================================
 // ========== POST requests ==========

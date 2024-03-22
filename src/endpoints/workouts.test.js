@@ -51,10 +51,189 @@ const initExercisesTableInDb = async () => {
     await query(q, [], () => {}, true);
 }
 
+const addWorkoutsAndExercises = async (exercisesIds) => {
+    // Create some workouts with their exercises
+    const pushResponse = await request.post(BASE_ENDPOINT).send({
+        alias: "Push",
+        description: "Test push exercise",
+    });
+
+    const pullResponse = await request.post(BASE_ENDPOINT).send({
+        alias: "Pull",
+        description: "Test pull exercise",
+    });
+
+    const legResponse = await request.post(BASE_ENDPOINT).send({
+        alias: "Leg",
+        description: "Test leg exercise",
+    });
+
+    // Add exercises to workouts
+    // PUSH: bench press
+    await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[0][0]],
+        exerciseSet: 1,
+        reps: 5,
+        weight: 55,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[0][0]],
+        exerciseSet: 2,
+        reps: 5,
+        weight: 55,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[0][0]],
+        exerciseSet: 3,
+        reps: 4,
+        weight: 55,
+        time_in_seconds: 0,
+    });
+
+
+    // PUSH: dip
+    await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[3][0]],
+        exerciseSet: 1,
+        reps: 8,
+        weight: 10,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[3][0]],
+        exerciseSet: 2,
+        reps: 8,
+        weight: 10,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[3][0]],
+        exerciseSet: 3,
+        reps: 7,
+        weight: 10,
+        time_in_seconds: 0,
+    });
+
+    // PULL: barbell row
+    await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[1][0]],
+        exerciseSet: 1,
+        reps: 9,
+        weight: 75,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[1][0]],
+        exerciseSet: 2,
+        reps: 8,
+        weight: 75,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[1][0]],
+        exerciseSet: 3,
+        reps: 8,
+        weight: 75,
+        time_in_seconds: 0,
+    });
+
+    // PULL: pull up
+    await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[2][0]],
+        exerciseSet: 1,
+        reps: 6,
+        weight: 12.5,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[2][0]],
+        exerciseSet: 2,
+        reps: 6,
+        weight: 12.5,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[2][0]],
+        exerciseSet: 3,
+        reps: 6,
+        weight: 12.5,
+        time_in_seconds: 0,
+    });
+
+
+    // LEG: dead lift
+    await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[4][0]],
+        exerciseSet: 1,
+        reps: 8,
+        weight: 80,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[4][0]],
+        exerciseSet: 2,
+        reps: 8,
+        weight: 80,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[4][0]],
+        exerciseSet: 3,
+        reps: 8,
+        weight: 80,
+        time_in_seconds: 0,
+    });
+
+
+    // LEG: squat
+    await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[5][0]],
+        exerciseSet: 1,
+        reps: 5,
+        weight: 85,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[5][0]],
+        exerciseSet: 2,
+        reps: 5,
+        weight: 85,
+        time_in_seconds: 0,
+    });
+
+    await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+        exerciseId: exercisesIds[exercises[5][0]],
+        exerciseSet: 3,
+        reps: 4,
+        weight: 85,
+        time_in_seconds: 0,
+    });
+
+    return {
+        pushResponse,
+        pullResponse,
+        legResponse,
+    };
+};
+
 
 const getExercisesIds = async () => {
     const exercisesIds = {};
 
+    // If solving all promises with Promise.all tests fail
     for (const exercise of exercises) {
         const name = exercise[0];
         const id = await dbExercises.selectIdForExerciseName(name, true); 
@@ -116,162 +295,9 @@ describe(`${BASE_ENDPOINT}`,  () => {
             await truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
-            exercisesIds = await getExercisesIds()
+            exercisesIds = await getExercisesIds();
 
-            // Create some workouts with their exercises
-            const pushResponse = await request.post(BASE_ENDPOINT).send({
-                alias: "Push",
-                description: "Test push exercise",
-            });
-
-            const pullResponse = await request.post(BASE_ENDPOINT).send({
-                alias: "Pull",
-                description: "Test pull exercise",
-            });
-
-            const legResponse = await request.post(BASE_ENDPOINT).send({
-                alias: "Leg",
-                description: "Test leg exercise",
-            });
-
-            // Add exercises to workouts
-            // PUSH: bench press
-            await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[0][0]],
-                    exerciseSet: 1,
-                    reps: 5,
-                    weight: 55,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[0][0]],
-                    exerciseSet: 2,
-                    reps: 5,
-                    weight: 55,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[0][0]],
-                    exerciseSet: 3,
-                    reps: 4,
-                    weight: 55,
-                    time_in_seconds: 0,
-                });
-
-            // PUSH: dip
-            await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[3][0]],
-                    exerciseSet: 1,
-                    reps: 8,
-                    weight: 10,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[3][0]],
-                    exerciseSet: 2,
-                    reps: 8,
-                    weight: 10,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[3][0]],
-                    exerciseSet: 3,
-                    reps: 7,
-                    weight: 10,
-                    time_in_seconds: 0,
-                });
-
-            // PULL: barbell row
-            await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[1][0]],
-                    exerciseSet: 1,
-                    reps: 9,
-                    weight: 75,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[1][0]],
-                    exerciseSet: 2,
-                    reps: 8,
-                    weight: 75,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[1][0]],
-                    exerciseSet: 3,
-                    reps: 8,
-                    weight: 75,
-                    time_in_seconds: 0,
-                });
-
-            // PULL: pull up
-            await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[2][0]],
-                    exerciseSet: 1,
-                    reps: 6,
-                    weight: 12.5,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[2][0]],
-                    exerciseSet: 2,
-                    reps: 6,
-                    weight: 12.5,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[2][0]],
-                    exerciseSet: 3,
-                    reps: 6,
-                    weight: 12.5,
-                    time_in_seconds: 0,
-                });
-
-            // LEG: dead lift
-            await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[4][0]],
-                    exerciseSet: 1,
-                    reps: 8,
-                    weight: 80,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[4][0]],
-                    exerciseSet: 2,
-                    reps: 8,
-                    weight: 80,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[4][0]],
-                    exerciseSet: 3,
-                    reps: 8,
-                    weight: 80,
-                    time_in_seconds: 0,
-                });
-
-            // LEG: squat
-            await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[5][0]],
-                    exerciseSet: 1,
-                    reps: 5,
-                    weight: 85,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[5][0]],
-                    exerciseSet: 2,
-                    reps: 5,
-                    weight: 85,
-                    time_in_seconds: 0,
-                });
-            await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
-                    exerciseId: exercisesIds[exercises[5][0]],
-                    exerciseSet: 3,
-                    reps: 4,
-                    weight: 85,
-                    time_in_seconds: 0,
-                });
+            await addWorkoutsAndExercises(exercisesIds);
         });
 
         beforeEach(async () => {
@@ -410,46 +436,61 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
     });
 
-    //describe('get requests', () => {
-    //    describe('happy path', () => {
-    //        it("status code of 200", async () => {
-    //            expect(response.statusCode).toStrictEqual(200);
-    //        });
+    describe('get requests', () => {
+        let response;
+        let workoutId;
 
-    //        it('workout object has id, alias, and description properties', () => {
-    //            const expectedKeys = ['id', 'alias', 'description'];
-    //            const workoutObject = response.body;
+        beforeAll(async () => {
+            await truncateWorkoutsExercisesAndRelatedTables();
+            await initExercisesTableInDb();
 
-    //            expect(utils.checkKeysInObject(expectedKeys, workoutObject)).toBe(true);
-    //        });
-    //    });
+            exercisesIds = await getExercisesIds();
+            
+            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            workoutId = pushResponse.body.id;
 
-    //    describe('uphappy paths', () => {
-    //        describe('400 response when', () => {
-    //            it('workoutId is string', async () => {
-    //                const response = await request.get(BASE_ENDPOINT + '/wrongId');
-    //                expect(response.statusCode).toStrictEqual(400);
-    //            });
+            response = await request.get(BASE_ENDPOINT + `/${pushResponse.body.id}`);
+        });
 
-    //            it('workoutId is boolean', async () => {
-    //                const response = await request.get(BASE_ENDPOINT + '/true');
-    //                expect(response.statusCode).toStrictEqual(400);
-    //            });
+        describe('happy path', () => {
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
+            });
 
-    //            it('workoutId is not positive', async () => {
-    //                const response = await request.get(BASE_ENDPOINT + '/-34');
-    //                expect(response.statusCode).toStrictEqual(400);
-    //            });
-    //        });
+            it('workout object has id, alias, exercises and description properties', () => {
+                const expectedKeys = ['id', 'alias', 'description', 'exercises'];
+                const workoutObject = response.body;
 
-    //        describe('404 response when', () => {
-    //            it('workoutId is valid but workout with that id does not exist', async () => {
-    //                const response = await request.get(BASE_ENDPOINT + '/1');
-    //                expect(response.statusCode).toStrictEqual(404);
-    //            });
-    //        });
-    //    });
-    //});
+                expect(utils.checkKeysInObject(expectedKeys, workoutObject)).toBe(true);
+            });
+        });
+
+        //describe('uphappy paths', () => {
+        //    describe('400 response when', () => {
+        //        it('workoutId is string', async () => {
+        //            const response = await request.get(BASE_ENDPOINT + '/wrongId');
+        //            expect(response.statusCode).toStrictEqual(400);
+        //        });
+
+        //        it('workoutId is boolean', async () => {
+        //            const response = await request.get(BASE_ENDPOINT + '/true');
+        //            expect(response.statusCode).toStrictEqual(400);
+        //        });
+
+        //        it('workoutId is not positive', async () => {
+        //            const response = await request.get(BASE_ENDPOINT + '/-34');
+        //            expect(response.statusCode).toStrictEqual(400);
+        //        });
+        //    });
+
+        //    describe('404 response when', () => {
+        //        it('workoutId is valid but workout with that id does not exist', async () => {
+        //            const response = await request.get(BASE_ENDPOINT + '/1');
+        //            expect(response.statusCode).toStrictEqual(404);
+        //        });
+        //    });
+        //});
+    });
 
     //describe('put request', () => {
     //    const putBodyRequest = {

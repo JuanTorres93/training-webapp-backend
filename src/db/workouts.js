@@ -100,6 +100,31 @@ const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
     return Number.isInteger(selectedWorkout.id);
 };
 
+const _compactWorkoutInfo = (workoutInfoDb) => {
+    // workoutInfoDb represents all rows in the table modeling a workout
+    const firstRow = workoutInfoDb[0];
+
+    const workoutSpec = {
+        id: firstRow.workout_id,
+        alias: firstRow.workout_alias,
+        description: firstRow.workout_description,
+        exercises: [],
+    };
+
+    workoutInfoDb.forEach(row => {
+        workoutSpec.exercises.push({
+            id: row.exercise_id,
+            alias: row.exercise_alias,
+            set: row.exercise_set,
+            reps: row.exercise_reps,
+            weight: row.exercise_weight,
+            time_in_seconds: row.exercise_time_in_seconds,
+        });
+    });
+
+    return workoutSpec;
+}
+
 const selectAllWorkouts = (appIsBeingTested) => {
     const q = workoutsWithExercisesQuery;
     const params = [];
@@ -127,23 +152,7 @@ const selectAllWorkouts = (appIsBeingTested) => {
                     return wk.workout_id === workoutId
                 })
 
-                const workoutSpec = {
-                    id: workoutId,
-                    alias: workoutInfo[0].workout_alias,
-                    description: workoutInfo[0].workout_description,
-                    exercises: [],
-                };
-
-                workoutInfo.forEach(info => {
-                    workoutSpec.exercises.push({
-                        id: info.exercise_id,
-                        alias: info.exercise_alias,
-                        set: info.exercise_set,
-                        reps: info.exercise_reps,
-                        weight: info.exercise_weight,
-                        time_in_seconds: info.exercise_time_in_seconds,
-                    });
-                });
+                const workoutSpec = _compactWorkoutInfo(workoutInfo);
 
                 allWorkoutsFormatted.push(workoutSpec);
             });
@@ -153,9 +162,29 @@ const selectAllWorkouts = (appIsBeingTested) => {
     });
 };
 
+const selectworkoutById = (id, appIsBeingTested) => {
+    const q = workoutsWithExercisesQuery.replace('WHERE TRUE', 
+                                            'WHERE wk.id = $1');
+    const params = [id];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const workoutInfo = results.rows;
+
+            // Group results by workout id
+            const workoutSpec = _compactWorkoutInfo(workoutInfo);
+
+            resolve(workoutSpec);
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     createWorkouts,
     addExerciseToWorkout,
     checkWorkoutByIdExists,
     selectAllWorkouts,
+    selectworkoutById,
 };
