@@ -465,31 +465,31 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             });
         });
 
-        //describe('uphappy paths', () => {
-        //    describe('400 response when', () => {
-        //        it('workoutId is string', async () => {
-        //            const response = await request.get(BASE_ENDPOINT + '/wrongId');
-        //            expect(response.statusCode).toStrictEqual(400);
-        //        });
+        describe('uphappy paths', () => {
+            describe('400 response when', () => {
+                it('workoutId is string', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/wrongId');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
 
-        //        it('workoutId is boolean', async () => {
-        //            const response = await request.get(BASE_ENDPOINT + '/true');
-        //            expect(response.statusCode).toStrictEqual(400);
-        //        });
+                it('workoutId is boolean', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/true');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
 
-        //        it('workoutId is not positive', async () => {
-        //            const response = await request.get(BASE_ENDPOINT + '/-34');
-        //            expect(response.statusCode).toStrictEqual(400);
-        //        });
-        //    });
+                it('workoutId is not positive', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/-34');
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
 
-        //    describe('404 response when', () => {
-        //        it('workoutId is valid but workout with that id does not exist', async () => {
-        //            const response = await request.get(BASE_ENDPOINT + '/1');
-        //            expect(response.statusCode).toStrictEqual(404);
-        //        });
-        //    });
-        //});
+            describe('404 response when', () => {
+                it('workoutId is valid but workout with that id does not exist', async () => {
+                    const response = await request.get(BASE_ENDPOINT + '/1');
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+        });
     });
 
     //describe('put request', () => {

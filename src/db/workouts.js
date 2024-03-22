@@ -172,6 +172,11 @@ const selectworkoutById = (id, appIsBeingTested) => {
             if (error) reject(error);
 
             const workoutInfo = results.rows;
+            
+            // If workout does not exists
+            if (workoutInfo.length === 0) {
+                return resolve(undefined);
+            }
 
             // Group results by workout id
             const workoutSpec = _compactWorkoutInfo(workoutInfo);

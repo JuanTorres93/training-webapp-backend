@@ -24,7 +24,7 @@ router.get('/', async (req, res, next) => {
 // Get workout by id
 router.get('/:workoutId', 
     validateIntegerParameter('workoutId'), async (req, res, next) => {
-    // TODO implement 403 response case
+    // TODO implement 401 and 403 response cases
     const { workoutId } = req.params;
 
     const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
