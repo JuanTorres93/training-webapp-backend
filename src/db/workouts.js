@@ -49,6 +49,31 @@ const createWorkouts = async ({ alias, description }, appIsBeingTested = undefin
     });
 };
 
+const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) => {
+    const returningFields = ['id', 'alias', 'description'];
+
+    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id, 
+                                                        workoutObject,
+                                                        returningFields)
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const updatedWorkout = results.rows[0];
+
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('updatedWorkout');
+            console.log(updatedWorkout);
+
+            // TODO fetch exercises From db
+            //updatedWorkout.exercises = [];
+
+            resolve(updatedWorkout)
+        }, appIsBeingTested)
+    });
+}
+
 const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds }, 
                                       appIsBeingTested = undefined) => {
     // Build query
@@ -188,6 +213,7 @@ const selectworkoutById = (id, appIsBeingTested) => {
 
 module.exports = {
     createWorkouts,
+    updateWorkout,
     addExerciseToWorkout,
     checkWorkoutByIdExists,
     selectAllWorkouts,

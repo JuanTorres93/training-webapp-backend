@@ -31,6 +31,25 @@ const validateCreateWorkoutParams = [
     mw.validateResult(400)
 ];
 
+const validateUpdateWorkoutParams = [
+    check(alias)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .exists().withMessage(msgs.parameterMissingMsg(alias))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        .trim()
+        .escape(),
+    check(description)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        .trim()
+        .escape(),
+    
+    mw.validateResult(400)
+];
+
 const validateAddExerciseToWorkoutParams = [
     check(exerciseId)
         // TODO share this validators with exerciseSet and maybe reps and weight
@@ -70,5 +89,6 @@ const validateAddExerciseToWorkoutParams = [
 
 module.exports = {
     validateCreateWorkoutParams,
+    validateUpdateWorkoutParams,
     validateAddExerciseToWorkoutParams,
 };

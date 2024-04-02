@@ -449,7 +449,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
             workoutId = pushResponse.body.id;
 
-            response = await request.get(BASE_ENDPOINT + `/${pushResponse.body.id}`);
+            response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
         });
 
         describe('happy path', () => {
@@ -492,72 +492,97 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
     });
 
-    //describe('put request', () => {
-    //    const putBodyRequest = {
-    //        alias: "updated alias",
-    //        description: "updated description",
-    //    };
+    describe('put request', () => {
+        let workoutId;
 
-    //    describe('happy path', () => {
-    //        let response;
+        const putBodyRequest = {
+            alias: "updated alias",
+            description: "updated description",
+        };
 
-    //        beforeAll(async () => {
-    //            response = await request.put(BASE_ENDPOINT + `/${id}`).send(putBodyRequest);
-    //        });
+        beforeAll(async () => {
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('BEFORE ALL PUT');
+            
+            await truncateWorkoutsExercisesAndRelatedTables();
+            await initExercisesTableInDb();
 
-    //        it('returns updated workout', () => {
-    //            const updatedworkout = response.body;
+            exercisesIds = await getExercisesIds();
 
-    //            expect(updatedworkout.id).toStrictEqual(id);
-    //            expect(updatedworkout.alias).toStrictEqual(putBodyRequest.alias);
-    //            expect(updatedworkout.description).toStrictEqual(putBodyRequest.description);
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('exercisesIds');
+            console.log(exercisesIds);
+            
+            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            workoutId = pushResponse.body.id;
 
-    //        });
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('workoutId');
+            console.log(workoutId);
 
-    //        it('returns 200 status code', () => {
-    //            expect(response.statusCode).toStrictEqual(200);
+        });
 
-    //        });
+        describe('happy path', () => {
+            let response;
 
-    //        it('changes are reflected in db', async () => {
-    //            const updatedworkoutFromDb = await selectEverythingFromworkoutId(id);
+            beforeAll(async () => {
+                response = await request.put(BASE_ENDPOINT + `/${workoutId}`).send(putBodyRequest);
+            });
 
-    //            expect(updatedworkoutFromDb.id).toStrictEqual(id);
-    //            expect(updatedworkoutFromDb.alias).toStrictEqual(putBodyRequest.alias);
-    //            expect(updatedworkoutFromDb.description).toStrictEqual(putBodyRequest.description);
-    //        });
-    //    });
+            it('returns updated workout', () => {
+                const updatedworkout = response.body;
 
-    //    describe('unhappy path', () => {
-    //        describe('returns 400 error code when', () => {
-    //            it('workoutid is string', async () => {
-    //                const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
-    //                expect(response.statusCode).toStrictEqual(400);
-    //            });
+                expect(updatedworkout.id).toStrictEqual(id);
+                expect(updatedworkout.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedworkout.description).toStrictEqual(putBodyRequest.description);
+                expect(updatedworkout).toHaveProperty('exercises');
 
-    //            it('workoutid is boolean', async () => {
-    //                const response = await request.put(BASE_ENDPOINT + '/true').send(putBodyRequest);
-    //                expect(response.statusCode).toStrictEqual(400);
-    //            });
+            });
 
-    //            it('workoutid is not positive', async () => {
-    //                const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
-    //                expect(response.statusCode).toStrictEqual(400);
-    //            });
-    //        });
+            it('returns 200 status code', () => {
+                expect(response.statusCode).toStrictEqual(200);
 
-    //        describe('404 response when', () => {
-    //            it('workoutid is valid but workout with that id does not exist', async () => {
-    //                const response = await request.put(BASE_ENDPOINT + '/1').send({
-    //                    ...putBodyRequest,
-    //                    alias: 'updated alias with put modified',
-    //                    description: 'updated_description_with_put_modified',
-    //                });
-    //                expect(response.statusCode).toStrictEqual(404);
-    //            });
-    //        });
-    //    });
-    //});
+            });
+
+            //it('changes are reflected in db', async () => {
+            //    const updatedworkoutFromDb = await selectEverythingFromworkoutId(id);
+
+            //    expect(updatedworkoutFromDb.id).toStrictEqual(id);
+            //    expect(updatedworkoutFromDb.alias).toStrictEqual(putBodyRequest.alias);
+            //    expect(updatedworkoutFromDb.description).toStrictEqual(putBodyRequest.description);
+            //});
+        });
+
+        //describe('unhappy path', () => {
+        //    describe('returns 400 error code when', () => {
+        //        it('workoutid is string', async () => {
+        //            const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
+        //            expect(response.statusCode).toStrictEqual(400);
+        //        });
+
+        //        it('workoutid is boolean', async () => {
+        //            const response = await request.put(BASE_ENDPOINT + '/true').send(putBodyRequest);
+        //            expect(response.statusCode).toStrictEqual(400);
+        //        });
+
+        //        it('workoutid is not positive', async () => {
+        //            const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
+        //            expect(response.statusCode).toStrictEqual(400);
+        //        });
+        //    });
+
+        //    describe('404 response when', () => {
+        //        it('workoutid is valid but workout with that id does not exist', async () => {
+        //            const response = await request.put(BASE_ENDPOINT + '/1').send({
+        //                ...putBodyRequest,
+        //                alias: 'updated alias with put modified',
+        //                description: 'updated_description_with_put_modified',
+        //            });
+        //            expect(response.statusCode).toStrictEqual(404);
+        //        });
+        //    });
+        //});
+    });
 
 
     //describe('delete requests', () => {
