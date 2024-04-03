@@ -21,6 +21,13 @@ router.get('/', async (req, res, next) => {
     res.status(200).send(workouts);
 });
 
+// Truncate test table
+router.get('/truncate', async (req, res, next) => {
+    const truncatedTable = await dbWorkouts.truncateTableTest(req.appIsBeingTested);
+
+    res.status(200).send(truncatedTable);
+});
+
 // Get workout by id
 router.get('/:workoutId', 
     validateIntegerParameter('workoutId'), async (req, res, next) => {
@@ -122,9 +129,6 @@ router.put('/:workoutId',
         // TODO implement 403 and 401 response cases
         const { workoutId } = req.params;
         const { alias, description } = req.body;
-
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('updating workout');
 
         const updateWorkoutInfo = {
             alias,

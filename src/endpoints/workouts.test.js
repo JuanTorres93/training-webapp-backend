@@ -32,9 +32,9 @@ const exercises = [
 ];
 
 // Empty database before starting tests
-const truncateWorkoutsExercisesAndRelatedTables = () => {
-    query("TRUNCATE workouts CASCADE;", [], () => {}, true);
-    query("TRUNCATE exercises CASCADE;", [], () => {}, true);
+const truncateWorkoutsExercisesAndRelatedTables = async () => {
+    await request.get(BASE_ENDPOINT + '/truncate');
+    await request.get('/exercises/truncate');
 }
 
 // Fill database with some exercises to be able to add them to workouts
@@ -254,8 +254,8 @@ const successfulPostRequest = {
 }
 
 describe(`${BASE_ENDPOINT}`,  () => {
-    beforeAll(() => {
-        truncateWorkoutsExercisesAndRelatedTables();
+    beforeAll(async () => {
+        await truncateWorkoutsExercisesAndRelatedTables();
     });
 
     describe('post requests', () => {
@@ -296,7 +296,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
         let exercisesIds;
 
         beforeAll(async () => {
-            truncateWorkoutsExercisesAndRelatedTables();
+            await truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
             try {
@@ -344,7 +344,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
 
     beforeAll(async () => {
         // Test's set up
-        truncateWorkoutsExercisesAndRelatedTables();
+        await truncateWorkoutsExercisesAndRelatedTables();
         await initExercisesTableInDb();
 
         // Create new workout
@@ -454,7 +454,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         let workoutId;
 
         beforeAll(async () => {
-            truncateWorkoutsExercisesAndRelatedTables();
+            await truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
             try {
@@ -519,7 +519,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         };
 
         beforeAll(async () => {
-            truncateWorkoutsExercisesAndRelatedTables();
+            await truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
             try {

@@ -63,8 +63,6 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
                                                         exerciseObject,
                                                         returningFields)
 
-    // TODO include workout exercises in response
-
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
@@ -75,7 +73,9 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
     });
 }
 
-const deleteExercise = async (id, appIsBeingTested = undefined) => {
+const deleteExercise = (id, appIsBeingTested = undefined) => {
+    // TODO IMPORTANT: REMOVE ENTRIES WHERE id = exercise_id IN RELATIONAL TABLE. 
+    // MAKE THIS QUERY A TRANSACTION. CHECK IN DOCS HOW TO DO IT, SINCE THIS METHOD DOES NOT WORK
     let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " + 
             "RETURNING id, alias, description;";
     const params = [id]
@@ -111,25 +111,12 @@ const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
 }
 
 const selectIdForExerciseName = (name, appIsBeingTested) => {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('Enters select id from db module');
-    console.log(`name: '${name}'`);
-
     const q = "SELECT id FROM " + TABLE_NAME + " WHERE alias = $1;";
     const params = [name];
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
-            // if (error) reject(error);
-            if (error) {
-                // TODO DELETE THESE DEBUG LOGS
-                console.log('error');
-                console.log(error);
-                throw new Error(error);
-            };
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('No error');
-            console.log(results.rows);
+            if (error) reject(error);
 
             // TODO handle better this error or delete it
             if (results.rows.length === 0) {
@@ -137,11 +124,29 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
             }
 
             const exerciseId = results.rows[0].id;
-
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('resolving promise');
             resolve(exerciseId)
         }, appIsBeingTested)
+    });
+};
+
+
+const truncateTableTest = (appIsBeingTested) => {
+    if (appIsBeingTested) {
+        return new Promise((resolve, reject) => {
+            // Test for making malicious people think they got something
+            resolve('Truncated ' + TABLE_NAME);
+        });
+    }
+
+    const q = "TRUNCATE " + TABLE_NAME + " CASCADE;";
+    const params = [];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            resolve('Table ' + TABLE_NAME + ' truncated in test db.')
+        }, true)
     });
 };
 
@@ -153,4 +158,5 @@ module.exports = {
     selectExerciseById,
     checkExerciseByIdExists,
     selectIdForExerciseName,
+    truncateTableTest,
 };

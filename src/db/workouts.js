@@ -62,10 +62,6 @@ const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) =>
 
             const updatedWorkout = results.rows[0];
 
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('updatedWorkout');
-            console.log(updatedWorkout);
-
             // TODO fetch exercises From db
             //updatedWorkout.exercises = [];
 
@@ -211,6 +207,27 @@ const selectworkoutById = (id, appIsBeingTested) => {
     });
 };
 
+
+const truncateTableTest = (appIsBeingTested) => {
+    if (appIsBeingTested) {
+        return new Promise((resolve, reject) => {
+            // Test for making malicious people think they got something
+            resolve('Truncated ' + TABLE_NAME);
+        });
+    }
+
+    const q = "TRUNCATE " + TABLE_NAME + " CASCADE;";
+    const params = [];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            resolve('Table ' + TABLE_NAME + ' truncated in test db.')
+        }, true)
+    });
+};
+
 module.exports = {
     createWorkouts,
     updateWorkout,
@@ -218,4 +235,5 @@ module.exports = {
     checkWorkoutByIdExists,
     selectAllWorkouts,
     selectworkoutById,
+    truncateTableTest,
 };

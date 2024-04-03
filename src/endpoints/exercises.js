@@ -19,6 +19,13 @@ router.get('/', async (req, res, next) => {
     res.status(200).send(exercises);
 });
 
+// Truncate test table
+router.get('/truncate', async (req, res, next) => {
+    const truncatedTable = await dbExercises.truncateTableTest(req.appIsBeingTested);
+
+    res.status(200).send(truncatedTable);
+});
+
 // Get exercise by id
 router.get('/:exerciseId', validateIntegerParameter('exerciseId'), async (req, res, next) => {
     // TODO implement 403 response case
@@ -93,6 +100,10 @@ router.delete('/:exerciseId',
     async (req, res, next) => {
         // TODO implement 403 and 401 response cases
         const { exerciseId } = req.params;
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('exerciseId from delete endpoint');
+        console.log(exerciseId);
 
         const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
 

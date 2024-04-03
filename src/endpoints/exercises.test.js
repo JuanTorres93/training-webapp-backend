@@ -21,8 +21,8 @@ function logErrors (err, req, res, next) {
 const request = supertest(app.use(logErrors))
 
 // Empty database before starting tests
-const truncateExercisesAndRelatedTables = () => {
-    query("TRUNCATE exercises CASCADE;", [], () => {}, true);
+const truncateExercisesAndRelatedTables = async () => {
+    await request.get(BASE_ENDPOINT + '/truncate');
 }
 
 const selectEverythingFromExerciseId = (id) => {
@@ -42,8 +42,8 @@ const successfulPostRequest = {
 }
 
 describe(`${BASE_ENDPOINT}`,  () => {
-    beforeAll(() => {
-        truncateExercisesAndRelatedTables();
+    beforeAll(async () => {
+        await truncateExercisesAndRelatedTables();
     });
 
     describe('post requests', () => {
@@ -111,7 +111,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
 
     beforeAll(async () => {
         // Test's set up
-        truncateExercisesAndRelatedTables();
+        await truncateExercisesAndRelatedTables();
         await request.post(BASE_ENDPOINT).send(successfulPostRequest);
 
         // get id of the exercise in db, since it changes every time the suite is run
@@ -269,6 +269,8 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
                 await request.put(BASE_ENDPOINT + `/${id}`).send({
                     ...successfulPostRequest,
                 });
+                // TODO DELETE THESE DEBUG LOGS
+                console.log('DELETE CALL');
                 response = await request.delete(BASE_ENDPOINT + `/${id}`)
             });
 
