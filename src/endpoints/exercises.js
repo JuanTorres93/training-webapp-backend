@@ -101,10 +101,6 @@ router.delete('/:exerciseId',
         // TODO implement 403 and 401 response cases
         const { exerciseId } = req.params;
 
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('exerciseId from delete endpoint');
-        console.log(exerciseId);
-
         const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
 
         if (deletedexercise === undefined) {

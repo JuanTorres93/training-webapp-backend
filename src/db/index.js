@@ -34,13 +34,26 @@ const query = (text, params, callback, appIsBeingTested) => {
     if (appIsBeingTested === true || appIsBeingTested === false) {
         if (appIsBeingTested) return testPool.query(text, params, callback);
 
-        // IDE might warn about this function not returning a promise, but it does
         return pool.query(text, params, callback);
     };
 
     throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
 };
 
+const getPoolClient = async (appIsBeingTested) => {
+    // This method is intended to be used when needed to use transactions
+    // DOCS for transactions: https://node-postgres.com/features/transactions
+    if (appIsBeingTested === true || appIsBeingTested === false) {
+        if (appIsBeingTested) return await testPool.connect();
+
+        return await pool.connect();
+    };
+
+    throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
+
+};
+
 module.exports = {
     query,
+    getPoolClient,
 };

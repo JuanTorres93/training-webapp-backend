@@ -1,4 +1,4 @@
-const { query } = require('./index');
+const { query, getPoolClient } = require('./index');
 const utils = require('../utils/utils.js');
 const qh = require('./queryHelper.js');
 
@@ -73,21 +73,33 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
     });
 }
 
-const deleteExercise = (id, appIsBeingTested = undefined) => {
-    // TODO IMPORTANT: REMOVE ENTRIES WHERE id = exercise_id IN RELATIONAL TABLE. 
-    // MAKE THIS QUERY A TRANSACTION. CHECK IN DOCS HOW TO DO IT, SINCE THIS METHOD DOES NOT WORK
-    let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " + 
-            "RETURNING id, alias, description;";
-    const params = [id]
+const deleteExercise = async (id, appIsBeingTested = undefined) => {
+    // TODO WARNING: There's a potencial risk of unreferenced items in workout_template_exercises
+    const client = await getPoolClient(appIsBeingTested);
+    let results;
+    try {
+        await client.query('BEGIN;');
 
-    return new Promise((resolve, reject) => {
-        query(q, params, (error, results) => {
-            if (error) reject(error);
+        // Delete references in workouts_exercises
+        const workoutsExercisesQuery = "DELETE FROM workouts_exercises WHERE exercise_id = $1;";
+        const workoutsExercisesParams = [id];
+        await client.query(workoutsExercisesQuery, workoutsExercisesParams);
 
-            const deletedExercise = results.rows[0];
-            resolve(deletedExercise)
-        }, appIsBeingTested)
-    });
+        // Delete exercise itself
+        const exercisesQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
+                               "RETURNING id, alias, description;";
+        const exercisesParams = [id];
+        results = await client.query(exercisesQuery, exercisesParams);
+
+        await client.query('COMMIT;');
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    return results.rows[0];
 }
 
 const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {

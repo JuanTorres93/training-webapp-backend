@@ -269,8 +269,6 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
                 await request.put(BASE_ENDPOINT + `/${id}`).send({
                     ...successfulPostRequest,
                 });
-                // TODO DELETE THESE DEBUG LOGS
-                console.log('DELETE CALL');
                 response = await request.delete(BASE_ENDPOINT + `/${id}`)
             });
 
