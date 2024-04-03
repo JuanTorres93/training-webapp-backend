@@ -4,7 +4,7 @@ const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'exercises';
 
-const createExercise = async ({ alias, description }, appIsBeingTested = undefined) => {
+const createExercise = ({ alias, description }, appIsBeingTested = undefined) => {
     // Build query
     let requiredFields = ['alias'];
     let requiredValues = [alias];
@@ -63,6 +63,8 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
                                                         exerciseObject,
                                                         returningFields)
 
+    // TODO include workout exercises in response
+
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
@@ -109,13 +111,35 @@ const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
 }
 
 const selectIdForExerciseName = (name, appIsBeingTested) => {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('Enters select id from db module');
+    console.log(`name: '${name}'`);
+
     const q = "SELECT id FROM " + TABLE_NAME + " WHERE alias = $1;";
     const params = [name];
 
-    return new Promise(async (resolve, reject) => {
-        await query(q, params, (error, results) => {
-            if (error) reject(error);
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            // if (error) reject(error);
+            if (error) {
+                // TODO DELETE THESE DEBUG LOGS
+                console.log('error');
+                console.log(error);
+                throw new Error(error);
+            };
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('No error');
+            console.log(results.rows);
+
+            // TODO handle better this error or delete it
+            if (results.rows.length === 0) {
+                throw new Error('DEBUG TESTS ERROR. NO ROWS FOUND');
+            }
+
             const exerciseId = results.rows[0].id;
+
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('resolving promise');
             resolve(exerciseId)
         }, appIsBeingTested)
     });

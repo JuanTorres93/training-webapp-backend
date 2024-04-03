@@ -32,23 +32,24 @@ const exercises = [
 ];
 
 // Empty database before starting tests
-const truncateWorkoutsExercisesAndRelatedTables = async () => {
-    await query("TRUNCATE workouts CASCADE;", [], () => {}, true);
-    await query("TRUNCATE exercises CASCADE;", [], () => {}, true);
+const truncateWorkoutsExercisesAndRelatedTables = () => {
+    query("TRUNCATE workouts CASCADE;", [], () => {}, true);
+    query("TRUNCATE exercises CASCADE;", [], () => {}, true);
 }
 
 // Fill database with some exercises to be able to add them to workouts
 const initExercisesTableInDb = async () => {
-    let q = "INSERT INTO exercises (alias, description) VALUES ";
-
-    exercises.forEach(exercise => {
-        q += `('${exercise[0]}', '${exercise[1]}'),`;
-    });
-
-    q = q.substring(0, q.length - 1);
-    q += ';';
-
-    await query(q, [], () => {}, true);
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('Posting for exercise creationg');
+    for (const exercise of exercises) {
+        const req = {
+            alias: exercise[0],
+            description: exercise[1],
+        };
+        await request.post('/exercises').send(req);
+    }
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('End post for exercise creationg');
 }
 
 const addWorkoutsAndExercises = async (exercisesIds) => {
@@ -233,13 +234,35 @@ const addWorkoutsAndExercises = async (exercisesIds) => {
 const getExercisesIds = async () => {
     const exercisesIds = {};
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('inside get ids function');
+
     // If solving all promises with Promise.all tests fail
     for (const exercise of exercises) {
         const name = exercise[0];
-        const id = await dbExercises.selectIdForExerciseName(name, true); 
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log(`name: ${name}`);
+
+        let id;
+
+        try {
+            id = await dbExercises.selectIdForExerciseName(name, true); 
+        } catch (error) {
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('Enters error');
+            throw error;
+        }
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log(`id ${id}`);
 
         exercisesIds[name] = id;
     }
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('returning value and exiting ids function');
+    console.log(exercisesIds);
 
     return exercisesIds;
 }
@@ -250,8 +273,8 @@ const successfulPostRequest = {
 }
 
 describe(`${BASE_ENDPOINT}`,  () => {
-    beforeAll(async () => {
-        await truncateWorkoutsExercisesAndRelatedTables();
+    beforeAll(() => {
+        truncateWorkoutsExercisesAndRelatedTables();
     });
 
     describe('post requests', () => {
@@ -292,12 +315,22 @@ describe(`${BASE_ENDPOINT}`,  () => {
         let exercisesIds;
 
         beforeAll(async () => {
-            await truncateWorkoutsExercisesAndRelatedTables();
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('INIT BEFORE ALL GET');
+
+            truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
-            exercisesIds = await getExercisesIds();
+            try {
+                exercisesIds = await getExercisesIds();
+            } catch (error) {
+                console.log("EEERROOOOOOOR")
+                console.log(error);
+            }
 
             await addWorkoutsAndExercises(exercisesIds);
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('END BEFORE ALL GET');
         });
 
         beforeEach(async () => {
@@ -334,8 +367,11 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
     };
 
     beforeAll(async () => {
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('INIT BEFORE ALL /{workoutId}');
+
         // Test's set up
-        await truncateWorkoutsExercisesAndRelatedTables();
+        truncateWorkoutsExercisesAndRelatedTables();
         await initExercisesTableInDb();
 
         // Create new workout
@@ -343,8 +379,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
 
         id = response.body.id;
 
-        // Get ids of the exercises
-        exercisesIds = await getExercisesIds();
+        try {
+            exercisesIds = await getExercisesIds();
+        } catch (error) {
+            console.log("EEERROOOOOOOR")
+            console.log(error);
+        }
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('END BEFORE ALL /{workoutId}');
     });
 
     describe('post requests', () => {
@@ -441,15 +484,25 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         let workoutId;
 
         beforeAll(async () => {
-            await truncateWorkoutsExercisesAndRelatedTables();
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('INIT BEFORE ALL');
+
+            truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
-            exercisesIds = await getExercisesIds();
+            try {
+                exercisesIds = await getExercisesIds();
+            } catch (error) {
+                console.log("EEERROOOOOOOR")
+                console.log(error);
+            }
             
             const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
             workoutId = pushResponse.body.id;
 
             response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('END BEFORE ALL');
         });
 
         describe('happy path', () => {
@@ -502,12 +555,20 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
 
         beforeAll(async () => {
             // TODO DELETE THESE DEBUG LOGS
-            console.log('BEFORE ALL PUT');
+            console.log('INIT BEFORE ALL PUT');
             
-            await truncateWorkoutsExercisesAndRelatedTables();
+            truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
-            exercisesIds = await getExercisesIds();
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('getting exercises ids');
+
+            try {
+                exercisesIds = await getExercisesIds();
+            } catch (error) {
+                console.log("EEERROOOOOOOR")
+                console.log(error);
+            }
 
             // TODO DELETE THESE DEBUG LOGS
             console.log('exercisesIds');
@@ -520,6 +581,8 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             console.log('workoutId');
             console.log(workoutId);
 
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('END BEFORE ALL PUT');
         });
 
         describe('happy path', () => {
@@ -532,7 +595,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             it('returns updated workout', () => {
                 const updatedworkout = response.body;
 
-                expect(updatedworkout.id).toStrictEqual(id);
+                expect(updatedworkout.id).toStrictEqual(workoutId);
                 expect(updatedworkout.alias).toStrictEqual(putBodyRequest.alias);
                 expect(updatedworkout.description).toStrictEqual(putBodyRequest.description);
                 expect(updatedworkout).toHaveProperty('exercises');

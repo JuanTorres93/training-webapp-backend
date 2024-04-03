@@ -22,17 +22,18 @@ const request = supertest(app.use(logErrors))
 
 // Empty database before starting tests
 const truncateExercisesAndRelatedTables = async () => {
-    await query("TRUNCATE exercises CASCADE;", [], () => {}, true);
+    query("TRUNCATE exercises CASCADE;", [], () => {}, true);
 }
 
 const selectEverythingFromExerciseId = (id) => {
-    return new Promise((resolve, reject) => {
-        query("SELECT * FROM exercises WHERE id = $1;", [id], (error, results) => {
-            if (error) reject(error);
+    let exercise;
+    query("SELECT * FROM exercises WHERE id = $1;", [id], (error, results) => {
+            if (error) throw error;
 
-            resolve(results.rows[0]);
+            exercise = results.rows[0];
         }, true);
-    });
+
+    return exercise;
 };
 
 const successfulPostRequest = {
@@ -41,8 +42,8 @@ const successfulPostRequest = {
 }
 
 describe(`${BASE_ENDPOINT}`,  () => {
-    beforeAll(async () => {
-        await truncateExercisesAndRelatedTables();
+    beforeAll(() => {
+        truncateExercisesAndRelatedTables();
     });
 
     describe('post requests', () => {
@@ -110,7 +111,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
 
     beforeAll(async () => {
         // Test's set up
-        await truncateExercisesAndRelatedTables();
+        truncateExercisesAndRelatedTables();
         await request.post(BASE_ENDPOINT).send(successfulPostRequest);
 
         // get id of the exercise in db, since it changes every time the suite is run
@@ -194,8 +195,8 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
 
             });
 
-            it('changes are reflected in db', async () => {
-                const updatedExerciseFromDb = await selectEverythingFromExerciseId(id);
+            it('changes are reflected in db', () => {
+                const updatedExerciseFromDb = selectEverythingFromExerciseId(id);
 
                 expect(updatedExerciseFromDb.id).toStrictEqual(id);
                 expect(updatedExerciseFromDb.alias).toStrictEqual(putBodyRequest.alias);
