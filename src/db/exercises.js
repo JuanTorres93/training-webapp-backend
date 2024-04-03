@@ -42,7 +42,7 @@ const selectAllExercises = (appIsBeingTested) => {
     });
 };
 
-const selectExerciseById = async (id, appIsBeingTested) => {
+const selectExerciseById = (id, appIsBeingTested) => {
     const q = "SELECT id, alias, description FROM " +
               TABLE_NAME + " WHERE id = $1;";
     const params = [id];

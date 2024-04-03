@@ -39,8 +39,6 @@ const truncateWorkoutsExercisesAndRelatedTables = () => {
 
 // Fill database with some exercises to be able to add them to workouts
 const initExercisesTableInDb = async () => {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('Posting for exercise creationg');
     for (const exercise of exercises) {
         const req = {
             alias: exercise[0],
@@ -48,8 +46,6 @@ const initExercisesTableInDb = async () => {
         };
         await request.post('/exercises').send(req);
     }
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('End post for exercise creationg');
 }
 
 const addWorkoutsAndExercises = async (exercisesIds) => {
@@ -234,35 +230,20 @@ const addWorkoutsAndExercises = async (exercisesIds) => {
 const getExercisesIds = async () => {
     const exercisesIds = {};
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('inside get ids function');
-
     // If solving all promises with Promise.all tests fail
     for (const exercise of exercises) {
         const name = exercise[0];
-
-        // TODO DELETE THESE DEBUG LOGS
-        console.log(`name: ${name}`);
 
         let id;
 
         try {
             id = await dbExercises.selectIdForExerciseName(name, true); 
         } catch (error) {
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('Enters error');
             throw error;
         }
 
-        // TODO DELETE THESE DEBUG LOGS
-        console.log(`id ${id}`);
-
         exercisesIds[name] = id;
     }
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('returning value and exiting ids function');
-    console.log(exercisesIds);
 
     return exercisesIds;
 }
@@ -315,9 +296,6 @@ describe(`${BASE_ENDPOINT}`,  () => {
         let exercisesIds;
 
         beforeAll(async () => {
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('INIT BEFORE ALL GET');
-
             truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
@@ -329,8 +307,6 @@ describe(`${BASE_ENDPOINT}`,  () => {
             }
 
             await addWorkoutsAndExercises(exercisesIds);
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('END BEFORE ALL GET');
         });
 
         beforeEach(async () => {
@@ -367,9 +343,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
     };
 
     beforeAll(async () => {
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('INIT BEFORE ALL /{workoutId}');
-
         // Test's set up
         truncateWorkoutsExercisesAndRelatedTables();
         await initExercisesTableInDb();
@@ -385,9 +358,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             console.log("EEERROOOOOOOR")
             console.log(error);
         }
-
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('END BEFORE ALL /{workoutId}');
     });
 
     describe('post requests', () => {
@@ -484,9 +454,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         let workoutId;
 
         beforeAll(async () => {
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('INIT BEFORE ALL');
-
             truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
 
@@ -501,8 +468,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             workoutId = pushResponse.body.id;
 
             response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('END BEFORE ALL');
         });
 
         describe('happy path', () => {
@@ -554,14 +519,8 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         };
 
         beforeAll(async () => {
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('INIT BEFORE ALL PUT');
-            
             truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
-
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('getting exercises ids');
 
             try {
                 exercisesIds = await getExercisesIds();
@@ -570,19 +529,8 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 console.log(error);
             }
 
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('exercisesIds');
-            console.log(exercisesIds);
-            
             const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
             workoutId = pushResponse.body.id;
-
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('workoutId');
-            console.log(workoutId);
-
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('END BEFORE ALL PUT');
         });
 
         describe('happy path', () => {

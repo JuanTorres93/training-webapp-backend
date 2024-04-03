@@ -21,7 +21,7 @@ function logErrors (err, req, res, next) {
 const request = supertest(app.use(logErrors))
 
 // Empty database before starting tests
-const truncateExercisesAndRelatedTables = async () => {
+const truncateExercisesAndRelatedTables = () => {
     query("TRUNCATE exercises CASCADE;", [], () => {}, true);
 }
 
@@ -115,13 +115,8 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
         await request.post(BASE_ENDPOINT).send(successfulPostRequest);
 
         // get id of the exercise in db, since it changes every time the suite is run
-        id = await new Promise((resolve, reject) => {
-            query("SELECT id FROM exercises;", [], (error, results) => {
-                if (error) reject(error);
-
-                resolve(results.rows[0].id);
-            }, true);
-        })
+        id = await request.get(BASE_ENDPOINT);
+        id = id.body[0].id
 
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${id}`);
@@ -129,7 +124,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
 
     describe('get requests', () => {
         describe('happy path', () => {
-            it("status code of 200", async () => {
+            it("status code of 200", () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
@@ -195,12 +190,12 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
 
             });
 
-            it('changes are reflected in db', () => {
-                const updatedExerciseFromDb = selectEverythingFromExerciseId(id);
+            it('changes are reflected in db', async () => {
+                const updatedExerciseFromDb = await request.get(BASE_ENDPOINT + `/${id}`);
 
-                expect(updatedExerciseFromDb.id).toStrictEqual(id);
-                expect(updatedExerciseFromDb.alias).toStrictEqual(putBodyRequest.alias);
-                expect(updatedExerciseFromDb.description).toStrictEqual(putBodyRequest.description);
+                expect(updatedExerciseFromDb.body.id).toStrictEqual(id);
+                expect(updatedExerciseFromDb.body.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedExerciseFromDb.body.description).toStrictEqual(putBodyRequest.description);
             });
         });
 
