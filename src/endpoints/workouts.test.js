@@ -525,7 +525,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             try {
                 exercisesIds = await getExercisesIds();
             } catch (error) {
-                console.log("EEERROOOOOOOR")
                 console.log(error);
             }
 

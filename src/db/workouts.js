@@ -1,4 +1,4 @@
-const { query } = require('./index');
+const { query, getPoolClient } = require('./index');
 const utils = require('../utils/utils.js');
 const qh = require('./queryHelper.js');
 
@@ -50,24 +50,43 @@ const createWorkouts = async ({ alias, description }, appIsBeingTested = undefin
 };
 
 const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) => {
-    const returningFields = ['id', 'alias', 'description'];
+    const client = await getPoolClient(appIsBeingTested);
+    let results;
 
-    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id, 
-                                                        workoutObject,
-                                                        returningFields)
+    try {
+        await client.query('BEGIN;');
 
-    return new Promise((resolve, reject) => {
-        query(q, params, (error, results) => {
-            if (error) reject(error);
+        // Update workout
+        const { q: updateQuery, params: updateParams } = qh.createUpdateTableStatement(TABLE_NAME, id, 
+                                                            workoutObject)
 
-            const updatedWorkout = results.rows[0];
+        await client.query(updateQuery, updateParams);
 
-            // TODO fetch exercises From db
-            //updatedWorkout.exercises = [];
+        const returnInfoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE', 
+                                                                   'WHERE wk.id = $1');
+        const returnInfoParams = [id];
 
-            resolve(updatedWorkout)
-        }, appIsBeingTested)
-    });
+        results = await client.query(returnInfoQuery, returnInfoParams);
+        await client.query('COMMIT;');
+
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    const workoutInfo = results.rows;
+            
+    // If workout does not exists
+    if (workoutInfo.length === 0) {
+        return undefined;
+    }
+
+    // Group results by workout id
+    const workoutSpec = _compactWorkoutInfo(workoutInfo);
+    
+    return workoutSpec;
 }
 
 const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds }, 
