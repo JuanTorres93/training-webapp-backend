@@ -657,3 +657,154 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
     });
 });
+
+describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
+    let workout;
+    let initialExercise;
+    let exercisesIds = {};
+
+    beforeAll(async () => {
+        // Test's set up
+        await truncateWorkoutsExercisesAndRelatedTables();
+        await initExercisesTableInDb();
+
+        try {
+            exercisesIds = await getExercisesIds();
+        } catch (error) {
+            console.log(error);
+        }
+
+        const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+        const workoutId = pushResponse.body.id;
+
+        workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
+        workout = workout.body;
+        initialExercise = workout.exercises[0];
+    });
+
+    describe('put requests', () => {
+        describe('happy path', () => {
+            it('updates only reps', async () => {
+                const req = {
+                    exerciseSet: 1,
+                    reps: 88,
+                };
+
+                const response = await request.put(
+                    BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+                ).send(req);
+
+                const updatedWorkout = response.body;
+                expect(updatedWorkout.id).toStrictEqual(initialExercise.id);
+                expect(updatedWorkout.exerciseSet).toStrictEqual(initialExercise.exerciseSet);
+                expect(updatedWorkout.reps).not.toEqual(initialExercise.reps);
+                expect(updatedWorkout.weight).toStrictEqual(initialExercise.weight);
+                expect(updatedWorkout.time_in_seconds).toStrictEqual(initialExercise.time_in_seconds);
+            });
+
+            it('updates only weight', async () => {
+                const req = {
+                    exerciseSet: 1,
+                    weight: 88,
+                };
+
+                const response = await request.put(
+                    BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+                ).send(req);
+
+                const updatedWorkout = response.body;
+                expect(updatedWorkout.id).toStrictEqual(initialExercise.id);
+                expect(updatedWorkout.exerciseSet).toStrictEqual(initialExercise.exerciseSet);
+                expect(updatedWorkout.reps).toStrictEqual(initialExercise.reps);
+                expect(updatedWorkout.weight).not.toEqual(initialExercise.weight);
+                expect(updatedWorkout.time_in_seconds).toStrictEqual(initialExercise.time_in_seconds);
+            });
+
+            it('updates only time_in_seconds', async () => {
+                const req = {
+                    exerciseSet: 1,
+                    time_in_seconds: 88,
+                };
+
+                const response = await request.put(
+                    BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+                ).send(req);
+
+                const updatedWorkout = response.body;
+                expect(updatedWorkout.id).toStrictEqual(initialExercise.id);
+                expect(updatedWorkout.exerciseSet).toStrictEqual(initialExercise.exerciseSet);
+                expect(updatedWorkout.reps).toStrictEqual(initialExercise.reps);
+                expect(updatedWorkout.weight).toStrictEqual(initialExercise.weight);
+                expect(updatedWorkout.time_in_seconds).not.toEqual(initialExercise.time_in_seconds);
+            });
+        });
+
+        describe('unhappy path', () => {
+            const req = {
+                exerciseSet: 1,
+                reps: 34,
+            };
+
+            describe('returns 400 error code when', () => {
+                it('workoutid is string', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + '/wrongId' + `/exercisesId/${initialExercise.id}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('workoutid is boolean', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + '/true' + `/exercisesId/${initialExercise.id}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('workoutid is not positive', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + '/-23' + `/exercisesId/${initialExercise.id}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is string', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercisesId/wrongId`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is boolean', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercisesId/true`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is not positive', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercisesId/-23`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('workoutid is valid but workout with that id does not exist', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + '/1' + `/exercises/${initialExercise.id}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(404);
+
+                it('exerciseId is valid but exercise with that id does not exist', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/1`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+                });
+            });
+        });
+
+    });
+});
