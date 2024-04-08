@@ -247,6 +247,53 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
+const deleteWorkout = async (id, appIsBeingTested = undefined) => {
+    // TODO WARNING: There's a potencial risk of unreferenced items in workout_template_exercises
+    const client = await getPoolClient(appIsBeingTested);
+    let workoutInfo;
+
+    try {
+        await client.query('BEGIN;');
+
+        // Get info to be deleted to return it to user
+        const infoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE', 
+                                                'WHERE wk.id = $1');
+        const infoParams = [id];
+        workoutInfo = await client.query(infoQuery, infoParams);
+
+        // Delete references in workouts_exercises
+        const workoutsExercisesQuery = "DELETE FROM workouts_exercises WHERE workout_id = $1;";
+        const workoutsExercisesParams = [id];
+        await client.query(workoutsExercisesQuery, workoutsExercisesParams);
+
+        // Delete workout itself
+        const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
+                              "RETURNING id, alias, description;";
+        const workoutsParams = [id];
+        await client.query(workoutsQuery, workoutsParams);
+
+        await client.query('COMMIT;');
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    // Get results from query
+    workoutInfo = workoutInfo.rows;
+            
+    // If workout does not exists
+    if (workoutInfo.length === 0) {
+        return undefined;
+    }
+
+    // Group results by workout id
+    const workoutSpec = _compactWorkoutInfo(workoutInfo);
+
+    return workoutSpec;
+}
+
 module.exports = {
     createWorkouts,
     updateWorkout,
@@ -255,4 +302,5 @@ module.exports = {
     selectAllWorkouts,
     selectworkoutById,
     truncateTableTest,
+    deleteWorkout,
 };

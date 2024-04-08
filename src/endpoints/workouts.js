@@ -147,28 +147,28 @@ router.put('/:workoutId',
     }
 );
 
-//// =====================================
-//// ========== DELETE requests ==========
-//// =====================================
-//
-//// update user by id
-//router.delete('/:exerciseId', 
-//    validateIntegerParameter('exerciseId'), 
-//    async (req, res, next) => {
-//        // TODO implement 403 and 401 response cases
-//        const { exerciseId } = req.params;
-//
-//        const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
-//
-//        if (deletedexercise === undefined) {
-//            return res.status(404).json({
-//                msg: "exercise not found",
-//            });
-//        }
-//
-//        res.status(200).json(deletedexercise);
-//    }
-//);
+// =====================================
+// ========== DELETE requests ==========
+// =====================================
+
+// delete workout by id
+router.delete('/:workoutId', 
+    validateIntegerParameter('workoutId'), 
+    async (req, res, next) => {
+        // TODO implement 403 and 401 response cases
+        const { workoutId } = req.params;
+
+        const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId, req.appIsBeingTested);
+
+        if (deletedWorkout === undefined) {
+            return res.status(404).json({
+                msg: "Workout not found",
+            });
+        }
+
+        res.status(200).json(deletedWorkout);
+    }
+);
 
 
 module.exports = router;
