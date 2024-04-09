@@ -376,6 +376,29 @@ const updateExerciseFromWorkout = (workoutId,
     });
 };
 
+const deleteExerciseFromWorkout = (workoutId, exerciseId, appIsBeingTested) => {
+    const q = "DELETE FROM workouts_exercises " +
+              "WHERE " +
+              "	workout_id = $1 AND " +
+              "	exercise_id = $2 " +
+              "RETURNING " +
+              "	exercise_id, " +
+              "	exercise_set, " +
+              "	exercise_reps, " +
+              "	exercise_weight, " +
+              "	exercise_time_in_seconds;";
+
+    const params = [workoutId, exerciseId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            // Compact exercise info
+            resolve(results)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     createWorkouts,
     updateWorkout,
@@ -387,4 +410,5 @@ module.exports = {
     truncateTableTest,
     deleteWorkout,
     updateExerciseFromWorkout,
+    deleteExerciseFromWorkout,
 };

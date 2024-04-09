@@ -586,7 +586,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
     });
 
-
     describe('delete requests', () => {
         // In this suite unhappy path is tested first in order to preserve the
         // entry in the database
@@ -607,6 +606,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             pushWorkout = pushResponse.body;
             workoutId = pushResponse.body.id;
         });
+
         describe('unhappy path', () => {
             describe('returns 400 error code when', () => {
                 it('workoutid is string', async () => {
@@ -823,6 +823,114 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                 });
             });
         });
+    });
 
+    describe('delete requests', () => {
+        let workout;
+        let initialExercise;
+        let exercisesIds = {};
+
+        beforeAll(async () => {
+            // Test's set up
+            await truncateWorkoutsExercisesAndRelatedTables();
+            await initExercisesTableInDb();
+
+            try {
+                exercisesIds = await getExercisesIds();
+            } catch (error) {
+                console.log(error);
+            }
+
+            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const workoutId = pushResponse.body.id;
+
+            workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
+            workout = workout.body;
+            initialExercise = workout.exercises[0];
+        });
+
+        describe('unhappy path', () => {
+            describe('returns 400 error code when', () => {
+                it('workoutid is string', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + '/wrongId' + `/exercises/${initialExercise.id}`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('workoutid is boolean', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + '/true' + `/exercises/${initialExercise.id}`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('workoutid is not positive', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + '/-23' + `/exercises/${initialExercise.id}`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is string', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/wrongId`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is boolean', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/true`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseid is not positive', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/-23`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('404 response when', () => {
+                it('workoutid is valid but workout with that id does not exist', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + '/1' + `/exercises/${initialExercise.id}`
+                    );
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+
+                it('exerciseId is valid but exercise with that id does not exist', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/1`
+                    );
+                    expect(response.statusCode).toStrictEqual(404);
+                });
+            });
+        });
+
+        describe('happy path', () => {
+            let response;
+
+            beforeAll(async () => {
+                response = await request.delete(BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`)
+            });
+
+            it("status code of 200", async () => {
+                expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it('returns deleted exercise', () => {
+                const deletedExercise = response.body;
+
+                expect(deletedExercise.exerciseId).toStrictEqual(initialExercise.id);
+                expect(deletedExercise.exerciseSet).toStrictEqual(initialExercise.set);
+                expect(deletedExercise.reps).toStrictEqual(initialExercise.reps);
+                expect(deletedExercise.weight).toStrictEqual(initialExercise.weight);
+                expect(deletedExercise.time_in_seconds).toStrictEqual(initialExercise.time_in_seconds);
+            });
+        });
     });
 });
