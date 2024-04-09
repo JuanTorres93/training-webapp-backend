@@ -486,7 +486,7 @@ paths:
               $ref: '#/components/schemas/ReqBodyUpdateExerciseFromWorkout'
             examples:
               UpdateWorkoutExercise:
-                $ref: '#/components/examples/UpdateExerciseFromWorkout'
+                $ref: '#/components/examples/ReqBodyUpdateExerciseFromWorkout'
 
     delete:
       tags:
@@ -1484,9 +1484,18 @@ components:
           reps: 6
           weight: 80
           time_in_seconds: null
+
+            
+    ReqBodyUpdateExerciseFromWorkout:
+      value:
+        exerciseSet: 2
+        reps: 7
+        weight: 80
+        time_in_seconds: null
             
     UpdateExerciseFromWorkout:
       value:
+        exerciseId: 1
         exerciseSet: 2
         reps: 7
         weight: 80

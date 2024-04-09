@@ -140,6 +140,26 @@ const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
     return Number.isInteger(selectedWorkout.id);
 };
 
+const checkExerciseInWorkoutExists = async (workoutId, exerciseId, appIsBeingTested = undefined) => {
+    let q = "SELECT workout_id FROM workouts_exercises WHERE workout_id = $1 AND exercise_id = $2;";
+    const params = [workoutId, exerciseId];
+
+    const selectedWorkout = await new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const workoutId = results.rows[0];
+            resolve(workoutId)
+        }, appIsBeingTested)
+    });
+
+    if (!selectedWorkout) {
+        return false;
+    }
+
+    return Number.isInteger(selectedWorkout.workout_id);
+};
+
 const _compactWorkoutInfo = (workoutInfoDb) => {
     // workoutInfoDb represents all rows in the table modeling a workout
     const firstRow = workoutInfoDb[0];
@@ -294,13 +314,77 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
     return workoutSpec;
 }
 
+const updateExerciseFromWorkout = (workoutId, 
+    { exerciseId, exerciseSet, reps, weight, time_in_seconds }, 
+    appIsBeingTested = undefined) => {
+
+    if (reps === undefined && weight === undefined && time_in_seconds === undefined) {
+        return
+    }
+
+    const fieldsToUpdate = {
+        exercise_reps: reps,
+        exercise_weight: weight,
+        exercise_time_in_seconds: time_in_seconds,
+    };
+
+    let paramDolarCounter = 1;
+
+    // Build query
+    const params = [];
+    let q = "UPDATE workouts_exercises SET ";
+
+    for (const [field, value] of Object.entries(fieldsToUpdate)) {
+        if (value !== undefined) {
+            const val = (value === '') ? null : value;
+            q += `${field} = $${paramDolarCounter}, `
+            params.push(val);
+            paramDolarCounter += 1;
+        }
+    }
+
+    q = q.substring(0, q.length - 2) + " ";
+    q += "WHERE ";
+    q +=    `workout_id = $${paramDolarCounter} AND `;
+    q +=    `exercise_id = $${paramDolarCounter + 1} AND `;
+    q +=    `exercise_set = $${paramDolarCounter + 2} `;
+    q += "RETURNING  " +
+         "	exercise_id,  " +
+         "	exercise_set,  " +
+         "	exercise_reps AS reps,  " +
+         "	exercise_weight AS weight,  " +
+         "	exercise_time_in_seconds AS time_in_seconds;"
+
+    params.push(workoutId);
+    params.push(exerciseId);
+    params.push(exerciseSet);
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const updatedExercise = results.rows[0];
+            const updatedExerciseSpec = {
+                exerciseId: updatedExercise.exercise_id,
+                exerciseSet: updatedExercise.exercise_set,
+                reps: updatedExercise.reps,
+                weight: updatedExercise.weight,
+                time_in_seconds: updatedExercise.time_in_seconds,
+            };
+            resolve(updatedExerciseSpec)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     createWorkouts,
     updateWorkout,
     addExerciseToWorkout,
     checkWorkoutByIdExists,
+    checkExerciseInWorkoutExists,
     selectAllWorkouts,
     selectworkoutById,
     truncateTableTest,
     deleteWorkout,
+    updateExerciseFromWorkout,
 };

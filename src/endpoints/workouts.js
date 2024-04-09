@@ -121,7 +121,7 @@ router.post('/:workoutId',
 // ========== PUT requests ==========
 // ==================================
 
-// update exercise by id
+// update workout by id
 router.put('/:workoutId', 
     workoutsValidators.validateUpdateWorkoutParams,
     validateIntegerParameter('workoutId'), 
@@ -144,6 +144,44 @@ router.put('/:workoutId',
         }
 
         res.status(200).json(updatedWorkout);
+    }
+);
+
+// update exercise in workout
+router.put('/:workoutId/exercises/:exerciseId', 
+    workoutsValidators.validateUpdateExerciseInWorkoutParams,
+    validateIntegerParameter('workoutId'), 
+    validateIntegerParameter('exerciseId'), 
+    async (req, res, next) => {
+        // TODO implement 403 and 401 response cases
+        const { workoutId, exerciseId } = req.params;
+        const { exerciseSet, reps, weight, time_in_seconds } = req.body;
+
+        const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(workoutId, exerciseId, req.appIsBeingTested);
+
+        if (!exerciseInWorkoutExists) {
+            return res.status(404).json({
+                msg: `Exercise with id ${exerciseId} does not exist in workout with id ${workoutId}`,
+            });
+        }
+
+        const updateExerciseInfo = {
+            exerciseId,
+            exerciseSet,
+            reps,
+            weight,
+            time_in_seconds,
+        };
+
+        const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(workoutId, updateExerciseInfo, req.appIsBeingTested);
+
+        if (updatedExercise === undefined) {
+            return res.status(404).json({
+                msg: "Workout or exercise not found",
+            });
+        }
+
+        res.status(200).json(updatedExercise);
     }
 );
 
