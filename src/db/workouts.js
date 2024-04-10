@@ -377,24 +377,41 @@ const updateExerciseFromWorkout = (workoutId,
 };
 
 const deleteExerciseFromWorkout = (workoutId, exerciseId, appIsBeingTested) => {
-    const q = "DELETE FROM workouts_exercises " +
-              "WHERE " +
-              "	workout_id = $1 AND " +
-              "	exercise_id = $2 " +
-              "RETURNING " +
-              "	exercise_id, " +
-              "	exercise_set, " +
-              "	exercise_reps, " +
-              "	exercise_weight, " +
-              "	exercise_time_in_seconds;";
+    const q = " WITH deleted AS ( " +
+              " 	DELETE FROM workouts_exercises " +
+              " 	WHERE " +
+              " 		workout_id = $1 AND " +
+              " 		exercise_id = $2 " +
+              " 	RETURNING  " +
+              " 		exercise_id, " +
+              " 		exercise_set, " +
+              " 		exercise_reps, " +
+              " 		exercise_weight, " +
+              " 		exercise_time_in_seconds " +
+              " ) " +
+              " SELECT * FROM deleted " +
+              " ORDER BY exercise_id, exercise_set; ";
 
     const params = [workoutId, exerciseId];
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            // Compact exercise info
-            resolve(results)
+
+            const exercisesRows = results.rows;
+            const exercisesSpec = [];
+
+            exercisesRows.forEach(row => {
+                exercisesSpec.push({
+                    exerciseId: row.exercise_id,
+                    exerciseSet: row.exercise_set,
+                    reps: row.exercise_reps,
+                    weight: row.exercise_weight,
+                    time_in_seconds: row.exercise_time_in_seconds,
+                });
+            });
+
+            resolve(exercisesSpec)
         }, appIsBeingTested)
     });
 };

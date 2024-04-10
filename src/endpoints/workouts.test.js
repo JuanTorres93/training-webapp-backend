@@ -923,7 +923,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
             });
 
             it('returns deleted exercise', () => {
-                const deletedExercise = response.body;
+                const deletedExercise = response.body[0];
 
                 expect(deletedExercise.exerciseId).toStrictEqual(initialExercise.id);
                 expect(deletedExercise.exerciseSet).toStrictEqual(initialExercise.set);
