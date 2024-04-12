@@ -15,7 +15,8 @@ const validateIntegerParameter = paramName => {
                 return false;
             }).withMessage(`${paramName} must be positive.`)
             .trim()
-            .escape(),
+            .escape()
+            .toInt(),
 
         mw.validateResult(400)
     ];
