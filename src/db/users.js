@@ -52,7 +52,7 @@ const checkAliasInUse = async (alias, appIsBeingTested) => {
     }
 };
 
-const registerNewUser = async ({ alias, email, password, last_name, second_last_name },
+const registerNewUser = ({ alias, email, password, last_name, second_last_name },
                                 appIsBeingTested = undefined) => {
     // Build query
     let requiredFields = ['alias', 'email', 'password'];
@@ -137,6 +137,25 @@ const deleteUser = async (id, appIsBeingTested = undefined) => {
     });
 }
 
+const truncateTableTest = (appIsBeingTested) => {
+    if (appIsBeingTested) {
+        return new Promise((resolve, reject) => {
+            // Test for making malicious people think they got something
+            resolve('Truncated ' + TABLE_NAME);
+        });
+    }
+
+    const q = "TRUNCATE " + TABLE_NAME + " CASCADE;";
+    const params = [];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            resolve('Table ' + TABLE_NAME + ' truncated in test db.')
+        }, true)
+    });
+};
 
 module.exports = {
     checkStringInFieldInUse,
@@ -147,4 +166,5 @@ module.exports = {
     selectUserById,
     updateUser,
     deleteUser,
+    truncateTableTest,
 };

@@ -23,6 +23,13 @@ router.get('/', async (req, res, next) => {
     res.status(200).send(users);
 });
 
+// Truncate test table
+router.get('/truncate', async (req, res, next) => {
+    const truncatedTable = await dbUsers.truncateTableTest(req.appIsBeingTested);
+
+    res.status(200).send(truncatedTable);
+});
+
 // Get user by id
 router.get('/:userId', validateIntegerParameter('userId'), async (req, res, next) => {
     // TODO implement 403 response case

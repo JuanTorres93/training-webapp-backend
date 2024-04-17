@@ -9,7 +9,7 @@ Table users {
   id SERIAL [PRIMARY KEY, increment]
   alias VARCHAR(40) [NOT NULL, UNIQUE, Note: 'Use alias instead of name due to postgres limitations']
   email VARCHAR(70) [NOT NULL, UNIQUE]
-  last_name VARCHAR(40) [NOT NULL]
+  last_name VARCHAR(40)
   img TEXT [Note: 'Image will be stored in server. This will be its URI. ALTERNATIVELY: store it in Postgres DB']
   second_last_name VARCHAR(40)
   password VARCHAR(60) [NOT NULL, Note: 'Bcrypt uses 59 or 60 characters to hash']
