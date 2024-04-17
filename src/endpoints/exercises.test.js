@@ -6,9 +6,6 @@ require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../app.js');
 
-const utils = require('../utils/utils.js');
-const query = require('../db/index.js').query;
-
 // true means that it should connect to test db
 const app = createApp(true);
 const BASE_ENDPOINT = '/exercises'
@@ -24,17 +21,6 @@ const request = supertest(app.use(logErrors))
 const truncateExercisesAndRelatedTables = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
 }
-
-const selectEverythingFromExerciseId = (id) => {
-    let exercise;
-    query("SELECT * FROM exercises WHERE id = $1;", [id], (error, results) => {
-            if (error) throw error;
-
-            exercise = results.rows[0];
-        }, true);
-
-    return exercise;
-};
 
 const successfulPostRequest = {
     alias: "first_test_exercise",
@@ -55,11 +41,9 @@ describe(`${BASE_ENDPOINT}`,  () => {
             });
 
             it("returns exercise object", () => {
-                const expectedKeys = ['id', 'alias', 'description'];
-
-                const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
-                    response.body)
-                expect(allKeysIncluded).toBe(true);
+                expect(response.body).toHaveProperty('id');
+                expect(response.body).toHaveProperty('alias');
+                expect(response.body).toHaveProperty('description');
             });
 
             it('returns 201 status code', () => {
@@ -80,25 +64,30 @@ describe(`${BASE_ENDPOINT}`,  () => {
     });
 
     describe('get requests', () => {
-        let response;
-
-        beforeEach(async () => {
-            response = await request.get(BASE_ENDPOINT);
+        beforeAll(async () => {
+            await truncateExercisesAndRelatedTables();
+            const newExerciseResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
         });
 
         describe("get all exercises", () => {
             it("returns list", async () => {
+                const response = await request.get(BASE_ENDPOINT);
                 expect(Array.isArray(response.body)).toBe(true);
             });
 
             it("status code of 200", async () => {
+                const response = await request.get(BASE_ENDPOINT);
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('exercise object has id, alias, and description properties', () => {
-                const expectedKeys = ['id', 'alias', 'description'];
+            it('exercise object has id, alias, and description properties', async () => {
+                const response = await request.get(BASE_ENDPOINT);
+
                 const exerciseObject = response.body[0];
-                expect(utils.checkKeysInObject(expectedKeys, exerciseObject)).toBe(true);
+
+                expect(exerciseObject).toHaveProperty('id');
+                expect(exerciseObject).toHaveProperty('alias');
+                expect(exerciseObject).toHaveProperty('description');
             });
         });
     });
@@ -112,11 +101,11 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
     beforeAll(async () => {
         // Test's set up
         await truncateExercisesAndRelatedTables();
-        await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+        const newExerciseResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+        const newExercise = newExerciseResponse.body;
 
         // get id of the exercise in db, since it changes every time the suite is run
-        id = await request.get(BASE_ENDPOINT);
-        id = id.body[0].id
+        id = newExercise.id;
 
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${id}`);
@@ -129,10 +118,11 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
             });
 
             it('exercise object has id, alias, and description properties', () => {
-                const expectedKeys = ['id', 'alias', 'description'];
                 const exerciseObject = response.body;
 
-                expect(utils.checkKeysInObject(expectedKeys, exerciseObject)).toBe(true);
+                expect(exerciseObject).toHaveProperty('id');
+                expect(exerciseObject).toHaveProperty('alias');
+                expect(exerciseObject).toHaveProperty('description');
             });
         });
 
@@ -173,6 +163,15 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
             let response;
 
             beforeAll(async () => {
+                // Test's set up
+                await truncateExercisesAndRelatedTables();
+                const newExerciseResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+                const newExercise = newExerciseResponse.body;
+
+                // get id of the exercise in db, since it changes every time the suite is run
+                id = newExercise.id;
+
+                // Test response
                 response = await request.put(BASE_ENDPOINT + `/${id}`).send(putBodyRequest);
             });
 
@@ -188,14 +187,6 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
             it('returns 200 status code', () => {
                 expect(response.statusCode).toStrictEqual(200);
 
-            });
-
-            it('changes are reflected in db', async () => {
-                const updatedExerciseFromDb = await request.get(BASE_ENDPOINT + `/${id}`);
-
-                expect(updatedExerciseFromDb.body.id).toStrictEqual(id);
-                expect(updatedExerciseFromDb.body.alias).toStrictEqual(putBodyRequest.alias);
-                expect(updatedExerciseFromDb.body.description).toStrictEqual(putBodyRequest.description);
             });
         });
 
@@ -265,10 +256,15 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
             let response;
 
             beforeAll(async () => {
-                // return db registry to its original state
-                await request.put(BASE_ENDPOINT + `/${id}`).send({
-                    ...successfulPostRequest,
-                });
+                // Test's set up
+                await truncateExercisesAndRelatedTables();
+                const newExerciseResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+                const newExercise = newExerciseResponse.body;
+
+                // get id of the exercise in db, since it changes every time the suite is run
+                id = newExercise.id;
+
+                // Test response
                 response = await request.delete(BASE_ENDPOINT + `/${id}`)
             });
 

@@ -156,6 +156,9 @@ describe(`${BASE_ENDPOINT}`,  () => {
         let response;
 
         beforeEach(async () => {
+            await truncateUsersAndRelatedTables();
+            const postResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+
             response = await request.get(BASE_ENDPOINT);
         });
 

@@ -297,13 +297,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
         beforeAll(async () => {
             await truncateWorkoutsExercisesAndRelatedTables();
             await initExercisesTableInDb();
-
-            try {
-                exercisesIds = await getExercisesIds();
-            } catch (error) {
-                console.log("EEERROOOOOOOR")
-                console.log(error);
-            }
+            exercisesIds = await getExercisesIds();
 
             await addWorkoutsAndExercises(exercisesIds);
         });

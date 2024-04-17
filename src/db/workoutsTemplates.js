@@ -50,10 +50,6 @@ const selectAllWorkoutsTemplates = (appIsBeingTested) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
             const everyWorkoutTemplate = results.rows;
-            
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('everyWorkoutTemplate');
-            console.log(everyWorkoutTemplate);
 
             const allTemplatesFormatted = [];
 

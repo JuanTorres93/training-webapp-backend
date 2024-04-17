@@ -37,6 +37,7 @@ const selectAllExercises = (appIsBeingTested) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
             const exercises = results.rows;
+
             resolve(exercises)
         }, appIsBeingTested)
     });
@@ -130,11 +131,6 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
 
-            // TODO handle better this error or delete it
-            if (results.rows.length === 0) {
-                throw new Error('DEBUG TESTS ERROR. NO ROWS FOUND');
-            }
-
             const exerciseId = results.rows[0].id;
             resolve(exerciseId)
         }, appIsBeingTested)
@@ -143,7 +139,7 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
 
 
 const truncateTableTest = (appIsBeingTested) => {
-    if (appIsBeingTested) {
+    if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
             resolve('Truncated ' + TABLE_NAME);
