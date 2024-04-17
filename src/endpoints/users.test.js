@@ -22,7 +22,7 @@ const request = supertest(app.use(logErrors))
 
 // Empty database before starting tests
 const truncateUsersAndRelatedTables = async () => {
-    await query("TRUNCATE users CASCADE;", [], () => {}, true);
+    await request.get(BASE_ENDPOINT + '/truncate');
 }
 
 const selectEverythingFromUserId = (id) => {
@@ -44,22 +44,15 @@ const successfulPostRequest = {
 }
 
 describe(`${BASE_ENDPOINT}`,  () => {
+    let postResponse;
+
     beforeAll(async () => {
         await truncateUsersAndRelatedTables();
+        postResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
     });
 
     describe('post requests', () => {
-        // =============
-        // POST requests
-        // =============
-
         describe("register user successfully", () => {
-            let response;
-
-            beforeAll(async () => {
-                response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
-            });
-
             it("returns user object", () => {
                 const expectedKeys = ['id', 'alias', 'email', 
                                       'last_name', 'img',
@@ -67,24 +60,24 @@ describe(`${BASE_ENDPOINT}`,  () => {
 
 
                 const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
-                    response.body)
+                    postResponse.body)
                 expect(allKeysIncluded).toBe(true);
                 // Do NOT return user password
-                expect(response.body).not.toHaveProperty('password');
+                expect(postResponse.body).not.toHaveProperty('password');
             });
 
             it("status code of 201", () => {
-                expect(response.statusCode).toStrictEqual(201);
+                expect(postResponse.statusCode).toStrictEqual(201);
             });
 
             it('does not store password as is submitted', async () => {
-                const userInDb = await selectEverythingFromUserId(response.body.id);
+                const userInDb = await selectEverythingFromUserId(postResponse.body.id);
 
                 expect(userInDb.password.trim()).not.toEqual(successfulPostRequest.password.trim());
             });
 
             it('hashes password', async () => {
-                const userInDb = await selectEverythingFromUserId(response.body.id);
+                const userInDb = await selectEverythingFromUserId(postResponse.body.id);
 
                 const passwordsMatch = await hash.comparePlainTextToHash(successfulPostRequest.password,
                                                                    userInDb.password);
@@ -126,26 +119,31 @@ describe(`${BASE_ENDPOINT}`,  () => {
             });
 
             it('409 response when email already exists in db', async () => {
-                const response = await request.post(BASE_ENDPOINT).send({
+                const req = {
                     ...successfulPostRequest,
                     // email same as successfulRequest
                     alias: "another_alias",
                     last_name: "another_last_name",
                     password: "another_password",
                     second_last_name: "another second last name",
-                });
+                };
+
+                let response = await request.post(BASE_ENDPOINT).send(req);
+                response = await request.post(BASE_ENDPOINT).send(req);
                 expect(response.statusCode).toStrictEqual(409);
             });
 
             it('409 response when alias already exists in db', async () => {
-                const response = await request.post(BASE_ENDPOINT).send({
+                let req = {
                     ...successfulPostRequest,
                     // alias same as successfulRequest
                     email: "another_mail@domain.com",
                     last_name: "another_last_name",
                     password: "another_password",
                     second_last_name: "another second last name",
-                });
+                };
+                let response = await request.post(BASE_ENDPOINT).send(req);
+                response = await request.post(BASE_ENDPOINT).send(req);
                 expect(response.statusCode).toStrictEqual(409);
             });
         });
@@ -171,10 +169,14 @@ describe(`${BASE_ENDPOINT}`,  () => {
             });
 
             it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
-                const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
                 const userObject = response.body[0];
-                expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
 
+                expect(userObject).toHaveProperty('id');
+                expect(userObject).toHaveProperty('alias');
+                expect(userObject).toHaveProperty('email');
+                expect(userObject).toHaveProperty('last_name');
+                expect(userObject).toHaveProperty('img');
+                expect(userObject).toHaveProperty('second_last_name');
                 expect(userObject).not.toHaveProperty('password');
             });
         });
@@ -193,16 +195,11 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
     beforeAll(async () => {
         // Test's set up
         await truncateUsersAndRelatedTables();
-        await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+        const userResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+        const user = userResponse.body;
 
         // get id of the user in db, since it changes every time the suite is run
-        id = await new Promise((resolve, reject) => {
-            query("SELECT id FROM users;", [], (error, results) => {
-                if (error) reject(error);
-
-                resolve(results.rows[0].id);
-            }, true);
-        })
+        id = user.id;
 
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${id}`);

@@ -4,22 +4,59 @@ const _setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/users/truncate');
 
-
-    const response = await request.post('/users').send({
+    // Add user to tb
+    const userResponse = await request.post('/users').send({
         alias: 'test user',
         email: 'test@domain.com',
         password: 'test password',
     });
-    const user = response.body;
+    const user = userResponse.body;
+
+    // Add template to dbv
+    const reqNewTemplate = createNewTemplateRequest(user.id, 'setup template', 'set up template description')
+    const responseNewTemplate = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
+    const newTemplate = responseNewTemplate.body;
 
     return {
         user,
+        newTemplate,
     };
 };
 
-// describe('get requests', () => {
+describe('get requests', () => {
+    beforeAll(async () => {
+        const setUpInfo = await _setUp();
+    });
+
+    describe('happy path', () => {
+        it('returns 200 status code', async () => {
+            const response = await request.get(BASE_ENDPOINT);
+
+            expect(response.statusCode).toStrictEqual(200);
+        });
+
+        it("returns list", async () => {
+            const response = await request.get(BASE_ENDPOINT);
+
+            expect(Array.isArray(response.body)).toBe(true);
+        });
+
+        // TODO test returned object when post request for creating them is available
+        // it('workout template object has correct properties', async () => {
+            // const response = await request.get(BASE_ENDPOINT);
+            // const workoutTemplate = response.body[0];
 // 
-// });
+            // expect(workoutTemplate).toHaveProperty('id');
+            // expect(workoutTemplate).toHaveProperty('exercises');
+            // expect(workoutTemplate).toHaveProperty('alias');
+            // expect(workoutTemplate).toHaveProperty('description');
+        // });
+    });
+
+    // describe('unhappy path', () => {
+    //     // TODO implement 401 and 403 cases
+    // });
+});
 
 describe('post requests', () => {
     let user;

@@ -14,6 +14,14 @@ const router = express.Router();
 // ========== GET requests ==========
 // ==================================
 
+// Get all workouts templates
+router.get('/', async (req, res, next) => {
+    // TODO modify spec and endpoint to need authenticated user
+    const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates(req.appIsBeingTested);
+
+    res.status(200).send(templates);
+});
+
 // Truncate test table
 router.get('/truncate', async (req, res, next) => {
     const truncatedTable = await dbWorkoutsTemplates.truncateTableTest(req.appIsBeingTested);

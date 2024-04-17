@@ -138,7 +138,7 @@ const deleteUser = async (id, appIsBeingTested = undefined) => {
 }
 
 const truncateTableTest = (appIsBeingTested) => {
-    if (appIsBeingTested) {
+    if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
             resolve('Truncated ' + TABLE_NAME);
