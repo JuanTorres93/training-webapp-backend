@@ -23,7 +23,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "jest --watch --runInBand",
+    "test": "jest --watch --runInBand --verbose",
     "start": "nodemon server.js"
   },
   "repository": {

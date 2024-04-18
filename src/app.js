@@ -29,7 +29,7 @@ const createApp = (appIsBeingTested = false) => {
     const checkoutRouter = require('./endpoints/checkout.js');
 
     // Enable request logs
-    app.use(morgan('short'));
+    if (!appIsBeingTested) app.use(morgan('short'));
 
     // CORS configuration
     const corsOptions = {
