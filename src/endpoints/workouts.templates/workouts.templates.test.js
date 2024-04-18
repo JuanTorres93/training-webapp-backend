@@ -13,14 +13,34 @@ const setUp = async () => {
     });
     const user = userResponse.body;
 
-    // Add template to dbv
+    // Add template to db
     const reqNewTemplate = createNewTemplateRequest(user.id, 'setup template', 'set up template description')
     const responseNewTemplate = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
     const newTemplate = responseNewTemplate.body;
 
+    // Add exercise to db
+    const exerciseResponse = await request.post('/exercises').send({
+        alias: "Pull up",
+        description: "Fucks your shoulder",
+    });
+    const newExercise = exerciseResponse.body;
+
+    // Add exercise to template
+    const reqAddExerciseToTemplate = {
+        exerciseId: newExercise.id,
+        exerciseOrder: 1,
+        exerciseSets: 3,
+    };
+    const responseAddExerciseToTemplate = await request.post(
+        BASE_ENDPOINT + `/${newTemplate.id}`
+    ).send(reqAddExerciseToTemplate);
+    const newExerciseInTemplate = responseAddExerciseToTemplate.body;
+
     return {
         user,
         newTemplate,
+        newExercise,
+        newExerciseInTemplate,
     };
 };
 
@@ -42,16 +62,15 @@ describe('get requests', () => {
             expect(Array.isArray(response.body)).toBe(true);
         });
 
-        // TODO test returned object when post request for creating them is available
-        // it('workout template object has correct properties', async () => {
-            // const response = await request.get(BASE_ENDPOINT);
-            // const workoutTemplate = response.body[0];
-// 
-            // expect(workoutTemplate).toHaveProperty('id');
-            // expect(workoutTemplate).toHaveProperty('exercises');
-            // expect(workoutTemplate).toHaveProperty('alias');
-            // expect(workoutTemplate).toHaveProperty('description');
-        // });
+        it('workout template object has correct properties', async () => {
+            const response = await request.get(BASE_ENDPOINT);
+            const workoutTemplate = response.body[0];
+
+            expect(workoutTemplate).toHaveProperty('id');
+            expect(workoutTemplate).toHaveProperty('exercises');
+            expect(workoutTemplate).toHaveProperty('alias');
+            expect(workoutTemplate).toHaveProperty('description');
+        });
     });
 
     // describe('unhappy path', () => {
