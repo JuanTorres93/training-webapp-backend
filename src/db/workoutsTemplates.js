@@ -79,6 +79,30 @@ const selectAllWorkoutsTemplates = (appIsBeingTested) => {
     });
 };
 
+const selectWorkoutTemplateById = (id, appIsBeingTested) => {
+    const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
+                                                          'WHERE wkt.id = $1');
+    const params = [id];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const templateInfo = results.rows;
+            
+            // If workout does not exists
+            if (templateInfo.length === 0) {
+                return resolve(undefined);
+            }
+
+            // Group results by workout id
+            const templateSpec = _compactWorkoutInfo(templateInfo);
+
+            resolve(templateSpec);
+        }, appIsBeingTested)
+    });
+};
+
 const createWorkoutTemplate = ({ userId, alias, description }, appIsBeingTested = undefined) => {
     // Build query
     let requiredFields = ['user_id', 'alias'];
@@ -131,8 +155,65 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
+const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseOrder, exerciseSets }, 
+                                      appIsBeingTested = undefined) => {
+    // Build query
+    let requiredFields = ['workout_template_id', 'exercise_id', 'exercise_order', 'exercise_sets'];
+    let requiredValues = [workoutTemplateId, exerciseId, exerciseOrder, exerciseSets];
+
+    let optionalFields = [];
+    let optionalValues = [];
+
+    let returningFields = ['workout_template_id', 'exercise_id', 'exercise_order', 'exercise_sets'];
+
+    const { q, params } = qh.createInsertIntoTableStatement('workout_template_exercises', 
+                                                            requiredFields, requiredValues,
+                                                            optionalFields, optionalValues,
+                                                            returningFields);
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const addedExercise = results.rows[0];
+
+            const specExercise = {
+                workoutTemplateId: addedExercise.workout_template_id,
+                exerciseId: addedExercise.exercise_id,
+                exerciseOrder: addedExercise.exercise_order,
+                exerciseSets: addedExercise.exercise_sets,
+            };
+
+            resolve(specExercise)
+        }, appIsBeingTested)
+    });
+};
+
+const checkWorkoutTemplateByIdExists = async (id, appIsBeingTested = undefined) => {
+    let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
+    const params = [id]
+
+    const selectedTemplate = await new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const template = results.rows[0];
+            resolve(template)
+        }, appIsBeingTested)
+    });
+
+    if (!selectedTemplate) {
+        return false;
+    }
+
+    return Number.isInteger(selectedTemplate.id);
+}
+
 module.exports = {
     selectAllWorkoutsTemplates,
+    selectWorkoutTemplateById,
     createWorkoutTemplate,
     truncateTableTest,
+    addExerciseToWorkoutTemplate,
+    checkWorkoutTemplateByIdExists,
 };

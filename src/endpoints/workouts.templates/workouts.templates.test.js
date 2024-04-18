@@ -1,6 +1,7 @@
 const { request, BASE_ENDPOINT, createNewTemplateRequest } = require('./setup');
 
-const _setUp = async () => {
+
+const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/users/truncate');
 
@@ -25,7 +26,7 @@ const _setUp = async () => {
 
 describe('get requests', () => {
     beforeAll(async () => {
-        const setUpInfo = await _setUp();
+        const setUpInfo = await setUp();
     });
 
     describe('happy path', () => {
@@ -62,7 +63,7 @@ describe('post requests', () => {
     let user;
 
     beforeAll(async () => {
-        const setUpInfo = await _setUp();
+        const setUpInfo = await setUp();
 
         user = setUpInfo.user;
     });

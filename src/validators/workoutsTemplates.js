@@ -10,17 +10,15 @@ const description = 'description';
 
 // Exercises params
 const exerciseId = 'exerciseId';
-const exerciseSet = 'exerciseSet';
-const reps = 'reps';
-const weight = 'weight';
-const timeInSeconds = 'time_in_seconds';
+const exerciseOrder = 'exerciseOrder';
+const exerciseSets = 'exerciseSets';
 
 
 const validateCreateWorkoutTemplateParams = [
     check(userId)
         .exists().withMessage(msgs.parameterMissingMsg(userId))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(userId))
-        .isInt().withMessage(msgs.parameterMustBeTypeMsg('string'))
+        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
         .trim()
         .escape()
         .toInt(),
@@ -40,6 +38,34 @@ const validateCreateWorkoutTemplateParams = [
     mw.validateResult(400)
 ];
 
+
+const validateAddExerciseToWorkoutTemplateParams = [
+    check(exerciseId)
+        .exists().withMessage(msgs.parameterMissingMsg(exerciseId))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseId))
+        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
+        .trim()
+        .escape()
+        .toInt(),
+    check(exerciseOrder)
+        .exists().withMessage(msgs.parameterMissingMsg(exerciseOrder))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseOrder))
+        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
+        .trim()
+        .escape()
+        .toInt(),
+    check(exerciseSets)
+        .exists().withMessage(msgs.parameterMissingMsg(exerciseSets))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseSets))
+        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
+        .trim()
+        .escape()
+        .toInt(),
+    
+    mw.validateResult(400)
+];
+
 module.exports = {
     validateCreateWorkoutTemplateParams,
+    validateAddExerciseToWorkoutTemplateParams,
 };

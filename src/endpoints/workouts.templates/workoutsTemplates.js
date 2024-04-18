@@ -3,6 +3,7 @@ const express = require('express');
 const workoutsTemplatesValidators = require('../../validators/workoutsTemplates.js');
 const dbWorkoutsTemplates = require('../../db/workoutsTemplates.js');
 const dbUsers = require('../../db/users.js');
+const dbExercises = require('../../db/exercises.js');
 const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
 const mw = require('../../utils/middleware.js');
 
@@ -57,6 +58,51 @@ router.post('/', workoutsTemplatesValidators.validateCreateWorkoutTemplateParams
         } catch (error) {
             return res.status(400).json({
                 msg: "Error when creating workout"
+            });
+        }
+});
+
+// Add exercise to workout template
+router.post('/:workoutTemplateId', 
+    workoutsTemplatesValidators.validateAddExerciseToWorkoutTemplateParams,
+    validateIntegerParameter('workoutTemplateId'),
+    async (req, res, next) => {
+        // TODO implement 401 and 403 response
+        const { workoutTemplateId } = req.params;
+        const { exerciseId } = req.body;
+
+        // Check template exists
+        const templateExists = await dbWorkoutsTemplates.checkWorkoutTemplateByIdExists(
+            workoutTemplateId, req.appIsBeingTested
+        );
+
+        if (!templateExists) {
+            return res.status(404).json({
+                msg: `Template with id ${workoutTemplateId} does not exist`,
+            });
+        }
+
+        // Check exercise exists
+        const exerciseIdExists = await dbExercises.checkExerciseByIdExists(exerciseId, req.appIsBeingTested);
+
+        if (!exerciseIdExists) {
+            return res.status(404).json({
+                msg: `Exercise with id ${exerciseId} does not exist`,
+            });
+        }
+
+        const exercise = {
+            ...req.body,
+            workoutTemplateId,
+        };
+
+        try {
+            const addedExercise = await dbWorkoutsTemplates.addExerciseToWorkoutTemplate(exercise, req.appIsBeingTested);
+
+            return res.status(201).json(addedExercise);
+        } catch (error) {
+            return res.status(400).json({
+                msg: "Error when adding exercise to workout template"
             });
         }
 });
