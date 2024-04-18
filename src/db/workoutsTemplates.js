@@ -79,9 +79,28 @@ const selectAllWorkoutsTemplates = (appIsBeingTested) => {
     });
 };
 
-const selectWorkoutTemplateById = (id, appIsBeingTested) => {
-    const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
-                                                          'WHERE wkt.id = $1');
+const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
+    const templateExists = await checkWorkoutTemplateByIdExists(id, appIsBeingTested);
+
+    if (!templateExists) {
+        return new Promise((resolve) => {
+            resolve(undefined);
+        });
+    }
+
+    // This info is needed because if the template does not have any exercise, then it won't
+    // appear in the main query
+    const templateHasExercises = await _checkWorkoutTemplateContainsExercises(id, appIsBeingTested);
+
+    let q;
+
+    if (!templateHasExercises) {
+        q = "SELECT id, alias, description FROM " + TABLE_NAME + " WHERE id = $1;";
+    } else {
+        q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
+                                                        'WHERE wkt.id = $1');
+    }
+    
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -96,7 +115,11 @@ const selectWorkoutTemplateById = (id, appIsBeingTested) => {
             }
 
             // Group results by workout id
-            const templateSpec = _compactWorkoutInfo(templateInfo);
+            const templateSpec = _compactWorkoutTemplateInfo(templateInfo);
+
+            if (!templateHasExercises) {
+                templateSpec.exercises = [];
+            }
 
             resolve(templateSpec);
         }, appIsBeingTested)
@@ -207,6 +230,26 @@ const checkWorkoutTemplateByIdExists = async (id, appIsBeingTested = undefined) 
     }
 
     return Number.isInteger(selectedTemplate.id);
+}
+
+const _checkWorkoutTemplateContainsExercises = async (templateId, appIsBeingTested = undefined) => {
+    let q = "SELECT exercise_id FROM workout_template_exercises WHERE workout_template_id = $1;";
+    const params = [templateId]
+
+    const selectedTemplate = await new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const template = results.rows[0];
+            resolve(template)
+        }, appIsBeingTested)
+    });
+
+    if (!selectedTemplate) {
+        return false;
+    }
+
+    return Number.isInteger(selectedTemplate.exercise_id);
 }
 
 module.exports = {

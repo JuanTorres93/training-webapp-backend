@@ -32,6 +32,71 @@ const setUp = async () => {
     };
 };
 
+describe('get requests', () => {
+    let user;
+    let newTemplate;
+    let newExercise;
+
+    beforeAll(async () => {
+        const setUpInfo = await setUp();
+
+        user = setUpInfo.user;
+        newTemplate = setUpInfo.newTemplate;
+        newExercise = setUpInfo.newExercise;
+    });
+
+    describe('happy path', () => {
+        it("status code of 200", async () => {
+            const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+            expect(response.statusCode).toStrictEqual(200);
+        });
+
+        it('returns template object when it has no exercises', async () => {
+            const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+            const workoutTemplateObject = response.body;
+
+            expect(workoutTemplateObject).toHaveProperty('id');
+            expect(workoutTemplateObject).toHaveProperty('alias');
+            expect(workoutTemplateObject).toHaveProperty('description');
+            expect(workoutTemplateObject).toHaveProperty('exercises');
+
+            expect(workoutTemplateObject.exercises.length).toStrictEqual(0);
+        });
+
+        it('returns template object when it do have exercises', async () => {
+            await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
+                exerciseId: newExercise.id,
+                exerciseOrder: 1,
+                exerciseSets: 3,
+            });
+
+            const getResponse = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+            const workoutTemplateObject = getResponse.body;
+
+            expect(workoutTemplateObject).toHaveProperty('id');
+            expect(workoutTemplateObject).toHaveProperty('alias');
+            expect(workoutTemplateObject).toHaveProperty('description');
+            expect(workoutTemplateObject).toHaveProperty('exercises');
+            expect(workoutTemplateObject.exercises.length).toBeGreaterThan(0);
+
+            const exercise = workoutTemplateObject.exercises[0];
+            expect(exercise).toHaveProperty('id');
+            expect(exercise).toHaveProperty('alias');
+            expect(exercise).toHaveProperty('order');
+            expect(exercise).toHaveProperty('sets');
+        });
+    });
+
+    describe('unhappy path', () => {
+        describe('404 response when', () => {
+            it('templateId is valid but template with that id does not exist', async () => {
+                const response = await request.get(BASE_ENDPOINT + '/1');
+                expect(response.statusCode).toStrictEqual(404);
+            });
+        });
+    });
+});
+
 describe('post requests', () => {
     let user;
     let newTemplate;
