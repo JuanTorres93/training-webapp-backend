@@ -740,6 +740,9 @@ paths:
                 DeletedWorkoutTemplate:
                   $ref: '#/components/examples/WorkoutTemplate'
                 
+        '400':
+          $ref: '#/components/responses/400'
+                
         '401':
           $ref: '#/components/responses/401'
 

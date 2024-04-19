@@ -307,6 +307,65 @@ const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested
     return workoutTemplateSpec;
 }
 
+const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
+    // TODO WARNING: There's a potencial risk of unreferenced items in workout_template_exercises
+    const client = await getPoolClient(appIsBeingTested);
+    const hasExercises = await _checkWorkoutTemplateContainsExercises(id, appIsBeingTested);
+
+    let templateInfo;
+
+    try {
+        await client.query('BEGIN;');
+
+        // Get info to be deleted to return it to user
+        let infoQuery;
+        if (hasExercises) {
+            infoQuery = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
+                                                                    'WHERE wkt.id = $1');
+        } else {
+            infoQuery = queryNoExercises;
+        }
+
+        const infoParams = [id];
+        templateInfo = await client.query(infoQuery, infoParams);
+
+        // Delete references in workouts_exercises
+        const templateExercisesQuery = "DELETE FROM workout_template_exercises WHERE workout_template_id = $1;";
+        const templateExercisesParams = [id];
+        await client.query(templateExercisesQuery, templateExercisesParams);
+
+        // Delete workout itself
+        const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
+                              "RETURNING id, alias, description;";
+        const workoutsParams = [id];
+        await client.query(workoutsQuery, workoutsParams);
+
+        await client.query('COMMIT;');
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    // Get results from query
+    templateInfo = templateInfo.rows;
+            
+    // If workout does not exists
+    if (templateInfo.length === 0) {
+        return undefined;
+    }
+
+    // Group results by workout id
+    const workoutSpec = _compactWorkoutTemplateInfo(templateInfo);
+    
+    if (!hasExercises) {
+        workoutSpec.exercises = [];
+    }
+
+    return workoutSpec;
+}
+
 module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
@@ -315,4 +374,5 @@ module.exports = {
     addExerciseToWorkoutTemplate,
     checkWorkoutTemplateByIdExists,
     updateWorkoutTemplate,
+    deleteWorkoutTemplate,
 };

@@ -309,3 +309,88 @@ describe('put requests', () => {
         });
     });
 });
+
+describe('delete requests', () => {
+    let user;
+    let newTemplate;
+    let newExercise;
+
+    beforeAll(async () => {
+        const setUpInfo = await setUp();
+
+        user = setUpInfo.user;
+        newTemplate = setUpInfo.newTemplate;
+        newExercise = setUpInfo.newExercise;
+    });
+
+    describe('unhappy path', () => {
+        describe('returns 400 error code when', () => {
+            it('templateId is string', async () => {
+                const response = await request.delete(BASE_ENDPOINT + '/wrongId');
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('templateId is boolean', async () => {
+                const response = await request.delete(BASE_ENDPOINT + '/true');
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('templateId is not positive', async () => {
+                const response = await request.delete(BASE_ENDPOINT + '/-23');
+                expect(response.statusCode).toStrictEqual(400);
+            });
+        });
+
+        describe('404 response when', () => {
+            it('templateId is valid but template with that id does not exist', async () => {
+                const response = await request.delete(BASE_ENDPOINT + '/1');
+                expect(response.statusCode).toStrictEqual(404);
+            });
+        });
+    });
+
+    describe('happy path', () => {
+        it("status code of 200", async () => {
+            const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+            expect(response.statusCode).toStrictEqual(200);
+        });
+
+        it('returns deleted template with NO exercises', async () => {
+            const { newTemplate } = await setUp();
+            const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+            const workoutTemplate = response.body;
+
+            expect(workoutTemplate).toHaveProperty('id');
+            expect(workoutTemplate).toHaveProperty('alias');
+            expect(workoutTemplate).toHaveProperty('description');
+            expect(workoutTemplate).toHaveProperty('exercises');
+
+            expect(workoutTemplate.exercises.length).toStrictEqual(0);
+        });
+
+        it('returns deleted template with exercises', async () => {
+            const { newTemplate, newExercise } = await setUp();
+            await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
+                exerciseId: newExercise.id,
+                exerciseOrder: 1,
+                exerciseSets: 3,
+            });
+
+            const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+            const workoutTemplate = response.body;
+
+            expect(workoutTemplate).toHaveProperty('id');
+            expect(workoutTemplate).toHaveProperty('alias');
+            expect(workoutTemplate).toHaveProperty('description');
+            expect(workoutTemplate).toHaveProperty('exercises');
+            expect(workoutTemplate.exercises.length).toBeGreaterThan(0);
+
+            const exercise = workoutTemplate.exercises[0];
+            expect(exercise).toHaveProperty('id');
+            expect(exercise).toHaveProperty('alias');
+            expect(exercise).toHaveProperty('order');
+            expect(exercise).toHaveProperty('sets');
+        });
+
+    });
+});
