@@ -18,6 +18,8 @@ workoutsTemplatesWithExercisesQuery += " JOIN exercises AS ex ON wkte.exercise_i
 workoutsTemplatesWithExercisesQuery += " WHERE TRUE "
 workoutsTemplatesWithExercisesQuery += " ORDER BY wkt.id, wkte.exercise_order; "
 
+const queryNoExercises = "SELECT id, alias, description FROM " + TABLE_NAME + " WHERE id = $1;"
+
 
 const _compactWorkoutTemplateInfo = (workoutTemplateInfoDb) => {
     // workoutTemplateInfoDb represents all rows in the table modeling a workout template
@@ -95,7 +97,7 @@ const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
     let q;
 
     if (!templateHasExercises) {
-        q = "SELECT id, alias, description FROM " + TABLE_NAME + " WHERE id = $1;";
+        q = queryNoExercises;
     } else {
         q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
                                                         'WHERE wkt.id = $1');
@@ -252,6 +254,59 @@ const _checkWorkoutTemplateContainsExercises = async (templateId, appIsBeingTest
     return Number.isInteger(selectedTemplate.exercise_id);
 }
 
+const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested = undefined) => {
+    const client = await getPoolClient(appIsBeingTested);
+    const hasExercises = await _checkWorkoutTemplateContainsExercises(id, appIsBeingTested);
+
+    let results;
+
+    try {
+        await client.query('BEGIN;');
+
+        // Update workout template
+        const { q: updateQuery, params: updateParams } = qh.createUpdateTableStatement(TABLE_NAME, id, 
+                                                            workoutTemplateObject)
+
+        await client.query(updateQuery, updateParams);
+
+
+        let returnInfoQuery;
+
+        if (hasExercises) {
+            returnInfoQuery = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
+                                                                          'WHERE wkt.id = $1');
+        } else {
+            returnInfoQuery = queryNoExercises;
+        }
+        const returnInfoParams = [id];
+
+        results = await client.query(returnInfoQuery, returnInfoParams);
+        await client.query('COMMIT;');
+
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    const workoutTemplateInfo = results.rows;
+            
+    // If workout template does not exists
+    if (workoutTemplateInfo.length === 0) {
+        return undefined;
+    }
+
+    // Group results by workout template id
+    const workoutTemplateSpec = _compactWorkoutTemplateInfo(workoutTemplateInfo);
+
+    if (!hasExercises) {
+        workoutTemplateSpec.exercises = [];
+    }
+    
+    return workoutTemplateSpec;
+}
+
 module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
@@ -259,4 +314,5 @@ module.exports = {
     truncateTableTest,
     addExerciseToWorkoutTemplate,
     checkWorkoutTemplateByIdExists,
+    updateWorkoutTemplate,
 };

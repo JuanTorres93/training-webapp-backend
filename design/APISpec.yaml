@@ -693,7 +693,7 @@ paths:
       description: Updates workout template
       operationId: updateNewWorkoutTemplate
       responses:
-        '201':
+        '200':
           description: Successfully updated template
           content:
             application/json:
@@ -711,6 +711,9 @@ paths:
 
         '403':
           $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
                 
       requestBody:
         content:

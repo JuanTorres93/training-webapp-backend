@@ -125,4 +125,37 @@ router.post('/:workoutTemplateId',
         }
 });
 
+
+// ==================================
+// ========== PUT requests ==========
+// ==================================
+
+// update workout template by id
+router.put('/:templateId', 
+    workoutsTemplatesValidators.validateUpdateWorkoutTemplateParams,
+    validateIntegerParameter('templateId'), 
+    async (req, res, next) => {
+        // TODO implement 403 and 401 response cases
+        const { templateId } = req.params;
+        const { alias, description } = req.body;
+
+        const updateWorkoutTemplateInfo = {
+            alias,
+            description,
+        };
+
+        const updatedWorkoutTemplate = await dbWorkoutsTemplates.updateWorkoutTemplate(
+            templateId, updateWorkoutTemplateInfo, req.appIsBeingTested
+        );
+
+        if (updatedWorkoutTemplate === undefined) {
+            return res.status(404).json({
+                msg: "Workout template not found",
+            });
+        }
+
+        res.status(200).json(updatedWorkoutTemplate);
+    }
+);
+
 module.exports = router;
