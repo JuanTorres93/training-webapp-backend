@@ -158,6 +158,47 @@ router.put('/:templateId',
     }
 );
 
+
+// update exercise in workout template
+router.put('/:templateId/exercises/:exerciseId', 
+    workoutsTemplatesValidators.validateUpdateExerciseInWorkoutTemplateParams,
+    validateIntegerParameter('templateId'), 
+    validateIntegerParameter('exerciseId'), 
+    async (req, res, next) => {
+        // TODO implement 403 and 401 response cases
+        const { templateId, exerciseId } = req.params;
+        const { exerciseOrder, exerciseSets } = req.body;
+
+        const exerciseInWorkoutTemplateExists = await dbWorkoutsTemplates.checkExerciseInWorkoutExists(
+            templateId, exerciseId, req.appIsBeingTested
+        );
+
+        if (!exerciseInWorkoutTemplateExists) {
+            return res.status(404).json({
+                msg: `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId}`,
+            });
+        }
+
+        const updateExerciseInfo = {
+            exerciseId,
+            exerciseOrder,
+            exerciseSets,
+        };
+
+        const updatedExercise = await dbWorkoutsTemplates.updateExerciseFromWorkoutTemplate(
+            templateId, updateExerciseInfo, req.appIsBeingTested
+        );
+
+        if (updatedExercise === undefined) {
+            return res.status(404).json({
+                msg: "Workout template or exercise not found",
+            });
+        }
+
+        res.status(200).json(updatedExercise);
+    }
+);
+
 // =====================================
 // ========== DELETE requests ==========
 // =====================================

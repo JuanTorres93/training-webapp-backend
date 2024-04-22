@@ -773,7 +773,7 @@ paths:
       description: Updates exercise from workout template
       operationId: updateExerciseToWorkoutTemplate
       responses:
-        '201':
+        '200':
           description: Successfully updated exercise to template
           content:
             application/json:

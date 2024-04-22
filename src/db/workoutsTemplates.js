@@ -366,6 +366,84 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
     return workoutSpec;
 }
 
+const checkExerciseInWorkoutExists = async (templateId, exerciseId, appIsBeingTested = undefined) => {
+    let q = "SELECT workout_template_id FROM workout_template_exercises WHERE workout_template_id = $1 AND exercise_id = $2;";
+    const params = [templateId, exerciseId];
+
+    const selectedWorkoutTemplate = await new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const workoutTemplateId = results.rows[0];
+            resolve(workoutTemplateId)
+        }, appIsBeingTested)
+    });
+
+    if (!selectedWorkoutTemplate) {
+        return false;
+    }
+
+    return Number.isInteger(selectedWorkoutTemplate.workout_template_id);
+};
+
+const updateExerciseFromWorkoutTemplate = (workoutTemplateId, 
+    { exerciseId, exerciseSets, exerciseOrder }, 
+    appIsBeingTested = undefined) => {
+
+    // If theres is nothing to update, then do nothing
+    if (exerciseId === undefined && exerciseSets === undefined && exerciseOrder === undefined) {
+        return
+    }
+
+    const fieldsToUpdate = {
+        exercise_order: exerciseOrder,
+        exercise_sets: exerciseSets,
+    };
+
+    let paramDolarCounter = 1;
+
+    // Build query
+    const params = [];
+    let q = "UPDATE workout_template_exercises SET ";
+
+    for (const [field, value] of Object.entries(fieldsToUpdate)) {
+        if (value !== undefined) {
+            const val = (value === '') ? null : value;
+            q += `${field} = $${paramDolarCounter}, `
+            params.push(val);
+            paramDolarCounter += 1;
+        }
+    }
+
+    q = q.substring(0, q.length - 2) + " ";
+    q += "WHERE ";
+    q +=    `workout_template_id = $${paramDolarCounter} AND `;
+    q +=    `exercise_id = $${paramDolarCounter + 1} `;
+    q += "RETURNING  " +
+         "	workout_template_id,  " +
+         "	exercise_id,  " +
+         "	exercise_order,  " +
+         "	exercise_sets;  "
+
+    params.push(workoutTemplateId);
+    params.push(exerciseId);
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const updatedExercise = results.rows[0];
+            const updatedExerciseSpec = {
+                workoutTemplateId: updatedExercise.workout_template_id,
+                exerciseId: updatedExercise.exercise_id,
+                exerciseOrder: updatedExercise.exercise_order,
+                exerciseSets: updatedExercise.exercise_sets,
+            };
+            resolve(updatedExerciseSpec)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
@@ -375,4 +453,6 @@ module.exports = {
     checkWorkoutTemplateByIdExists,
     updateWorkoutTemplate,
     deleteWorkoutTemplate,
+    checkExerciseInWorkoutExists,
+    updateExerciseFromWorkoutTemplate,
 };

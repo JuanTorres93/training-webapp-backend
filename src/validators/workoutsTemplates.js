@@ -65,7 +65,6 @@ const validateAddExerciseToWorkoutTemplateParams = [
     mw.validateResult(400)
 ];
 
-
 const validateUpdateWorkoutTemplateParams = [
     check(alias)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
@@ -83,8 +82,29 @@ const validateUpdateWorkoutTemplateParams = [
     mw.validateResult(400)
 ];
 
+
+const validateUpdateExerciseInWorkoutTemplateParams = [
+    check(exerciseOrder)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
+        .trim()
+        .escape()
+        .toInt(),
+    check(exerciseSets)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
+        .trim()
+        .escape()
+        .toInt(),
+    
+    mw.validateResult(400)
+];
+
 module.exports = {
     validateCreateWorkoutTemplateParams,
     validateAddExerciseToWorkoutTemplateParams,
     validateUpdateWorkoutTemplateParams,
+    validateUpdateExerciseInWorkoutTemplateParams,
 };
