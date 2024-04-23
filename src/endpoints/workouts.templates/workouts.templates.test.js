@@ -1,4 +1,4 @@
-const { request, BASE_ENDPOINT, createNewTemplateRequest } = require('./setup');
+const { request, BASE_ENDPOINT, createNewTemplateRequest } = require('./testsSetup');
 
 
 const setUp = async () => {

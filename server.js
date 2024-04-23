@@ -2,7 +2,7 @@ require('dotenv').config();
 // Server is started in its own file for testing purposes
 const createApp = require('./src/app.js');
 
-// TODO false means that it uses real db
+// this false parameter (appIsBeingTested = false) means that it uses real db
 const app = createApp(false);
 const PORT = process.env.SERVER_PORT;
 

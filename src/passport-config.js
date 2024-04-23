@@ -3,10 +3,12 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-const query = require('./db/index').query;
+const { query } = require('./db/index');
 const hashing = require('./hashing');
 
-const localStrategy = new LocalStrategy((username, password, done) => {
+const localStrategy = new LocalStrategy(
+    {passReqToCallback: true}, // Send request to callback to be able to access req.appIsBeingTested
+    (req, username, password, done) => {
     // username and password are the credentials sent in the body of a POST request
     // done is a callback function whose purpose is to supply an authenticated user to 
     // Passport if a user is authenticated. The logic within the anonymous function follows 
@@ -21,10 +23,12 @@ const localStrategy = new LocalStrategy((username, password, done) => {
     // 1. An error or null if no error is found.
     // 2. A user or false if no user is found.
 
-    // NOTE: In this specific application username is the email due to the db
-    // implementation. I've decided to leave it as username for future reference purposes
-    const q = "SELECT * FROM customers WHERE email = $1;";
-    const params = [username]   // Read note above for username
+    // Everything is selected in order for query to return a standar JS object and not
+    // a weird one in the shape of: { row: '(76,testUser,test@uuuser.com,,,)' }
+    // In addition, password is needed to be retrieved from db in order to compare it
+    // with the one submitted by the user.
+    const q = "SELECT * FROM users WHERE alias = $1;";
+    const params = [username];
 
     // TODO DEBUGGAR TODO ESTE MIDDLEWARE
     query(q, params, async (error, results) => {
@@ -41,16 +45,18 @@ const localStrategy = new LocalStrategy((username, password, done) => {
         // be able to log in the user.
         if (!(await hashing.comparePlainTextToHash(password, userObject.password.trim()))) return done(null, false);
 
+        // Actual user info to be send
         const user = {
             id: userObject.id,
-            first_name: userObject.first_name,
+            alias: userObject.alias,
+            email: userObject.email,
             last_name: userObject.last_name,
             second_last_name: userObject.second_last_name,
-            email: userObject.email,
+            img: userObject.img,
         };
 
         return done(null, user);
-    })
+    }, req.appIsBeingTested)
 })
 
 // const googleStrategy = new GoogleStrategy({
@@ -74,11 +80,14 @@ const serializeUser = (user, done) => {
     // When serializing a user, Passport takes that user id and stores it 
     // internally on req.session.passport which is Passport’s internal 
     // mechanism to keep track of things.
+
     done(null, user.id);
 }
 
+// TODO get req.appIsBeignTested
 const deserializeUser = (id, done) => {
     // TODO research about what exactly this function does
+    // TODO right now it seems to be doing nothing, since customers table doesn't even exists in db
     const q = "SELECT * FROM customers WHERE id = $1;";
     const params = [id]
 

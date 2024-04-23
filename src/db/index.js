@@ -1,4 +1,3 @@
-// TODO all calls to database should be async?
 const { Pool } = require('pg');
   
 const pool = new Pool({
@@ -50,7 +49,6 @@ const getPoolClient = async (appIsBeingTested) => {
     };
 
     throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
-
 };
 
 module.exports = {
