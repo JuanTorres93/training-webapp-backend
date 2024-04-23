@@ -804,6 +804,27 @@ paths:
               UpdateExerciseToWorkoutTemplate:
                 $ref: '#/components/examples/UpdateExerciseToWorkoutTemplate'
 
+  /workouts/templates/{templateId}/exercises/{exerciseId}/{exerciseOrder}:
+    parameters:
+      - name: templateId
+        in: path
+        required: true
+        description: Template id
+        schema:
+          type: integer
+      - name: exerciseId
+        in: path
+        required: true
+        description: Exercise id
+        schema:
+          type: integer
+      - name: exerciseOrder
+        in: path
+        required: true
+        description: Exercise order
+        schema:
+          type: integer
+
     delete:
       tags:
         - Workouts
@@ -819,6 +840,9 @@ paths:
               examples:
                 UpdatedExercise:
                   $ref: '#/components/examples/WorkoutTemplateExercise'
+                
+        '400':
+          $ref: '#/components/responses/400'
                 
         '401':
           $ref: '#/components/responses/401'

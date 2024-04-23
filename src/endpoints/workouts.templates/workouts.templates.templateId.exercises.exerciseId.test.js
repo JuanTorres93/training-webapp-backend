@@ -183,3 +183,101 @@ describe('put request', () => {
         });
     });
 });
+
+describe('delete requests', () => {
+    // TODO change this describe block to its own file? Or change above describe to same endpoint(finishing with exerciseOrder)?
+    let newTemplate;
+    let newExercise;
+    let addedExercise;
+
+    beforeAll(async () => {
+        const setUpInfo = await setUp();
+
+        newTemplate = setUpInfo.newTemplate;
+        newExercise = setUpInfo.newExercise;
+        addedExercise = setUpInfo.addedExercise;
+    });
+
+    describe('unhappy path', () => {
+        describe('returns 400 error code when', () => {
+            it('templateid is string', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + '/wrongId' + `/exercises/${addedExercise.id}/${addedExercise.order}`
+                );
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('templateid is boolean', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + '/true' + `/exercises/${addedExercise.id}/${addedExercise.order}`
+                );
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('templateid is not positive', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + '/-23' + `/exercises/${addedExercise.id}/${addedExercise.order}`
+                );
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('exerciseid is string', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId/${addedExercise.order}`
+                );
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('exerciseid is boolean', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true/${addedExercise.order}`
+                );
+                expect(response.statusCode).toStrictEqual(400);
+            });
+
+            it('exerciseid is not positive', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${addedExercise.order}`
+                );
+                expect(response.statusCode).toStrictEqual(400);
+            });
+        });
+
+        describe('404 response when', () => {
+            it('templateid is valid but template with that id does not exist', async () => {
+                const endpoint = BASE_ENDPOINT + '/1' + `/exercises/${addedExercise.exerciseId}/${addedExercise.exerciseOrder}`;
+                const response = await request.delete(endpoint);
+                expect(response.statusCode).toStrictEqual(404);
+            });
+
+            it('exerciseId is valid but exercise with that id does not exist', async () => {
+                const response = await request.delete(
+                    BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/1/${addedExercise.exerciseOrder}`
+                );
+                expect(response.statusCode).toStrictEqual(404);
+            });
+        });
+    });
+
+    describe('happy path', () => {
+        let response;
+
+        beforeAll(async () => {
+            const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+            response = await request.delete(endpoint)
+        });
+
+        it("status code of 200", async () => {
+            expect(response.statusCode).toStrictEqual(200);
+        });
+
+        it('returns deleted exercise', () => {
+            const deletedExercise = response.body;
+
+            expect(deletedExercise.workoutTemplateId).toStrictEqual(addedExercise.workoutTemplateId);
+            expect(deletedExercise.exerciseId).toStrictEqual(addedExercise.exerciseId);
+            expect(deletedExercise.exerciseSets).toStrictEqual(addedExercise.exerciseSets);
+            expect(deletedExercise.exerciseOrder).toStrictEqual(addedExercise.exerciseOrder);
+        });
+    });
+});

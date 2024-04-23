@@ -444,6 +444,45 @@ const updateExerciseFromWorkoutTemplate = (workoutTemplateId,
     });
 };
 
+const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder, appIsBeingTested) => {
+    const q = " WITH deleted AS ( " +
+              " 	DELETE FROM workout_template_exercises " +
+              " 	WHERE " +
+              " 		workout_template_id = $1 AND " +
+              " 		exercise_id = $2 AND " +
+              " 		exercise_order = $3 " +
+              " 	RETURNING  " +
+              " 		workout_template_id, " +
+              " 		exercise_id, " +
+              " 		exercise_order, " +
+              " 		exercise_sets " +
+              " ) " +
+              " SELECT * FROM deleted " +
+              " ORDER BY exercise_id, exercise_order; ";
+
+    const params = [workoutId, exerciseId, exerciseOrder];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const exercisesRows = results.rows;
+            const exercisesSpec = [];
+
+            exercisesRows.forEach(row => {
+                exercisesSpec.push({
+                    workoutTemplateId: row.workout_template_id,
+                    exerciseId: row.exercise_id,
+                    exerciseSets: row.exercise_sets,
+                    exerciseOrder: row.exercise_order,
+                });
+            });
+
+            resolve(exercisesSpec)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
@@ -455,4 +494,5 @@ module.exports = {
     deleteWorkoutTemplate,
     checkExerciseInWorkoutExists,
     updateExerciseFromWorkoutTemplate,
+    deleteExerciseFromWorkoutTemplate,
 };
