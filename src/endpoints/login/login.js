@@ -1,10 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const passport = require('../passport-config.js');
+const passport = require('../../passport-config.js');
+
+const loginValidator = require('../../validators/login.js');
 
 const loginRouter = express.Router();
 loginRouter.use(bodyParser.json());
+
 
 const _loginSuccessful = (req, res, next) => {
     // Callback for handling success
@@ -28,7 +31,7 @@ const _loginUnsuccessfull = (err, req, res, next) => {
     });
 }
 
-// Used for retrieving user info after loggin (with OAuth)
+// Used for retrieving user info after login (with OAuth)
 loginRouter.get('/success', (req, res, next) => {
     if (req.user) {
         res.json({
@@ -47,6 +50,7 @@ loginRouter.get('/failed', (req, res, next) => {
 
 // Post request for login with regular credentials
 loginRouter.post('/',
+    loginValidator.validateLoginUserParams,
     // DOCS
     // passport.authenticate() takes in:
     // 1. A string specifying which strategy to employ. 

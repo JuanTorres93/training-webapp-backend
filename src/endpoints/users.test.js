@@ -39,7 +39,7 @@ const successfulPostRequest = {
     alias: "first_test_user",
     email: "first_user@domain.com",
     last_name: "Manacle",
-    password: "secure_password",
+    password: "$ecur3_P@ssword",
     second_last_name: "Sanches",
 }
 
@@ -91,7 +91,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 let response = await request.post(BASE_ENDPOINT).send({
                     email: "John.Doe@domain.com",
                     last_name: "Doe",
-                    password: "secure_password",
+                    password: "$ecur3_P@ssword",
                     second_last_name: "Smith",
                 })
 
@@ -101,7 +101,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 response = await request.post(BASE_ENDPOINT).send({
                     alias: "John",
                     last_name: "Doe",
-                    password: "secure_password",
+                    password: "$ecur3_P@ssword",
                     second_last_name: "Smith",
                 })
 
@@ -124,7 +124,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                     // email same as successfulRequest
                     alias: "another_alias",
                     last_name: "another_last_name",
-                    password: "another_password",
+                    password: "@n0th3r_Pa$swOrd",
                     second_last_name: "another second last name",
                 };
 
@@ -139,7 +139,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                     // alias same as successfulRequest
                     email: "another_mail@domain.com",
                     last_name: "another_last_name",
-                    password: "another_password",
+                    password: "@n0th3r_PasswOrd",
                     second_last_name: "another second last name",
                 };
                 let response = await request.post(BASE_ENDPOINT).send(req);
@@ -254,7 +254,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
             alias: "updated alias with put",
             email: "updated_email_with_put@domain.com",
             last_name: "updated_last_name_with_put",
-            password: "updated_pasword_with_put",
+            password: "Upd@t3d_Pasword_with_put",
             second_last_name: "updated_second_last_with_put",
             img: "img",
         };
@@ -310,7 +310,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                     alias: "new alias",
                     email: "new-email@domain.com",
                     last_name: "new last name",
-                    password: "new password",
+                    password: "N3w p@ssWord",
                     second_last_name: "new second last name",
                     img: "new img",
                 };

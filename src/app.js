@@ -24,7 +24,7 @@ const createApp = (appIsBeingTested = false) => {
     const exercisesRouter = require('./endpoints/exercises.js');
     const workoutsRouter = require('./endpoints/workouts.js');
     const workoutsTemplatesRouter = require('./endpoints/workouts.templates/workoutsTemplates.js');
-    const loginRouter = require('./endpoints/login.js');
+    const loginRouter = require('./endpoints/login/login.js');
     const logoutRouter = require('./endpoints/logout.js');
     const checkoutRouter = require('./endpoints/checkout.js');
 

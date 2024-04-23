@@ -9,7 +9,7 @@ const setUp = async () => {
     const userResponse = await request.post('/users').send({
         alias: 'test user',
         email: 'test@domain.com',
-        password: 'test password',
+        password: 'T3st P@ssWOrd',
     });
     const user = userResponse.body;
 

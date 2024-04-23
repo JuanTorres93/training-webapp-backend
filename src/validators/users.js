@@ -27,7 +27,7 @@ const validateRegisterUserParams = [
         .exists().withMessage(msgs.parameterMissingMsg(password))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(password))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
-        // TODO add isStrongPassword validator
+        .isStrongPassword()
         .trim()
         .escape(),
     check(lastName)
@@ -67,7 +67,7 @@ const validateUpdateUserParams = [
         .optional()
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(password))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
-        // TODO add isStrongPassword validator
+        .isStrongPassword()
         .trim()
         .escape(),
     check(lastName)
