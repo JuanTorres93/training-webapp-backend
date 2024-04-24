@@ -1,5 +1,4 @@
 const { request, BASE_ENDPOINT } = require('./testsSetup');
-const utils = require('../../utils/utils.js');
 const query = require('../../db/index.js').query;
 const hash = require('../../hashing.js');
 
@@ -37,16 +36,15 @@ describe(`${BASE_ENDPOINT}`,  () => {
     describe('post requests', () => {
         describe("register user successfully", () => {
             it("returns user object", () => {
-                const expectedKeys = ['id', 'alias', 'email', 
-                                      'last_name', 'img',
-                                      'second_last_name'];
-
-
-                const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
-                    postResponse.body)
-                expect(allKeysIncluded).toBe(true);
+                const user = postResponse.body;
+                expect(user).toHaveProperty('id');
+                expect(user).toHaveProperty('alias');
+                expect(user).toHaveProperty('email');
+                expect(user).toHaveProperty('last_name');
+                expect(user).toHaveProperty('second_last_name');
+                expect(user).toHaveProperty('img');
                 // Do NOT return user password
-                expect(postResponse.body).not.toHaveProperty('password');
+                expect(user).not.toHaveProperty('password');
             });
 
             it("status code of 201", () => {
@@ -198,9 +196,15 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
             });
 
             it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
-                const expectedKeys = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
                 const userObject = response.body;
-                expect(utils.checkKeysInObject(expectedKeys, userObject)).toBe(true);
+
+                expect(userObject).toHaveProperty('id');
+                expect(userObject).toHaveProperty('alias');
+                expect(userObject).toHaveProperty('email');
+                expect(userObject).toHaveProperty('last_name');
+                expect(userObject).toHaveProperty('second_last_name');
+                expect(userObject).toHaveProperty('img');
+
                 expect(userObject).not.toHaveProperty('password');
             });
         });
