@@ -1,25 +1,6 @@
-// Needed to access environment variables and for server not to crash.
-// if not included, then test will fail due to supertest not being able
-// to read EXPRESS_SESSION_SECRET
-require('dotenv').config();
-const supertest = require('supertest');
-const createApp = require('../../app.js');
-
+const { request, BASE_ENDPOINT } = require('./testsSetup');
 const utils = require('../../utils/utils.js');
-const query = require('../../db/index.js').query;
-
 const dbExercises = require('../../db/exercises.js');
-
-// true means that it should connect to test db
-const app = createApp(true);
-const BASE_ENDPOINT = '/workouts'
-
-function logErrors (err, req, res, next) {
-  console.error(err.stack)
-  next(err)
-}
-
-const request = supertest(app.use(logErrors))
 
 const exercises = [
     ['bench press', 'A compound upper body exercise where you lie on a bench and press a barbell upwards, targeting chest, shoulders, and triceps.'],
