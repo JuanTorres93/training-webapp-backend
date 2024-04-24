@@ -1,5 +1,4 @@
 const { request, BASE_ENDPOINT } = require('./testsSetup');
-const utils = require('../../utils/utils.js');
 const dbExercises = require('../../db/exercises.js');
 
 const exercises = [
@@ -247,11 +246,10 @@ describe(`${BASE_ENDPOINT}`,  () => {
             });
 
             it("returns workout object", () => {
-                const expectedKeys = ['id', 'alias', 'description', 'exercises'];
-
-                const allKeysIncluded = utils.checkKeysInObject(expectedKeys,
-                    response.body)
-                expect(allKeysIncluded).toBe(true);
+                expect(response.body).toHaveProperty('id');
+                expect(response.body).toHaveProperty('alias');
+                expect(response.body).toHaveProperty('description');
+                expect(response.body).toHaveProperty('exercises');
             });
 
             it('returns 201 status code', () => {
@@ -297,10 +295,12 @@ describe(`${BASE_ENDPOINT}`,  () => {
             });
 
             it('workout object has id, alias, description and exercises properties', () => {
-                const expectedKeys = ['id', 'alias', 'description', 'exercises'];
                 const workoutObject = response.body[0];
 
-                expect(utils.checkKeysInObject(expectedKeys, workoutObject)).toBe(true);
+                expect(workoutObject).toHaveProperty('id');
+                expect(workoutObject).toHaveProperty('alias');
+                expect(workoutObject).toHaveProperty('description');
+                expect(workoutObject).toHaveProperty('exercises');
             });
         });
     });
@@ -450,10 +450,12 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             });
 
             it('workout object has id, alias, exercises and description properties', () => {
-                const expectedKeys = ['id', 'alias', 'description', 'exercises'];
                 const workoutObject = response.body;
 
-                expect(utils.checkKeysInObject(expectedKeys, workoutObject)).toBe(true);
+                expect(workoutObject).toHaveProperty('id');
+                expect(workoutObject).toHaveProperty('alias');
+                expect(workoutObject).toHaveProperty('description');
+                expect(workoutObject).toHaveProperty('exercises');
             });
         });
 
