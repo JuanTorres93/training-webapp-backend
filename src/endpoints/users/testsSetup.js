@@ -14,7 +14,11 @@ function logErrors (err, req, res, next) {
   next(err)
 };
 
-const request = supertest(app.use(logErrors));
+app.use(logErrors);
+
+// I use agent for storing user info when login in
+const request = supertest.agent(app);
+
 
 module.exports = {
     request,

@@ -89,10 +89,11 @@ router.put('/:userId',
     validateUpdateUserParams,
     validateIntegerParameter('userId'), 
     mw.checkUserEmailAndAliasAlreadyExist,
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
     mw.hashPassword,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
-
+        // TODO implement 403 response case
         const { userId } = req.params;
         const { alias, email, password, last_name, second_last_name, img } = req.body;
 

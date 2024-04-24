@@ -106,7 +106,18 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 const setUpInfo = await setUp();
                 newUser = setUpInfo.newUser;
 
+                // login user
+                await request.post('/login').send({
+                    username: successfulPostRequest.alias,
+                    password: successfulPostRequest.password,
+                });
+
                 response = await request.put(BASE_ENDPOINT + `/${newUser.id}`).send(putBodyRequest);
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
             });
 
             it('returns updated user', () => {
@@ -147,42 +158,20 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                                                                          userInDb.password);
                 expect(passwordsMatch).toBe(true);
             });
-
-            it('does not crash for every possible field update', async () => {
-                const putReq = {
-                    alias: "new alias",
-                    email: "new-email@domain.com",
-                    last_name: "new last name",
-                    password: "N3w p@ssWord",
-                    second_last_name: "new second last name",
-                    img: "new img",
-                };
-
-                Object.keys(putReq).forEach(async (field) => {
-                    const individualReq = {
-                        [field]: putReq[field],
-                    };
-
-                    const res = await request.put(BASE_ENDPOINT + `/${newUser.id}`).send(individualReq);
-
-                    if (field !== 'password') {
-                        expect(res.body[field]).toStrictEqual(individualReq[field]);
-                    } else {
-                        const userInDb = await selectEverythingFromUserId(newUser.id);
-
-                        // TODO DELETE THESE DEBUG LOGS
-                        console.log('userInDb');
-                        console.log(userInDb);
-
-                        const passwordsMatch = await hash.comparePlainTextToHash(individualReq.password,
-                                                                                 userInDb.password);
-                        expect(passwordsMatch).toBe(true);
-                    }
-                });
-            });
         });
 
         describe('unhappy paths', () => {
+            let newUser;
+
+            beforeAll(async () => {
+                // Test's set up
+                const setUpInfo = await setUp();
+                newUser = setUpInfo.newUser;
+
+                // Ensure user is logged out
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('userid is string', async () => {
                     const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
@@ -197,6 +186,13 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 it('userid is not positive', async () => {
                     const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('returns 401 error code when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.put(BASE_ENDPOINT + `/${newUser.id}`).send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 

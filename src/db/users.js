@@ -1,5 +1,4 @@
 const { query } = require('./index');
-const utils = require('../utils/utils.js');
 const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'users';

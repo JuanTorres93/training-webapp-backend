@@ -104,6 +104,21 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
     next();
 }
 
+const checkUserExistsById = async (req, res, next) => {
+    // IMPORTANT: This middleware must be called after validating user parameter
+    const { userId } = req.params;
+
+    const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
+
+    if (!user) {
+        return res.status(404).json({
+            msg: 'User not found',
+        });
+    };
+
+    next();
+}
+
 const hashPassword = async (req, res, next) => {
     // IMPORTANT use this middleware after validating password
     const { password } = req.body;
@@ -122,5 +137,6 @@ module.exports = {
     checkKeysInBodyRequest,
     validateResult,
     checkUserEmailAndAliasAlreadyExist,
+    checkUserExistsById,
     hashPassword,
 }

@@ -46,6 +46,9 @@ const localStrategy = new LocalStrategy(
         if (!(await hashing.comparePlainTextToHash(password, userObject.password.trim()))) return done(null, false);
 
         // Actual user info to be send
+        // TODO IMPORTANT SECURITY. I DON'T KNOW WHAT THIS DOES. I THOUGHT THIS TO BE
+        // THE RETURN VALUE WHEN LOGGING, BUT WHEN TESTING IT SEEMS TO BE THE VALUE
+        // RETURNED BY deserializUser function
         const user = {
             id: userObject.id,
             alias: userObject.alias,
@@ -75,29 +78,42 @@ const localStrategy = new LocalStrategy(
 //     return done(null, profile);
 // });
 
-const serializeUser = (user, done) => {
+const serializeUser = (req, user, done) => {
     // TODO research about what exactly this function does
     // When serializing a user, Passport takes that user id and stores it 
     // internally on req.session.passport which is Passport’s internal 
     // mechanism to keep track of things.
 
-    done(null, user.id);
+    const serializeData = {
+        id: user.id,
+        appIsBeingTested: req.appIsBeingTested,
+    };
+
+    done(null, serializeData);
 }
 
-// TODO get req.appIsBeignTested
-const deserializeUser = (id, done) => {
+const deserializeUser = (serializedData, done) => {
     // TODO research about what exactly this function does
     // TODO right now it seems to be doing nothing, since customers table doesn't even exists in db
-    const q = "SELECT * FROM customers WHERE id = $1;";
-    const params = [id]
+    const q = "SELECT * FROM users WHERE id = $1;";
+    const params = [serializedData.id]
 
     query(q, params, (error, results) => {
         if (error) return done(error);
 
-        const user = results.rows[0];
+        const userObject = results.rows[0];
+
+        const user = {
+            id: userObject.id,
+            alias: userObject.alias,
+            email: userObject.email,
+            last_name: userObject.last_name,
+            second_last_name: userObject.second_last_name,
+            img: userObject.img,
+        };
 
         return done(null, user);
-    })
+    }, serializedData.appIsBeingTested);
 }
 
 // local strategy for passport
