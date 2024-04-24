@@ -1,10 +1,10 @@
 const express = require('express');
 
-const workoutsValidators = require('../validators/workouts.js');
-const { validateIntegerParameter } = require('../validators/generalPurpose.js');
-const dbWorkouts = require('../db/workouts.js');
-const dbExercises = require('../db/exercises.js');
-const mw = require('../utils/middleware.js');
+const workoutsValidators = require('../../validators/workouts.js');
+const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
+const dbWorkouts = require('../../db/workouts.js');
+const dbExercises = require('../../db/exercises.js');
+const mw = require('../../utils/middleware.js');
 
 const router = express.Router();
 

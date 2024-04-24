@@ -3,11 +3,11 @@
 // to read EXPRESS_SESSION_SECRET
 require('dotenv').config();
 const supertest = require('supertest');
-const createApp = require('../app.js');
+const createApp = require('../../app.js');
 
-const utils = require('../utils/utils.js');
-const query = require('../db/index.js').query;
-const hash = require('../hashing.js');
+const utils = require('../../utils/utils.js');
+const query = require('../../db/index.js').query;
+const hash = require('../../hashing.js');
 
 // true means that it should connect to test db
 const app = createApp(true);

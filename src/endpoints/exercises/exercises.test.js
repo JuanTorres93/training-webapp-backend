@@ -4,7 +4,7 @@
 // to read EXPRESS_SESSION_SECRET
 require('dotenv').config();
 const supertest = require('supertest');
-const createApp = require('../app.js');
+const createApp = require('../../app.js');
 
 // true means that it should connect to test db
 const app = createApp(true);

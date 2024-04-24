@@ -20,9 +20,9 @@ const createApp = (appIsBeingTested = false) => {
     });
 
     // Routers imports
-    const usersRouter = require('./endpoints/users.js');
-    const exercisesRouter = require('./endpoints/exercises.js');
-    const workoutsRouter = require('./endpoints/workouts.js');
+    const usersRouter = require('./endpoints/users/users.js');
+    const exercisesRouter = require('./endpoints/exercises/exercises.js');
+    const workoutsRouter = require('./endpoints/workouts/workouts.js');
     const workoutsTemplatesRouter = require('./endpoints/workouts.templates/workoutsTemplates.js');
     const loginRouter = require('./endpoints/login/login.js');
     const logoutRouter = require('./endpoints/logout.js');

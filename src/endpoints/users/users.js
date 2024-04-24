@@ -1,9 +1,9 @@
 const express = require('express');
 
-const { validateRegisterUserParams, validateUpdateUserParams } = require('../validators/users.js');
-const { validateIntegerParameter } = require('../validators/generalPurpose.js');
-const dbUsers = require('../db/users.js');
-const mw = require('../utils/middleware.js');
+const { validateRegisterUserParams, validateUpdateUserParams } = require('../../validators/users.js');
+const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
+const dbUsers = require('../../db/users.js');
+const mw = require('../../utils/middleware.js');
 
 const router = express.Router();
 

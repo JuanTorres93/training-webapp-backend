@@ -19,7 +19,6 @@ const _loginSuccessful = (req, res, next) => {
         msg: "logged in",
         user: req.user,
     }
-    console.log(response);
     return res.json(response);
 };
 
