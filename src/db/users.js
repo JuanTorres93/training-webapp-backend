@@ -157,6 +157,19 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
+const testDbSelectEverythingFromUserId = (id, appIsBeingTested) => {
+    const q = "SELECT * FROM " + TABLE_NAME + " WHERE id = $1;";
+    const params = [id];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            resolve(results.rows[0]);
+        }, true);
+    });
+};
+
 module.exports = {
     checkStringInFieldInUse,
     checkEmailInUse,
@@ -167,4 +180,5 @@ module.exports = {
     updateUser,
     deleteUser,
     truncateTableTest,
+    testDbSelectEverythingFromUserId,
 };

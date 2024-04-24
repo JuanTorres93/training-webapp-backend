@@ -1,5 +1,4 @@
 const { request, BASE_ENDPOINT } = require('./testsSetup');
-const query = require('../../db/index.js').query;
 const hash = require('../../hashing.js');
 
 // Empty database before starting tests
@@ -7,14 +6,9 @@ const truncateUsersAndRelatedTables = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
 }
 
-const selectEverythingFromUserId = (id) => {
-    return new Promise((resolve, reject) => {
-        query("SELECT * FROM users WHERE id = $1;", [id], (error, results) => {
-            if (error) reject(error);
-
-            resolve(results.rows[0]);
-        }, true);
-    });
+const selectEverythingFromUserId = async (id) => {
+    const response = await request.get(BASE_ENDPOINT + `/${id}/allTest`)
+    return response.body;
 };
 
 const successfulPostRequest = {
@@ -61,7 +55,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 const userInDb = await selectEverythingFromUserId(postResponse.body.id);
 
                 const passwordsMatch = await hash.comparePlainTextToHash(successfulPostRequest.password,
-                                                                   userInDb.password);
+                                                                         userInDb.password);
                 expect(passwordsMatch).toBe(true);
             });
         });

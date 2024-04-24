@@ -46,6 +46,21 @@ router.get('/:userId', validateIntegerParameter('userId'), async (req, res, next
     res.status(200).json(user);
 });
 
+// Get everything from user by id (test db only)
+router.get('/:userId/allTest', validateIntegerParameter('userId'), async (req, res, next) => {
+    const { userId } = req.params;
+
+    const user = await dbUsers.testDbSelectEverythingFromUserId(userId, req.appIsBeingTested);
+
+    if (user === undefined) {
+        return res.status(404).json({
+            msg: "User not found",
+        });
+    }
+
+    res.status(200).json(user);
+});
+
 
 // ===================================
 // ========== POST requests ==========

@@ -137,7 +137,6 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
     });
 };
 
-
 const truncateTableTest = (appIsBeingTested) => {
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
