@@ -170,6 +170,10 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                     } else {
                         const userInDb = await selectEverythingFromUserId(newUser.id);
 
+                        // TODO DELETE THESE DEBUG LOGS
+                        console.log('userInDb');
+                        console.log(userInDb);
+
                         const passwordsMatch = await hash.comparePlainTextToHash(individualReq.password,
                                                                                  userInDb.password);
                         expect(passwordsMatch).toBe(true);
