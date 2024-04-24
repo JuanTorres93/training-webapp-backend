@@ -19,7 +19,6 @@ app.use(logErrors);
 // I use agent for storing user info when login in
 const request = supertest.agent(app);
 
-
 module.exports = {
     request,
     BASE_ENDPOINT,
