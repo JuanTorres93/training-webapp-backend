@@ -1,4 +1,4 @@
-const { request, BASE_ENDPOINT } = require('./testsSetup');
+const { request, BASE_ENDPOINT, newUserReq } = require('./testsSetup');
 
 const successfulPostRequest = {
     alias: "first_test_exercise",
@@ -7,10 +7,24 @@ const successfulPostRequest = {
 
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
+    await request.get('/users/truncate');
+
+    // Add user to db
+    const newUserResponse = await request.post('/users').send(newUserReq);
+    const newUser = newUserResponse.body;
+
+    // login user
+    await request.post('/login').send({
+        username: newUserReq.alias,
+        password: newUserReq.password,
+    });
 
     // Add exercise to db
     const newExercisesResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
     const newExercise = newExercisesResponse.body;
+
+    // logout user
+    await request.get('/logout');
 
     return {
         newExercise,

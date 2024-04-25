@@ -27,8 +27,17 @@ const createNewTemplateRequest = (userId, alias, description) => {
     };
 };
 
+const newUserReq = {
+    alias: "first_test_user",
+    email: "first_user@domain.com",
+    last_name: "Manacle",
+    password: "$ecur3_P@ssword",
+    second_last_name: "Sanches",
+};
+
 module.exports = {
     request,
     BASE_ENDPOINT,
+    newUserReq,
     createNewTemplateRequest,
 };

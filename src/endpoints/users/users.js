@@ -126,18 +126,13 @@ router.put('/:userId',
 // update user by id
 router.delete('/:userId', 
     validateIntegerParameter('userId'), 
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
         // TODO implement 403 and 401 response cases
-
         const { userId } = req.params;
 
         const deletedUser = await dbUsers.deleteUser(userId, req.appIsBeingTested);
-
-        if (deletedUser === undefined) {
-            return res.status(404).json({
-                msg: "User not found",
-            });
-        }
 
         res.status(200).json(deletedUser);
     }

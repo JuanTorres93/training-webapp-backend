@@ -1,17 +1,20 @@
-const { request, BASE_ENDPOINT, createNewTemplateRequest } = require('./testsSetup');
+const { request, BASE_ENDPOINT, newUserReq,
+        createNewTemplateRequest } = require('./testsSetup');
 
 
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/users/truncate');
 
-    // Add user to tb
-    const userResponse = await request.post('/users').send({
-        alias: 'test user',
-        email: 'test@domain.com',
-        password: 'T3st p@ssW0rd',
-    });
+    // Add user to db
+    const userResponse = await request.post('/users').send(newUserReq);
     const user = userResponse.body;
+
+    // login user
+    await request.post('/login').send({
+        username: newUserReq.alias,
+        password: newUserReq.password,
+    });
 
     // Add template to db
     const reqNewTemplate = createNewTemplateRequest(user.id, 'setup template', 'set up template description')
@@ -35,6 +38,10 @@ const setUp = async () => {
         BASE_ENDPOINT + `/${newTemplate.id}`
     ).send(reqAddExerciseToTemplate);
     const newExerciseInTemplate = responseAddExerciseToTemplate.body;
+
+
+    // logout user
+    await request.get('/logout');
 
     return {
         user,

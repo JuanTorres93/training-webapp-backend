@@ -21,6 +21,14 @@ const request = supertest.agent(app);
 
 const dbExercises = require('../../db/exercises.js');
 
+const newUserReq = {
+    alias: "first_test_user",
+    email: "first_user@domain.com",
+    last_name: "Manacle",
+    password: "$ecur3_P@ssword",
+    second_last_name: "Sanches",
+};
+
 const exercises = [
     ['bench press', 'A compound upper body exercise where you lie on a bench and press a barbell upwards, targeting chest, shoulders, and triceps.'],
     ['barbell row', 'An upper body exercise where you bend forward at the hips, pulling a barbell towards your torso, targeting back muscles like lats and rhomboids.'],
@@ -32,6 +40,13 @@ const exercises = [
 
 // Fill database with some exercises to be able to add them to workouts
 const initExercisesTableInDb = async () => {
+    // login user
+    await request.post('/login').send({
+        username: newUserReq.alias,
+        password: newUserReq.password,
+    });
+
+    // Create exercises
     for (const exercise of exercises) {
         const req = {
             alias: exercise[0],
@@ -39,6 +54,9 @@ const initExercisesTableInDb = async () => {
         };
         await request.post('/exercises').send(req);
     }
+
+    // logout user
+    await request.get('/logout');
 }
 
 const addWorkoutsAndExercises = async (exercisesIds) => {
@@ -244,6 +262,7 @@ module.exports = {
     request,
     BASE_ENDPOINT,
     exercises,
+    newUserReq,
     initExercisesTableInDb,
     addWorkoutsAndExercises,
     getExercisesIds,

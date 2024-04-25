@@ -214,16 +214,19 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
     describe('delete requests', () => {
         // In this suite unhappy path is tested first in order to preserve the
         // entry in the database
-        let newUser;
-
-        beforeAll(async () => {
-            // Test's set up
-            const setUpInfo = await setUp();
-            newUser = setUpInfo.newUser;
-        });
-
         describe('unhappy path', () => {
-            describe('returns 400 error code when', () => {
+            let newUser;
+
+            beforeAll(async () => {
+                // Test's set up
+                const setUpInfo = await setUp();
+                newUser = setUpInfo.newUser;
+
+                // Ensure user is logged out
+                await request.get('/logout');
+            });
+
+            describe('400 error code when', () => {
                 it('userid is string', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/wrongId');
                     expect(response.statusCode).toStrictEqual(400);
@@ -240,6 +243,13 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 });
             });
 
+            describe('401 error code when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + `/${newUser.id}`);
+                    expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
             describe('404 response when', () => {
                 it('userid is valid but user with that id does not exist', async () => {
                     // alias and email need to be modified again to avoid 409 conflict
@@ -253,14 +263,30 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
 
         describe('happy path', () => {
             let response;
+            let newUser;
 
             beforeAll(async () => {
+                // Test's set up
+                const setUpInfo = await setUp();
+                newUser = setUpInfo.newUser;
+
+                // login user
+                await request.post('/login').send({
+                    username: successfulPostRequest.alias,
+                    password: successfulPostRequest.password,
+                });
+
                 // return db registry to its original state
                 await request.put(BASE_ENDPOINT + `/${newUser.id}`).send({
                     ...successfulPostRequest,
                     img: null,
                 });
                 response = await request.delete(BASE_ENDPOINT + `/${newUser.id}`)
+            });
+
+            afterAll(async () => {
+                // logout user
+                // await request.get('/logout');
             });
 
             it("status code of 200", async () => {

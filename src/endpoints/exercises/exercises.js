@@ -45,10 +45,11 @@ router.get('/:exerciseId', validateIntegerParameter('exerciseId'), async (req, r
 // ===================================
 // ========== POST requests ==========
 // ===================================
-router.post('/', exerciseValidators.validateCreateExerciseParams,
+router.post('/', 
+    exerciseValidators.validateCreateExerciseParams,
+    mw.authenticatedUser,
     async (req, res, next) => {
         // TODO implement 403 response
-
         try {
             const createdExercise = await dbExercises.createExercise(req.body, req.appIsBeingTested);
             return res.status(201).json(createdExercise);

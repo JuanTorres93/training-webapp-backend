@@ -19,7 +19,16 @@ app.use(logErrors);
 // I use agent for storing user info when login in
 const request = supertest.agent(app);
 
+const newUserReq = {
+    alias: "first_test_user",
+    email: "first_user@domain.com",
+    last_name: "Manacle",
+    password: "$ecur3_P@ssword",
+    second_last_name: "Sanches",
+};
+
 module.exports = {
     request,
     BASE_ENDPOINT,
+    newUserReq,
 };

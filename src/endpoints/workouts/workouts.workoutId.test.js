@@ -1,4 +1,4 @@
-const { request, BASE_ENDPOINT, 
+const { request, BASE_ENDPOINT, newUserReq,
         exercises, initExercisesTableInDb, 
         addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
 
@@ -11,6 +11,7 @@ const successfulPostRequest = {
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/exercises/truncate');
+    await request.post('/users').send(newUserReq);
 
     // Fill database with some exercises to be able to add them to workouts
     // await initExercisesTableInDb();
