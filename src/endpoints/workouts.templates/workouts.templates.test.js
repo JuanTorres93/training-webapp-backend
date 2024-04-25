@@ -51,89 +51,91 @@ const setUp = async () => {
     };
 };
 
-describe('get requests', () => {
-    beforeAll(async () => {
-        const setUpInfo = await setUp();
+describe(BASE_ENDPOINT, () => {
+    describe('get requests', () => {
+        beforeAll(async () => {
+            const setUpInfo = await setUp();
+        });
+
+        describe('happy path', () => {
+            it('returns 200 status code', async () => {
+                const response = await request.get(BASE_ENDPOINT);
+
+                expect(response.statusCode).toStrictEqual(200);
+            });
+
+            it("returns list", async () => {
+                const response = await request.get(BASE_ENDPOINT);
+
+                expect(Array.isArray(response.body)).toBe(true);
+            });
+
+            it('workout template object has correct properties', async () => {
+                const response = await request.get(BASE_ENDPOINT);
+                const workoutTemplate = response.body[0];
+
+                expect(workoutTemplate).toHaveProperty('id');
+                expect(workoutTemplate).toHaveProperty('exercises');
+                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('description');
+            });
+        });
+
+        // describe('unhappy path', () => {
+        //     // TODO implement 401 and 403 cases
+        // });
     });
 
-    describe('happy path', () => {
-        it('returns 200 status code', async () => {
-            const response = await request.get(BASE_ENDPOINT);
+    describe('post requests', () => {
+        let user;
 
-            expect(response.statusCode).toStrictEqual(200);
+        beforeAll(async () => {
+            const setUpInfo = await setUp();
+
+            user = setUpInfo.user;
         });
 
-        it("returns list", async () => {
-            const response = await request.get(BASE_ENDPOINT);
+        describe('happy path', () => {
+            it('returns 201 status code', async () => {
+                const req = createNewTemplateRequest(user.id, 'template test', 'template description')
+                const response = await request.post(BASE_ENDPOINT).send(req);
 
-            expect(Array.isArray(response.body)).toBe(true);
+                expect(response.statusCode).toStrictEqual(201);
+            });
+
+            it('returns workout template object', async () => {
+                const req = createNewTemplateRequest(user.id, 'template test', 'template description')
+                const response = await request.post(BASE_ENDPOINT).send(req);
+                const workoutTemplate = response.body;
+
+                expect(workoutTemplate).toHaveProperty('id');
+                expect(workoutTemplate).toHaveProperty('userId');
+                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('description');
+            });
         });
 
-        it('workout template object has correct properties', async () => {
-            const response = await request.get(BASE_ENDPOINT);
-            const workoutTemplate = response.body[0];
+        describe('unhappy path', () => {
+            describe('400 response when', () => {
+                it('mandatory parameter is missing', async () => {
+                    // Missing userId
+                    const reqMissingUserId = {
+                        alias: 'test',
+                    }
 
-            expect(workoutTemplate).toHaveProperty('id');
-            expect(workoutTemplate).toHaveProperty('exercises');
-            expect(workoutTemplate).toHaveProperty('alias');
-            expect(workoutTemplate).toHaveProperty('description');
-        });
-    });
+                    let response = await request.post(BASE_ENDPOINT).send(reqMissingUserId);
 
-    // describe('unhappy path', () => {
-    //     // TODO implement 401 and 403 cases
-    // });
-});
+                    expect(response.statusCode).toStrictEqual(400);
 
-describe('post requests', () => {
-    let user;
+                    // Missing alias
+                    const reqMissingAlias = {
+                        userId: 1,
+                    }
 
-    beforeAll(async () => {
-        const setUpInfo = await setUp();
+                    response = await request.post(BASE_ENDPOINT).send(reqMissingAlias);
 
-        user = setUpInfo.user;
-    });
-
-    describe('happy path', () => {
-        it('returns 201 status code', async () => {
-            const req = createNewTemplateRequest(user.id, 'template test', 'template description')
-            const response = await request.post(BASE_ENDPOINT).send(req);
-
-            expect(response.statusCode).toStrictEqual(201);
-        });
-
-        it('returns workout template object', async () => {
-            const req = createNewTemplateRequest(user.id, 'template test', 'template description')
-            const response = await request.post(BASE_ENDPOINT).send(req);
-            const workoutTemplate = response.body;
-
-            expect(workoutTemplate).toHaveProperty('id');
-            expect(workoutTemplate).toHaveProperty('userId');
-            expect(workoutTemplate).toHaveProperty('alias');
-            expect(workoutTemplate).toHaveProperty('description');
-        });
-    });
-
-    describe('unhappy path', () => {
-        describe('400 response when', () => {
-            it('mandatory parameter is missing', async () => {
-                // Missing userId
-                const reqMissingUserId = {
-                    alias: 'test',
-                }
-
-                let response = await request.post(BASE_ENDPOINT).send(reqMissingUserId);
-
-                expect(response.statusCode).toStrictEqual(400);
-
-                // Missing alias
-                const reqMissingAlias = {
-                    userId: 1,
-                }
-
-                response = await request.post(BASE_ENDPOINT).send(reqMissingAlias);
-
-                expect(response.statusCode).toStrictEqual(400);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
             });
         });
     });
