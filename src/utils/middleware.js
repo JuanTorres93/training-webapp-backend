@@ -1,4 +1,5 @@
 const dbUsers = require('../db/users');
+const dbExercises = require('../db/exercises');
 const utils = require('./utils');
 const { validationResult } = require('express-validator');
 const hash = require('../hashing');
@@ -119,6 +120,21 @@ const checkUserExistsById = async (req, res, next) => {
     next();
 }
 
+const checkExerciseExistsById = async (req, res, next) => {
+    // IMPORTANT: This middleware must be called after validating user parameter
+    const { exerciseId } = req.params;
+
+    const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
+
+    if (!exercise) {
+        return res.status(404).json({
+            msg: 'Exercise not found',
+        });
+    };
+
+    next();
+}
+
 const hashPassword = async (req, res, next) => {
     // IMPORTANT use this middleware after validating password
     const { password } = req.body;
@@ -138,5 +154,6 @@ module.exports = {
     validateResult,
     checkUserEmailAndAliasAlreadyExist,
     checkUserExistsById,
+    checkExerciseExistsById,
     hashPassword,
 }

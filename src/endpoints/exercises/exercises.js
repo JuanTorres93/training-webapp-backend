@@ -27,17 +27,14 @@ router.get('/truncate', async (req, res, next) => {
 });
 
 // Get exercise by id
-router.get('/:exerciseId', validateIntegerParameter('exerciseId'), async (req, res, next) => {
+router.get('/:exerciseId', 
+    validateIntegerParameter('exerciseId'), 
+    mw.checkExerciseExistsById,
+    async (req, res, next) => {
     // TODO implement 403 response case
     const { exerciseId } = req.params;
 
     const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
-
-    if (exercise === undefined) {
-        return res.status(404).json({
-            msg: "Exercise not found",
-        });
-    }
 
     res.status(200).json(exercise);
 });
@@ -68,8 +65,10 @@ router.post('/',
 router.put('/:exerciseId', 
     exerciseValidators.validateUpdateExerciseParams,
     validateIntegerParameter('exerciseId'), 
+    mw.checkExerciseExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
 
         const { exerciseId } = req.params;
         const { alias, description } = req.body;
@@ -80,12 +79,6 @@ router.put('/:exerciseId',
         };
 
         const updatedExercise = await dbExercises.updateExercise(exerciseId, newExerciseInfo, req.appIsBeingTested);
-
-        if (updatedExercise === undefined) {
-            return res.status(404).json({
-                msg: "User not found",
-            });
-        }
 
         res.status(200).json(updatedExercise);
     }

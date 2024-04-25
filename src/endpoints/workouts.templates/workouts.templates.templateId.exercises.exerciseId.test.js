@@ -5,7 +5,7 @@ const setUp = async () => {
     await request.get('/users/truncate');
     await request.get('/exercises/truncate');
 
-    // Add user to tb
+    // Add user to db
     const userResponse = await request.post('/users').send(newUserReq);
     const user = userResponse.body;
 
