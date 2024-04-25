@@ -203,6 +203,19 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
         // In this suite unhappy path is tested first in order to preserve the
         // entry in the database
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Test's set up
+                const setUpInfo = await setUp();
+                newExercise = setUpInfo.newExercise;
+
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('exerciseid is string', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/wrongId');
@@ -217,6 +230,13 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
                 it('exerciseid is not positive', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/-23');
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + `/${newExercise.id}`)
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 
@@ -237,8 +257,19 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
                 const setUpInfo = await setUp();
                 newExercise = setUpInfo.newExercise;
 
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 // Test response
                 response = await request.delete(BASE_ENDPOINT + `/${newExercise.id}`)
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
             });
 
             it("status code of 200", async () => {

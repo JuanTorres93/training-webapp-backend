@@ -69,7 +69,6 @@ router.put('/:exerciseId',
     mw.authenticatedUser,
     async (req, res, next) => {
         // TODO implement 403 response cases
-
         const { exerciseId } = req.params;
         const { alias, description } = req.body;
 
@@ -91,17 +90,13 @@ router.put('/:exerciseId',
 // update user by id
 router.delete('/:exerciseId', 
     validateIntegerParameter('exerciseId'), 
+    mw.checkExerciseExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { exerciseId } = req.params;
 
         const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
-
-        if (deletedexercise === undefined) {
-            return res.status(404).json({
-                msg: "exercise not found",
-            });
-        }
 
         res.status(200).json(deletedexercise);
     }
