@@ -10,13 +10,14 @@ const mw = require('../../utils/middleware.js');
 const router = express.Router();
 
 
-
 // ==================================
 // ========== GET requests ==========
 // ==================================
 
 // Get all workouts templates
-router.get('/', async (req, res, next) => {
+router.get('/', 
+    mw.authenticatedUser,
+    async (req, res, next) => {
     // TODO modify spec and endpoint to need authenticated user
     const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates(req.appIsBeingTested);
 

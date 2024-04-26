@@ -58,6 +58,19 @@ describe(BASE_ENDPOINT, () => {
         });
 
         describe('happy path', () => {
+            beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
+            });
+
             it('returns 200 status code', async () => {
                 const response = await request.get(BASE_ENDPOINT);
 
@@ -81,9 +94,24 @@ describe(BASE_ENDPOINT, () => {
             });
         });
 
-        // describe('unhappy path', () => {
-        //     // TODO implement 401 and 403 cases
-        // });
+        describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.get(BASE_ENDPOINT);
+                    expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+        });
+
     });
 
     describe('post requests', () => {
