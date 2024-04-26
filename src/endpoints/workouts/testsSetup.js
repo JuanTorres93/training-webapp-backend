@@ -60,6 +60,12 @@ const initExercisesTableInDb = async () => {
 }
 
 const addWorkoutsAndExercises = async (exercisesIds) => {
+    // login user
+    await request.post('/login').send({
+        username: newUserReq.alias,
+        password: newUserReq.password,
+    });
+
     // Create some workouts with their exercises
     const pushResponse = await request.post(BASE_ENDPOINT).send({
         alias: "Push",
@@ -229,6 +235,9 @@ const addWorkoutsAndExercises = async (exercisesIds) => {
         weight: 85,
         time_in_seconds: 0,
     });
+
+    // logout user
+    await request.get('/logout');
 
     return {
         pushResponse,

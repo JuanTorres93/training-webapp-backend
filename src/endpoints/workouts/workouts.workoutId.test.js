@@ -2,11 +2,6 @@ const { request, BASE_ENDPOINT, newUserReq,
         exercises, initExercisesTableInDb, 
         addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
 
-const successfulPostRequest = {
-    alias: "first_test_workout",
-    description: "This is the description for a test workout",
-}
-
 // Empty database before starting tests
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
@@ -31,6 +26,12 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         await setUp();
         await initExercisesTableInDb();
 
+        // login user
+        await request.post('/login').send({
+            username: newUserReq.alias,
+            password: newUserReq.password,
+        });
+
         // Create new workout
         const response = await request.post(BASE_ENDPOINT).send(createWorkoutRequest);
 
@@ -39,9 +40,11 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         try {
             exercisesIds = await getExercisesIds();
         } catch (error) {
-            console.log("EEERROOOOOOOR")
             console.log(error);
         }
+
+        // logout user
+        await request.get('/logout');
     });
 
     describe('post requests', () => {

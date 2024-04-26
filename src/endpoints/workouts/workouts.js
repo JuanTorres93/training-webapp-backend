@@ -49,10 +49,10 @@ router.get('/:workoutId',
 // ===================================
 
 // Create new workout
-router.post('/', workoutsValidators.validateCreateWorkoutParams,
+router.post('/', 
+    workoutsValidators.validateCreateWorkoutParams,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 401 response
-
         try {
             const createdWorkout = await dbWorkouts.createWorkouts(req.body, req.appIsBeingTested);
             return res.status(201).json(createdWorkout);

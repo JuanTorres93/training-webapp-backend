@@ -18,16 +18,25 @@ const setUp = async () => {
 }
 
 describe(`${BASE_ENDPOINT}`,  () => {
-    beforeAll(async () => {
-        await setUp();
-    });
-
     describe('post requests', () => {
         describe('happy path', () => {
             let response;
 
             beforeAll(async () => {
+                await setUp();
+
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
             });
 
             it("returns workout object", () => {
@@ -43,6 +52,17 @@ describe(`${BASE_ENDPOINT}`,  () => {
         });
 
         describe('unhappy paths', () => {
+            beforeAll(async () => {
+                await setUp();
+
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             it('400 response when mandatory parameter is missing', async () => {
                 // alias is missing
                 let response = await request.post(BASE_ENDPOINT).send({
@@ -50,6 +70,13 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 })
 
                 expect(response.statusCode).toStrictEqual(400);
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+                    expect(response.statusCode).toStrictEqual(401);
+                });
             });
         });
     });
