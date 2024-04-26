@@ -94,7 +94,6 @@ const serializeUser = (req, user, done) => {
 
 const deserializeUser = (serializedData, done) => {
     // TODO research about what exactly this function does
-    // TODO right now it seems to be doing nothing, since customers table doesn't even exists in db
     const q = "SELECT * FROM users WHERE id = $1;";
     const params = [serializedData.id]
 
