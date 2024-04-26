@@ -171,17 +171,13 @@ router.put('/:workoutId/exercises/:exerciseId',
 // delete workout by id
 router.delete('/:workoutId', 
     validateIntegerParameter('workoutId'), 
+    mw.checkWorkoutExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { workoutId } = req.params;
 
         const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId, req.appIsBeingTested);
-
-        if (deletedWorkout === undefined) {
-            return res.status(404).json({
-                msg: "Workout not found",
-            });
-        }
 
         res.status(200).json(deletedWorkout);
     }

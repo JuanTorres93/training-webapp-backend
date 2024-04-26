@@ -383,6 +383,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('workoutid is string', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/wrongId');
@@ -400,6 +409,13 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 });
             });
 
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + `/${workoutId}`)
+                    expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
             describe('404 response when', () => {
                 it('workoutid is valid but workout with that id does not exist', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/1');
@@ -413,7 +429,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             let response;
 
             beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 response = await request.delete(BASE_ENDPOINT + `/${workoutId}`)
+            });
+
+            afterAll(async () => {
+                // Logout user
+                await request.get('/logout');
             });
 
             it("status code of 200", async () => {
