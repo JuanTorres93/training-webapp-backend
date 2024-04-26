@@ -1,5 +1,6 @@
 const dbUsers = require('../db/users');
 const dbExercises = require('../db/exercises');
+const dbWorkouts = require('../db/workouts');
 const utils = require('./utils');
 const { validationResult } = require('express-validator');
 const hash = require('../hashing');
@@ -106,7 +107,7 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
 }
 
 const checkUserExistsById = async (req, res, next) => {
-    // IMPORTANT: This middleware must be called after validating user parameter
+    // IMPORTANT: This middleware must be called after validating userId parameter
     const { userId } = req.params;
 
     const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
@@ -121,7 +122,7 @@ const checkUserExistsById = async (req, res, next) => {
 }
 
 const checkExerciseExistsById = async (req, res, next) => {
-    // IMPORTANT: This middleware must be called after validating user parameter
+    // IMPORTANT: This middleware must be called after validating exerciseId parameter
     const { exerciseId } = req.params;
 
     const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
@@ -129,6 +130,21 @@ const checkExerciseExistsById = async (req, res, next) => {
     if (!exercise) {
         return res.status(404).json({
             msg: 'Exercise not found',
+        });
+    };
+
+    next();
+}
+
+const checkWorkoutExistsById = async (req, res, next) => {
+    // IMPORTANT: This middleware must be called after validating workoutId parameter
+    const { workoutId } = req.params;
+
+    const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
+
+    if (!workout) {
+        return res.status(404).json({
+            msg: 'Workout not found',
         });
     };
 
@@ -155,5 +171,6 @@ module.exports = {
     checkUserEmailAndAliasAlreadyExist,
     checkUserExistsById,
     checkExerciseExistsById,
+    checkWorkoutExistsById,
     hashPassword,
 }

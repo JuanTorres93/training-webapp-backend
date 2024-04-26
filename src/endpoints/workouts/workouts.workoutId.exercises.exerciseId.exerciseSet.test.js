@@ -37,9 +37,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
             const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
             const workoutId = pushResponse.body.id;
 
+            // login user
+            await request.post('/login').send({
+                username: newUserReq.alias,
+                password: newUserReq.password,
+            });
+
             workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
             workout = workout.body;
             initialExercise = workout.exercises[0];
+
+            // logout user
+            await request.get('/logout');
         });
 
         describe('unhappy path', () => {

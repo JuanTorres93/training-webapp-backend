@@ -1,11 +1,6 @@
-const { request, BASE_ENDPOINT, newUserReq,
-        exercises, initExercisesTableInDb, 
+const { request, BASE_ENDPOINT,
+        initExercisesTableInDb, newUserReq,
         addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
-
-const successfulPostRequest = {
-    alias: "first_test_workout",
-    description: "This is the description for a test workout",
-}
 
 // Empty database before starting tests
 const setUp = async () => {
@@ -36,9 +31,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
         const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
         const workoutId = pushResponse.body.id;
 
+        // login user
+        await request.post('/login').send({
+            username: newUserReq.alias,
+            password: newUserReq.password,
+        });
+
         workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
         workout = workout.body;
         initialExercise = workout.exercises[0];
+
+        // logout user
+        await request.get('/logout');
     });
 
     describe('put requests', () => {
@@ -56,9 +60,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                 const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
                 const workoutId = pushResponse.body.id;
 
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
                 workout = workout.body;
                 initialExercise = workout.exercises[0];
+
+                // logout user
+                await request.get('/logout');
             });
 
             it('updates only reps', async () => {
@@ -203,9 +216,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
             const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
             const workoutId = pushResponse.body.id;
 
+            // login user
+            await request.post('/login').send({
+                username: newUserReq.alias,
+                password: newUserReq.password,
+            });
+
             workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
             workout = workout.body;
             initialExercise = workout.exercises[0];
+
+            // logout user
+            await request.get('/logout');
         });
 
         describe('unhappy path', () => {
