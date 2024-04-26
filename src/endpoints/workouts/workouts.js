@@ -203,46 +203,15 @@ router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet',
     validateIntegerParameter('workoutId'), 
     validateIntegerParameter('exerciseId'), 
     validateIntegerParameter('exerciseSet'), 
+    mw.checkWorkoutExistsById,
+    mw.checkExerciseExistsById,
+    mw.checkExerciseSetExistsInWorkout,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { workoutId, exerciseId, exerciseSet } = req.params;
 
-        const workoutIdExists = await dbWorkouts.checkWorkoutByIdExists(workoutId, req.appIsBeingTested);
-
-        if (!workoutIdExists) {
-            return res.status(404).json({
-                msg: `Workout with id ${workoutId} does not exist`,
-            });
-        }
-
-        const exerciseIdExists = await dbExercises.checkExerciseByIdExists(exerciseId, req.appIsBeingTested);
-
-        if (!exerciseIdExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseId} does not exist`,
-            });
-        }
-
-        const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested)
-        const exercises = workout.exercises;
-
-        const setExists = exercises.filter((ex) => {
-            return (ex.set === exerciseSet) && (ex.id === exerciseId);
-        }).length > 0
-
-        if (!setExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseId} does not contain set ${exerciseSet}`,
-            });
-        }
-
         const deletedExercise = await dbWorkouts.deleteSetFromExercise(workoutId, exerciseId, exerciseSet, req.appIsBeingTested);
-
-        if (deletedExercise === undefined) {
-            return res.status(404).json({
-                msg: "Workout not found",
-            });
-        }
 
         res.status(200).json(deletedExercise);
     }

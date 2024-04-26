@@ -52,6 +52,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('exerciseset is string', async () => {
                     const response = await request.delete(
@@ -72,6 +81,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
                         BASE_ENDPOINT + `/${workout.id}` + `/exercises/${initialExercise.id}/-23`
                     );
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
+                    )
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 
@@ -104,9 +122,20 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
             let response;
             
             beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 response = await request.delete(
                     BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
                 )
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
             });
             
             it("status code of 200", async () => {
