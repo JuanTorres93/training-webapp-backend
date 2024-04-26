@@ -52,6 +52,19 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
         });
 
         describe('happy path', () => {
+            beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
+            });
+
             it("status code of 200", async () => {
                 const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
                 expect(response.statusCode).toStrictEqual(200);
@@ -94,6 +107,22 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+                    expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
                     const response = await request.get(BASE_ENDPOINT + '/1');

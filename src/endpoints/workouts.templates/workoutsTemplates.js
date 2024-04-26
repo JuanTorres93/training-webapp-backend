@@ -31,23 +31,20 @@ router.get('/truncate', async (req, res, next) => {
     res.status(200).send(truncatedTable);
 });
 
-
 // Get workout template by id
 router.get('/:templateId', 
-    validateIntegerParameter('templateId'), async (req, res, next) => {
-    // TODO implement 401 and 403 response cases
+    validateIntegerParameter('templateId'), 
+    mw.checkWorkoutTemplateExistsById,
+    mw.authenticatedUser,
+    async (req, res, next) => {
+    // TODO implement 403 response cases
     const { templateId } = req.params;
 
     const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
 
-    if (workoutTemplate === undefined) {
-        return res.status(404).json({
-            msg: "workout not found",
-        });
-    }
-
     res.status(200).json(workoutTemplate);
 });
+
 
 // ===================================
 // ========== POST requests ==========
@@ -151,7 +148,6 @@ router.put('/:templateId',
     }
 );
 
-
 // update exercise in workout template
 router.put('/:templateId/exercises/:exerciseId', 
     workoutsTemplatesValidators.validateUpdateExerciseInWorkoutTemplateParams,
@@ -191,6 +187,7 @@ router.put('/:templateId/exercises/:exerciseId',
         res.status(200).json(updatedExercise);
     }
 );
+
 
 // =====================================
 // ========== DELETE requests ==========

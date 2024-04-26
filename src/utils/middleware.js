@@ -1,6 +1,7 @@
 const dbUsers = require('../db/users');
 const dbExercises = require('../db/exercises');
 const dbWorkouts = require('../db/workouts');
+const dbWorkoutsTemplates = require('../db/workoutsTemplates');
 const utils = require('./utils');
 const { validationResult } = require('express-validator');
 const hash = require('../hashing');
@@ -173,6 +174,21 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     next();
 }
 
+const checkWorkoutTemplateExistsById = async (req, res, next) => {
+    // IMPORTANT: This middleware must be called after validating workoutId parameter
+    const templateId = (req.params.templateId) ? req.params.templateId: req.body.templateId;
+
+    const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
+
+    if (!template) {
+        return res.status(404).json({
+            msg: 'Template not found',
+        });
+    };
+
+    next();
+}
+
 const hashPassword = async (req, res, next) => {
     // IMPORTANT use this middleware after validating password
     const { password } = req.body;
@@ -195,5 +211,6 @@ module.exports = {
     checkExerciseExistsById,
     checkWorkoutExistsById,
     checkExerciseSetExistsInWorkout,
+    checkWorkoutTemplateExistsById,
     hashPassword,
 }
