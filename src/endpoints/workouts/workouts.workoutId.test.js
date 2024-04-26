@@ -48,8 +48,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
     });
 
     describe('post requests', () => {
-        let response;
-
         const addExerciseRequest = {
             exerciseId: exercisesIds[exercises[0][0]],
             exerciseSet: 1,
@@ -61,11 +59,26 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         beforeAll(async () => {
             // Added here due to async problems
             addExerciseRequest.exerciseId = exercisesIds[exercises[0][0]];
-                
-            response = await request.post(BASE_ENDPOINT + `/${id}`).send(addExerciseRequest);
         });
 
         describe('happy path', () => {
+            let response;
+
+            beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
+                response = await request.post(BASE_ENDPOINT + `/${id}`).send(addExerciseRequest);
+            });
+
+            afterAll(async () => {
+                // Logout user
+                await request.get('/logout');
+            });
+
             it('returns exercise', () => {
                 expect(response.body).toHaveProperty('exerciseId');
                 expect(response.body).toHaveProperty('exerciseSet');
@@ -80,6 +93,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
 
         describe('unhappy paths', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('400 response when', () => {
                 it('workoutId is string', async () => {
                     const response = await request.post(BASE_ENDPOINT + '/wrongId').send(addExerciseRequest);
@@ -116,6 +138,13 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                     })
 
                     expect(res.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.post(BASE_ENDPOINT + `/${id}`).send(addExerciseRequest);
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 

@@ -108,7 +108,7 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
 
 const checkUserExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating userId parameter
-    const { userId } = req.params;
+    const userId = (req.params.userId) ? req.params.userId: req.body.userId;
 
     const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
 
@@ -123,7 +123,7 @@ const checkUserExistsById = async (req, res, next) => {
 
 const checkExerciseExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating exerciseId parameter
-    const { exerciseId } = req.params;
+    const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
 
     const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
 
@@ -138,7 +138,7 @@ const checkExerciseExistsById = async (req, res, next) => {
 
 const checkWorkoutExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
-    const { workoutId } = req.params;
+    const workoutId = (req.params.workoutId) ? req.params.workoutId: req.body.workoutId;
 
     const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
 

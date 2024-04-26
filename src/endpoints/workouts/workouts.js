@@ -33,7 +33,7 @@ router.get('/:workoutId',
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     async (req, res, next) => {
-    // TODO implement 401 and 403 response cases
+    // TODO implement 403 response cases
     const { workoutId } = req.params;
 
     const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
@@ -64,8 +64,11 @@ router.post('/',
 router.post('/:workoutId', 
     workoutsValidators.validateAddExerciseToWorkoutParams,
     validateIntegerParameter('workoutId'),
+    mw.checkWorkoutExistsById,
+    mw.checkExerciseExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 401 and 403 response
+        // TODO implement 403 response
         const { workoutId } = req.params;
 
         const exerciseData = {
@@ -75,22 +78,6 @@ router.post('/:workoutId',
             exerciseSet: req.body.exerciseSet,
             workoutId,
         };
-
-        const workoutIdExists = await dbWorkouts.checkWorkoutByIdExists(workoutId, req.appIsBeingTested);
-
-        if (!workoutIdExists) {
-            return res.status(404).json({
-                msg: `Workout with id ${workoutId} does not exist`,
-            });
-        }
-
-        const exerciseIdExists = await dbExercises.checkExerciseByIdExists(exerciseData.exerciseId, req.appIsBeingTested);
-
-        if (!exerciseIdExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseData.exerciseId} does not exist`,
-            });
-        }
 
         // TODO CHECK primary key is not duplicated
 
