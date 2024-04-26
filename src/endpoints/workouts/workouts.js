@@ -197,7 +197,6 @@ router.delete('/:workoutId/exercises/:exerciseId',
     }
 );
 
-
 // delete exercise set from workout
 router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet', 
     validateIntegerParameter('workoutId'), 
