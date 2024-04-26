@@ -54,20 +54,12 @@ router.get('/:templateId',
 // ===================================
 
 // Create new workout
-router.post('/', workoutsTemplatesValidators.validateCreateWorkoutTemplateParams,
+router.post('/', 
+    workoutsTemplatesValidators.validateCreateWorkoutTemplateParams,
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 401 and 403 response
-
-        // TODO check user exists
-        const { userId } = req.body;
-
-        const user = await dbUsers.selectUserById(userId, req.appIsBeingTested)
-
-        if (user === undefined) {
-            return res.status(400).json({
-                msg: `Error. User with id ${userId} does not exist.`,
-            });
-        }
+        // TODO implement 403 response
 
         try {
             const createdWorkoutTemplate = await dbWorkoutsTemplates.createWorkoutTemplate(

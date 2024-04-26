@@ -124,6 +124,19 @@ describe(BASE_ENDPOINT, () => {
         });
 
         describe('happy path', () => {
+            beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
+            });
+
             it('returns 201 status code', async () => {
                 const req = createNewTemplateRequest(user.id, 'template test', 'template description')
                 const response = await request.post(BASE_ENDPOINT).send(req);
@@ -144,6 +157,15 @@ describe(BASE_ENDPOINT, () => {
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('400 response when', () => {
                 it('mandatory parameter is missing', async () => {
                     // Missing userId
@@ -163,6 +185,15 @@ describe(BASE_ENDPOINT, () => {
                     response = await request.post(BASE_ENDPOINT).send(reqMissingAlias);
 
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const req = createNewTemplateRequest(user.id, 'template test', 'template description')
+                    const response = await request.post(BASE_ENDPOINT).send(req);
+
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
         });
