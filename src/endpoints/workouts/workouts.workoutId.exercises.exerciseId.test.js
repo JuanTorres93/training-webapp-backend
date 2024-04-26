@@ -60,7 +60,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                 const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
                 const workoutId = pushResponse.body.id;
 
-                // login user
+                // login user. HERE BECAUSE PREVIOUS CALLS LOGOUT THE USER
                 await request.post('/login').send({
                     username: newUserReq.alias,
                     password: newUserReq.password,
@@ -72,6 +72,17 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
 
                 // logout user
                 await request.get('/logout');
+
+                // login user. HERE BECAUSE PREVIOUS CALLS LOGOUT THE USER
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
             });
 
             it('updates only reps', async () => {
@@ -80,9 +91,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                     reps: 88,
                 };
 
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 const response = await request.put(
                     BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
                 ).send(req);
+
+                // logout user
+                await request.get('/logout');
 
                 const updatedWorkout = response.body;
                 expect(updatedWorkout.exerciseId).toStrictEqual(initialExercise.id);
@@ -135,6 +155,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                 reps: 34,
             };
 
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('workoutid is string', async () => {
                     const response = await request.put(
@@ -176,6 +205,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                         BASE_ENDPOINT + `/${workout.id}` + `/exercises/-23`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 
