@@ -2,7 +2,6 @@ const express = require('express');
 
 const workoutsTemplatesValidators = require('../../validators/workoutsTemplates.js');
 const dbWorkoutsTemplates = require('../../db/workoutsTemplates.js');
-const dbUsers = require('../../db/users.js');
 const dbExercises = require('../../db/exercises.js');
 const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
 const mw = require('../../utils/middleware.js');
@@ -71,37 +70,19 @@ router.post('/',
 });
 
 // Add exercise to workout template
-router.post('/:workoutTemplateId', 
+router.post('/:templateId', 
     workoutsTemplatesValidators.validateAddExerciseToWorkoutTemplateParams,
-    validateIntegerParameter('workoutTemplateId'),
+    validateIntegerParameter('templateId'),
+    mw.checkWorkoutTemplateExistsById,
+    mw.checkExerciseExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 401 and 403 response
-        const { workoutTemplateId } = req.params;
-        const { exerciseId } = req.body;
-
-        // Check template exists
-        const templateExists = await dbWorkoutsTemplates.checkWorkoutTemplateByIdExists(
-            workoutTemplateId, req.appIsBeingTested
-        );
-
-        if (!templateExists) {
-            return res.status(404).json({
-                msg: `Template with id ${workoutTemplateId} does not exist`,
-            });
-        }
-
-        // Check exercise exists
-        const exerciseIdExists = await dbExercises.checkExerciseByIdExists(exerciseId, req.appIsBeingTested);
-
-        if (!exerciseIdExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseId} does not exist`,
-            });
-        }
+        // TODO implement 403 response
+        const { templateId } = req.params;
 
         const exercise = {
             ...req.body,
-            workoutTemplateId,
+            workoutTemplateId: templateId,
         };
 
         try {
