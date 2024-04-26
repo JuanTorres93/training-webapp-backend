@@ -108,6 +108,8 @@ router.post('/:workoutId',
 router.put('/:workoutId', 
     workoutsValidators.validateUpdateWorkoutParams,
     validateIntegerParameter('workoutId'), 
+    mw.checkWorkoutExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
         // TODO implement 403 and 401 response cases
         const { workoutId } = req.params;
@@ -119,12 +121,6 @@ router.put('/:workoutId',
         };
 
         const updatedWorkout = await dbWorkouts.updateWorkout(workoutId, updateWorkoutInfo, req.appIsBeingTested);
-
-        if (updatedWorkout === undefined) {
-            return res.status(404).json({
-                msg: "Workout not found",
-            });
-        }
 
         res.status(200).json(updatedWorkout);
     }

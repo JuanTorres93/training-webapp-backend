@@ -284,7 +284,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             let response;
 
             beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 response = await request.put(BASE_ENDPOINT + `/${workoutId}`).send(putBodyRequest);
+            });
+
+            afterAll(async () => {
+                // Logout user
+                await request.get('/logout');
             });
 
             it('returns updated workout', () => {
@@ -304,6 +315,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('workoutid is string', async () => {
                     const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
@@ -318,6 +338,13 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 it('workoutid is not positive', async () => {
                     const response = await request.put(BASE_ENDPOINT + '/-23').send(putBodyRequest);
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.put(BASE_ENDPOINT + `/${workoutId}`).send(putBodyRequest);
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 
