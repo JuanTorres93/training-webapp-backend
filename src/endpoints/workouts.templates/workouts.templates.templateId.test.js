@@ -269,7 +269,6 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
     });
 
     describe('put requests', () => {
-        let user;
         let newTemplate;
         let newExercise;
 
@@ -282,6 +281,19 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
         });
 
         describe('happy path', () => {
+            beforeAll(async () => {
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+            });
+
+            afterAll(async () => {
+                // logout user
+                await request.get('/logout');
+            });
+
             it('returns 200 status code', async () => {
                 const req = {
                     alias: 'test 200 code',
@@ -308,20 +320,11 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             });
 
             it('returns updated template with exercises', async () => {
-                // login user
-                await request.post('/login').send({
-                    username: newUserReq.alias,
-                    password: newUserReq.password,
-                });
-
                 await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
                     exerciseId: newExercise.id,
                     exerciseOrder: 1,
                     exerciseSets: 3,
                 });
-
-                // logout user
-                await request.get('/logout');
 
                 const req = {
                     alias: 'test with exercises',
@@ -347,11 +350,20 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
         describe('unhappy path', () => {
             let req;
 
-            beforeAll(() => {
+            beforeAll(async () => {
                 req = {
                     alias: "new alias",
                     description: "new description",
                 };
+
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
+                // logout user
+                await request.get('/logout');
             });
 
             describe('returns 400 error code when', () => {
@@ -368,6 +380,17 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 it('templateId is not positive', async () => {
                     const response = await request.put(BASE_ENDPOINT + '/-23').send(req);
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const req = {
+                        alias: 'test 200 code',
+                        description: 'new description for 200 code',
+                    };
+                    const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 

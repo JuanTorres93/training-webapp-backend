@@ -105,8 +105,10 @@ router.post('/:templateId',
 router.put('/:templateId', 
     workoutsTemplatesValidators.validateUpdateWorkoutTemplateParams,
     validateIntegerParameter('templateId'), 
+    mw.checkWorkoutTemplateExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { templateId } = req.params;
         const { alias, description } = req.body;
 
@@ -118,12 +120,6 @@ router.put('/:templateId',
         const updatedWorkoutTemplate = await dbWorkoutsTemplates.updateWorkoutTemplate(
             templateId, updateWorkoutTemplateInfo, req.appIsBeingTested
         );
-
-        if (updatedWorkoutTemplate === undefined) {
-            return res.status(404).json({
-                msg: "Workout template not found",
-            });
-        }
 
         res.status(200).json(updatedWorkoutTemplate);
     }
