@@ -46,7 +46,7 @@ const setUp = async () => {
     };
 };
 
-describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
+describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}', () => {
     describe('put request', () => {
         describe('happy path', () => {
             let newTemplate;
@@ -68,7 +68,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
                 };
 
                 const response = await request.put(
-                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}`
+                BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                 ).send(req);
 
                 expect(response.statusCode).toStrictEqual(200);
@@ -76,11 +76,11 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
 
             it('updates only exercise order', async () => {
                 const req = {
-                    exerciseOrder: 9,
+                    newExerciseOrder: 9,
                 };
 
                 const response = await request.put(
-                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}`
+                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                 ).send(req);
 
                 const updatedWorkoutTemplateExercise = response.body;
@@ -97,7 +97,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
                 };
 
                 const response = await request.put(
-                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}`
+                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                 ).send(req);
 
                 const updatedWorkoutTemplateExercise = response.body;
@@ -131,42 +131,63 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
             describe('returns 400 error code when', () => {
                 it('templateid is string', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + '/wrongId' + `/exercises/${newExercise.id}`
+                        BASE_ENDPOINT + '/wrongId' + `/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('templateid is boolean', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + '/true' + `/exercises/${newExercise.id}`
+                        BASE_ENDPOINT + '/true' + `/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('templateid is not positive', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + '/-23' + `/exercises/${newExercise.id}`
+                        BASE_ENDPOINT + '/-23' + `/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is string', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId/${addedExercise.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is boolean', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true/${addedExercise.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is not positive', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${addedExercise.exerciseOrder}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseOrder is string', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/wrongId`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseOrder is boolean', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/true`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseOrder is not positive', async () => {
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/-23`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
@@ -191,7 +212,6 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
     });
 
     describe('delete requests', () => {
-        // TODO change this describe block to its own file? Or change above describe to same endpoint(finishing with exerciseOrder)?
         let newTemplate;
         let newExercise;
         let addedExercise;
@@ -244,6 +264,27 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}', () => {
                 it('exerciseid is not positive', async () => {
                     const response = await request.delete(
                         BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${addedExercise.order}`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseOrder is string', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/wrongId`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseOrder is boolean', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/true`
+                    );
+                    expect(response.statusCode).toStrictEqual(400);
+                });
+
+                it('exerciseOrder is not positive', async () => {
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/-23`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });

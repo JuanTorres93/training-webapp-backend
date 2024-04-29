@@ -755,7 +755,7 @@ paths:
         '404':
           $ref: '#/components/responses/404'
               
-  /workouts/templates/{templateId}/exercises/{exerciseId}:
+  /workouts/templates/{templateId}/exercises/{exerciseId}/{exerciseOrder}:
     parameters:
       - name: templateId
         in: path
@@ -767,6 +767,12 @@ paths:
         in: path
         required: true
         description: Exercise id
+        schema:
+          type: integer
+      - name: exerciseOrder
+        in: path
+        required: true
+        description: Exercise order
         schema:
           type: integer
 
@@ -807,26 +813,6 @@ paths:
               UpdateExerciseToWorkoutTemplate:
                 $ref: '#/components/examples/UpdateExerciseToWorkoutTemplate'
 
-  /workouts/templates/{templateId}/exercises/{exerciseId}/{exerciseOrder}:
-    parameters:
-      - name: templateId
-        in: path
-        required: true
-        description: Template id
-        schema:
-          type: integer
-      - name: exerciseId
-        in: path
-        required: true
-        description: Exercise id
-        schema:
-          type: integer
-      - name: exerciseOrder
-        in: path
-        required: true
-        description: Exercise order
-        schema:
-          type: integer
 
     delete:
       tags:
@@ -1140,7 +1126,7 @@ components:
     ReqBodyUpdateExerciseFromWorkoutTemplate:
       type: object
       properties:
-        exerciseOrder:
+        newExerciseOrder:
           type: integer
           description: Order of the exercise in the template
         exerciseSets:
@@ -1552,5 +1538,5 @@ components:
 
     UpdateExerciseToWorkoutTemplate:
       value:
-        exerciseOrder: 6
+        newExerciseOrder: 6
         exerciseSets: 4

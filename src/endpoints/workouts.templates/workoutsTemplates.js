@@ -126,17 +126,19 @@ router.put('/:templateId',
 );
 
 // update exercise in workout template
-router.put('/:templateId/exercises/:exerciseId', 
+router.put('/:templateId/exercises/:exerciseId/:exerciseOrder', 
     workoutsTemplatesValidators.validateUpdateExerciseInWorkoutTemplateParams,
     validateIntegerParameter('templateId'), 
     validateIntegerParameter('exerciseId'), 
+    validateIntegerParameter('exerciseOrder'), 
     async (req, res, next) => {
         // TODO implement 403 and 401 response cases
-        const { templateId, exerciseId } = req.params;
-        const { exerciseOrder, exerciseSets } = req.body;
+        const { templateId, exerciseId, exerciseOrder } = req.params;
+        const { newExerciseOrder, exerciseSets } = req.body;
 
+        // TODO make this a middleware
         const exerciseInWorkoutTemplateExists = await dbWorkoutsTemplates.checkExerciseInWorkoutExists(
-            templateId, exerciseId, req.appIsBeingTested
+            templateId, exerciseId, exerciseOrder, req.appIsBeingTested
         );
 
         if (!exerciseInWorkoutTemplateExists) {
@@ -147,12 +149,12 @@ router.put('/:templateId/exercises/:exerciseId',
 
         const updateExerciseInfo = {
             exerciseId,
-            exerciseOrder,
+            newExerciseOrder,
             exerciseSets,
         };
 
         const updatedExercise = await dbWorkoutsTemplates.updateExerciseFromWorkoutTemplate(
-            templateId, updateExerciseInfo, req.appIsBeingTested
+            templateId, exerciseOrder, updateExerciseInfo, req.appIsBeingTested
         );
 
         if (updatedExercise === undefined) {

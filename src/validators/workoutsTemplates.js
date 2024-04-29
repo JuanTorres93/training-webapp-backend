@@ -11,6 +11,7 @@ const description = 'description';
 // Exercises params
 const exerciseId = 'exerciseId';
 const exerciseOrder = 'exerciseOrder';
+const newExerciseOrder = 'newExerciseOrder';
 const exerciseSets = 'exerciseSets';
 
 
@@ -84,7 +85,7 @@ const validateUpdateWorkoutTemplateParams = [
 
 
 const validateUpdateExerciseInWorkoutTemplateParams = [
-    check(exerciseOrder)
+    check(newExerciseOrder)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
         .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))

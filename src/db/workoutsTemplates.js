@@ -366,9 +366,9 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
     return workoutSpec;
 }
 
-const checkExerciseInWorkoutExists = async (templateId, exerciseId, appIsBeingTested = undefined) => {
-    let q = "SELECT workout_template_id FROM workout_template_exercises WHERE workout_template_id = $1 AND exercise_id = $2;";
-    const params = [templateId, exerciseId];
+const checkExerciseInWorkoutExists = async (templateId, exerciseId, exerciseOrder, appIsBeingTested = undefined) => {
+    let q = "SELECT workout_template_id FROM workout_template_exercises WHERE workout_template_id = $1 AND exercise_id = $2 AND exercise_order = $3;";
+    const params = [templateId, exerciseId, exerciseOrder];
 
     const selectedWorkoutTemplate = await new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -386,17 +386,18 @@ const checkExerciseInWorkoutExists = async (templateId, exerciseId, appIsBeingTe
     return Number.isInteger(selectedWorkoutTemplate.workout_template_id);
 };
 
-const updateExerciseFromWorkoutTemplate = (workoutTemplateId, 
-    { exerciseId, exerciseSets, exerciseOrder }, 
+const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,
+    { exerciseId, exerciseSets, newExerciseOrder  }, 
     appIsBeingTested = undefined) => {
 
+
     // If theres is nothing to update, then do nothing
-    if (exerciseId === undefined && exerciseSets === undefined && exerciseOrder === undefined) {
+    if (exerciseId === undefined && exerciseSets === undefined && newExerciseOrder === undefined) {
         return
     }
 
     const fieldsToUpdate = {
-        exercise_order: exerciseOrder,
+        exercise_order: newExerciseOrder,
         exercise_sets: exerciseSets,
     };
 
@@ -418,7 +419,8 @@ const updateExerciseFromWorkoutTemplate = (workoutTemplateId,
     q = q.substring(0, q.length - 2) + " ";
     q += "WHERE ";
     q +=    `workout_template_id = $${paramDolarCounter} AND `;
-    q +=    `exercise_id = $${paramDolarCounter + 1} `;
+    q +=    `exercise_id = $${paramDolarCounter + 1} AND `;
+    q +=    `exercise_order = $${paramDolarCounter + 2} `;
     q += "RETURNING  " +
          "	workout_template_id,  " +
          "	exercise_id,  " +
@@ -427,6 +429,7 @@ const updateExerciseFromWorkoutTemplate = (workoutTemplateId,
 
     params.push(workoutTemplateId);
     params.push(exerciseId);
+    params.push(exerciseOrder);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
