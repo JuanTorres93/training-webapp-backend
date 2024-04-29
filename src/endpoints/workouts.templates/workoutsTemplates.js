@@ -173,19 +173,15 @@ router.put('/:templateId/exercises/:exerciseId',
 // delete workout by id
 router.delete('/:templateId', 
     validateIntegerParameter('templateId'), 
+    mw.checkWorkoutTemplateExistsById,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { templateId } = req.params;
 
         const deletedWorkoutTemplate = await dbWorkoutsTemplates.deleteWorkoutTemplate(
             templateId, req.appIsBeingTested
         );
-
-        if (deletedWorkoutTemplate === undefined) {
-            return res.status(404).json({
-                msg: "Workout template not found",
-            });
-        }
 
         res.status(200).json(deletedWorkoutTemplate);
     }

@@ -417,6 +417,15 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('templateId is string', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/wrongId');
@@ -434,6 +443,13 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 });
             });
 
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+                    expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/1');
@@ -444,13 +460,34 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
         describe('happy path', () => {
             it("status code of 200", async () => {
+                // login user. HERE CAUSE setUp ends loggin out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+
+                // logout user
+                await request.get('/logout');
+
                 expect(response.statusCode).toStrictEqual(200);
             });
 
             it('returns deleted template with NO exercises', async () => {
                 const { newTemplate } = await setUp();
+
+                // login user. HERE CAUSE setUp ends loggin out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+
+                // logout user
+                await request.get('/logout');
+
                 const workoutTemplate = response.body;
 
                 expect(workoutTemplate).toHaveProperty('id');
@@ -464,7 +501,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             it('returns deleted template with exercises', async () => {
                 const { newTemplate, newExercise } = await setUp();
 
-                // login user
+                // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
                     username: newUserReq.alias,
                     password: newUserReq.password,
@@ -476,10 +513,11 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                     exerciseSets: 3,
                 });
 
+                const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+
                 // logout user
                 await request.get('/logout');
 
-                const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
                 const workoutTemplate = response.body;
 
                 expect(workoutTemplate).toHaveProperty('id');
