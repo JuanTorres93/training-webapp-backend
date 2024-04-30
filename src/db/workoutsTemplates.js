@@ -366,7 +366,7 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
     return workoutSpec;
 }
 
-const checkExerciseInWorkoutExists = async (templateId, exerciseId, exerciseOrder, appIsBeingTested = undefined) => {
+const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exerciseOrder, appIsBeingTested = undefined) => {
     let q = "SELECT workout_template_id FROM workout_template_exercises WHERE workout_template_id = $1 AND exercise_id = $2 AND exercise_order = $3;";
     const params = [templateId, exerciseId, exerciseOrder];
 
@@ -495,7 +495,7 @@ module.exports = {
     checkWorkoutTemplateByIdExists,
     updateWorkoutTemplate,
     deleteWorkoutTemplate,
-    checkExerciseInWorkoutExists,
+    checkExerciseInWorkoutTemplateExists,
     updateExerciseFromWorkoutTemplate,
     deleteExerciseFromWorkoutTemplate,
 };

@@ -67,9 +67,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                     exerciseSets: 8,
                 };
 
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 const response = await request.put(
-                BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                 ).send(req);
+                
+                // logout user
+                await request.get('/logout');
 
                 expect(response.statusCode).toStrictEqual(200);
             });
@@ -79,9 +88,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                     newExerciseOrder: 9,
                 };
 
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 const response = await request.put(
                     BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                 ).send(req);
+                
+                // logout user
+                await request.get('/logout');
 
                 const updatedWorkoutTemplateExercise = response.body;
 
@@ -96,9 +114,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                     exerciseSets: 9,
                 };
 
+                // login user
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
                 const response = await request.put(
                     BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                 ).send(req);
+                
+                // logout user
+                await request.get('/logout');
 
                 const updatedWorkoutTemplateExercise = response.body;
 
@@ -126,6 +153,13 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 newTemplate = setUpInfo.newTemplate;
                 newExercise = setUpInfo.newExercise;
                 addedExercise = setUpInfo.addedExercise;
+
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
             });
 
             describe('returns 400 error code when', () => {
@@ -190,6 +224,20 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                         BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/-23`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
+                });
+            });
+
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const req = {
+                        exerciseOrder: 9,
+                        exerciseSets: 8,
+                    };
+
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    ).send(req);
+                    expect(response.statusCode).toStrictEqual(401);
                 });
             });
 

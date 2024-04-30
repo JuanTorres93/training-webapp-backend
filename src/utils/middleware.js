@@ -189,6 +189,25 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
     next();
 }
 
+const checkExerciseOrderExistsInWorkoutTemplate = async (req, res, next) => {
+    // IMPORTANT: This middleware must be called after validating workoutId parameter
+    const templateId = (req.params.templateId) ? req.params.templateId: req.body.templateId;
+    const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
+    const exerciseOrder = (req.params.exerciseOrder) ? req.params.exerciseOrder : req.body.exerciseOrder;
+
+    const exerciseInWorkoutTemplateExists = await dbWorkoutsTemplates.checkExerciseInWorkoutTemplateExists(
+        templateId, exerciseId, exerciseOrder, req.appIsBeingTested
+    );
+
+    if (!exerciseInWorkoutTemplateExists) {
+        return res.status(404).json({
+            msg: `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId} in the order ${exerciseOrder}`,
+        });
+    }
+
+    next();
+}
+
 const hashPassword = async (req, res, next) => {
     // IMPORTANT use this middleware after validating password
     const { password } = req.body;
@@ -211,6 +230,7 @@ module.exports = {
     checkExerciseExistsById,
     checkWorkoutExistsById,
     checkExerciseSetExistsInWorkout,
+    checkExerciseOrderExistsInWorkoutTemplate,
     checkWorkoutTemplateExistsById,
     hashPassword,
 }

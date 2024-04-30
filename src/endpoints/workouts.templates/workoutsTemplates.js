@@ -131,21 +131,14 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
     validateIntegerParameter('templateId'), 
     validateIntegerParameter('exerciseId'), 
     validateIntegerParameter('exerciseOrder'), 
+    mw.checkExerciseExistsById,
+    mw.checkWorkoutTemplateExistsById,
+    mw.checkExerciseOrderExistsInWorkoutTemplate,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { templateId, exerciseId, exerciseOrder } = req.params;
         const { newExerciseOrder, exerciseSets } = req.body;
-
-        // TODO make this a middleware
-        const exerciseInWorkoutTemplateExists = await dbWorkoutsTemplates.checkExerciseInWorkoutExists(
-            templateId, exerciseId, exerciseOrder, req.appIsBeingTested
-        );
-
-        if (!exerciseInWorkoutTemplateExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId}`,
-            });
-        }
 
         const updateExerciseInfo = {
             exerciseId,
@@ -156,12 +149,6 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
         const updatedExercise = await dbWorkoutsTemplates.updateExerciseFromWorkoutTemplate(
             templateId, exerciseOrder, updateExerciseInfo, req.appIsBeingTested
         );
-
-        if (updatedExercise === undefined) {
-            return res.status(404).json({
-                msg: "Workout template or exercise not found",
-            });
-        }
 
         res.status(200).json(updatedExercise);
     }
