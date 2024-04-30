@@ -15,8 +15,6 @@ const router = express.Router();
 
 // Get all users
 router.get('/', async (req, res, next) => {
-    // TODO implement 403 response case
-
     const users = await dbUsers.selectAllUsers(req.appIsBeingTested);
 
     res.status(200).send(users);

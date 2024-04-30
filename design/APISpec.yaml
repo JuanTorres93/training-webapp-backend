@@ -24,9 +24,6 @@ paths:
                 items:
                     $ref: '#/components/schemas/ResponseUser'
 
-        '403':
-          $ref: '#/components/responses/403'
-
     post:
       tags:
         - Users
@@ -168,9 +165,6 @@ paths:
                 
         '401':
           $ref: '#/components/responses/401'
-
-        '403':
-          $ref: '#/components/responses/403'
                 
       requestBody:
         content:
