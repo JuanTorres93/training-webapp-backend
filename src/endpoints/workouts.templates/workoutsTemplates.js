@@ -181,37 +181,17 @@ router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder',
     validateIntegerParameter('templateId'), 
     validateIntegerParameter('exerciseId'), 
     validateIntegerParameter('exerciseOrder'), 
+    mw.checkWorkoutTemplateExistsById,
+    mw.checkExerciseExistsById,
+    mw.checkExerciseOrderExistsInWorkoutTemplate,
+    mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
+        // TODO implement 403 response cases
         const { templateId, exerciseId, exerciseOrder } = req.params;
-
-        const workoutTemplateIdExists = await dbWorkoutsTemplates.checkWorkoutTemplateByIdExists(
-            templateId, req.appIsBeingTested
-        );
-
-        if (!workoutTemplateIdExists) {
-            return res.status(404).json({
-                msg: `Workout template with id ${templateId} does not exist`,
-            });
-        }
-
-        const exerciseIdExists = await dbExercises.checkExerciseByIdExists(exerciseId, req.appIsBeingTested);
-
-        if (!exerciseIdExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseId} does not exist`,
-            });
-        }
 
         const deletedExercise = await dbWorkoutsTemplates.deleteExerciseFromWorkoutTemplate(
             templateId, exerciseId, exerciseOrder, req.appIsBeingTested
         );
-
-        if (deletedExercise === undefined) {
-            return res.status(404).json({
-                msg: "Workout not found",
-            });
-        }
 
         res.status(200).json(deletedExercise[0]);
     }

@@ -273,6 +273,15 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
         });
 
         describe('unhappy path', () => {
+            beforeAll(async () => {
+                // Ensure user is logged out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+                await request.get('/logout');
+            });
+
             describe('returns 400 error code when', () => {
                 it('templateid is string', async () => {
                     const response = await request.delete(
@@ -338,6 +347,14 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 });
             });
 
+            describe('401 response when', () => {
+                it('user is not logged in', async () => {
+                    const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    const response = await request.delete(endpoint)
+                    expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
             describe('404 response when', () => {
                 it('templateid is valid but template with that id does not exist', async () => {
                     const endpoint = BASE_ENDPOINT + '/1' + `/exercises/${addedExercise.exerciseId}/${addedExercise.exerciseOrder}`;
@@ -355,18 +372,49 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
         });
 
         describe('happy path', () => {
-            let response;
+            let newTemplate;
+            let newExercise;
+            let addedExercise;
 
-            beforeAll(async () => {
-                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
-                response = await request.delete(endpoint)
+            beforeEach(async () => {
+                const setUpInfo = await setUp();
+
+                newTemplate = setUpInfo.newTemplate;
+                newExercise = setUpInfo.newExercise;
+                addedExercise = setUpInfo.addedExercise;
             });
 
             it("status code of 200", async () => {
+                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+
+                // login user. HERE CAUSE setUp ends loggin out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
+                const response = await request.delete(endpoint)
+
+                // logout user
+                await request.get('/logout');
+
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('returns deleted exercise', () => {
+            it('returns deleted exercise', async () => {
+                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+
+                // login user. HERE CAUSE setUp ends loggin out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
+                const response = await request.delete(endpoint)
+
+                // logout user
+                await request.get('/logout');
+
                 const deletedExercise = response.body;
 
                 expect(deletedExercise.workoutTemplateId).toStrictEqual(addedExercise.workoutTemplateId);
