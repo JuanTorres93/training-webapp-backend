@@ -12,7 +12,6 @@ const router = express.Router();
 // ========== GET requests ==========
 // ==================================
 
-// TODO add authentication and authorization for customer endpoints
 
 // Get all users
 router.get('/', async (req, res, next) => {
@@ -128,8 +127,8 @@ router.delete('/:userId',
     validateIntegerParameter('userId'), 
     mw.checkUserExistsById,
     mw.authenticatedUser,
+    mw.userCanOnlyAccessItsOwnInformation,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
         const { userId } = req.params;
 
         const deletedUser = await dbUsers.deleteUser(userId, req.appIsBeingTested);

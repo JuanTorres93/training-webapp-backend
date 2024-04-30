@@ -243,11 +243,13 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
         // entry in the database
         describe('unhappy path', () => {
             let newUser;
+            let otherUser;
 
             beforeAll(async () => {
                 // Test's set up
                 const setUpInfo = await setUp();
                 newUser = setUpInfo.newUser;
+                otherUser = setUpInfo.otherUser;
 
                 // Ensure user is logged out
                 await request.get('/logout');
@@ -274,6 +276,22 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 it('user is not logged in', async () => {
                     const response = await request.delete(BASE_ENDPOINT + `/${newUser.id}`);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to delete another user', async () => {
+                    // login user
+                    await request.post('/login').send({
+                        username: successfulPostRequest.alias,
+                        password: successfulPostRequest.password,
+                    });
+
+                    const response = await request.delete(BASE_ENDPOINT + `/${otherUser.id}`)
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 
