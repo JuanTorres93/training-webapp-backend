@@ -92,8 +92,8 @@ router.put('/:userId',
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.hashPassword,
+    mw.userCanOnlyAccessItsOwnInformation,
     async (req, res, next) => {
-        // TODO implement 403 response case
         const { userId } = req.params;
         const { alias, email, password, last_name, second_last_name, img } = req.body;
 

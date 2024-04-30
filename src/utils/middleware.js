@@ -15,6 +15,22 @@ const authenticatedUser = (req, res, next) => {
     }
 };
 
+
+const userCanOnlyAccessItsOwnInformation = (req, res, next) => {
+    const loggedUser = req.session.passport.user;
+    const loggedUserId = loggedUser.id;
+
+    const userIdInRequest = (req.params.userId) ? req.params.userId: req.body.userId;
+
+    if ( (loggedUserId === userIdInRequest) && (loggedUserId !== undefined) && (loggedUserId !== null) ) {
+        next();
+    } else {
+        return res.status(403).send("Don't have permissions");
+    };
+
+
+};
+
 // This function is an example of how authorization can be implemented.
 // I have not tested it because I think I need a browser GUI to keep a session active
 // and just Postman is not enough. After posting to /login, it probably doesn't keep
@@ -223,6 +239,7 @@ const hashPassword = async (req, res, next) => {
 module.exports = {
     processIntegerURLParameter,
     authenticatedUser,
+    userCanOnlyAccessItsOwnInformation,
     checkKeysInBodyRequest,
     validateResult,
     checkUserEmailAndAliasAlreadyExist,

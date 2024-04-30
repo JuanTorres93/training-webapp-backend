@@ -17,8 +17,17 @@ const setUp = async () => {
     const newUserResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
     const newUser = newUserResponse.body;
 
+    // Add another user to db
+    const otherUserResponse = await request.post(BASE_ENDPOINT).send({
+        ...successfulPostRequest,
+        alias: 'other',
+        email: 'other@domain.com',
+    });
+    const otherUser = otherUserResponse.body;
+
     return {
         newUser,
+        otherUser,
     };
 }
 
@@ -162,17 +171,19 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
 
         describe('unhappy paths', () => {
             let newUser;
+            let otherUser;
 
             beforeAll(async () => {
                 // Test's set up
                 const setUpInfo = await setUp();
                 newUser = setUpInfo.newUser;
+                otherUser = setUpInfo.otherUser;
 
                 // Ensure user is logged out
                 await request.get('/logout');
             });
 
-            describe('returns 400 error code when', () => {
+            describe('400 response when', () => {
                 it('userid is string', async () => {
                     const response = await request.put(BASE_ENDPOINT + '/wrongId').send(putBodyRequest);
                     expect(response.statusCode).toStrictEqual(400);
@@ -189,10 +200,26 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 });
             });
 
-            describe('returns 401 error code when', () => {
+            describe('401 response when', () => {
                 it('user is not logged in', async () => {
                     const response = await request.put(BASE_ENDPOINT + `/${newUser.id}`).send(putBodyRequest);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to modify another user data', async () => {
+                    // login user
+                    await request.post('/login').send({
+                        username: successfulPostRequest.alias,
+                        password: successfulPostRequest.password,
+                    });
+
+                    const response = await request.put(BASE_ENDPOINT + `/${otherUser.id}`).send(putBodyRequest);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 
