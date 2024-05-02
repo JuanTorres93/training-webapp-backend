@@ -46,7 +46,6 @@ router.post('/',
     exerciseValidators.validateCreateExerciseParams,
     mw.authenticatedUser,
     async (req, res, next) => {
-        // TODO implement 403 response
         const userId = req.user.id;
 
         try {
@@ -71,8 +70,8 @@ router.put('/:exerciseId',
     validateIntegerParameter('exerciseId'), 
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
+    mw.exerciseBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { exerciseId } = req.params;
         const { alias, description } = req.body;
 

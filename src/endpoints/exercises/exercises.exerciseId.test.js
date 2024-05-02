@@ -1,5 +1,7 @@
 const { request, BASE_ENDPOINT, newUserReq } = require('./testsSetup');
 
+OTHER_USER_ALIAS = 'other user';
+
 const successfulPostRequest = {
     alias: "first_test_exercise",
     description: "This is the description for a test exercise",
@@ -12,6 +14,14 @@ const setUp = async () => {
     // Add user to db
     const newUserResponse = await request.post('/users').send(newUserReq);
     const newUser = newUserResponse.body;
+
+    // Add other user to db
+    const otherUserResponse = await request.post('/users').send({
+        ...newUserReq,
+        alias: OTHER_USER_ALIAS,
+        email: 'other@user.com',
+    });
+    const otherUser = otherUserResponse.body;
 
     // login user
     await request.post('/login').send({
@@ -28,6 +38,7 @@ const setUp = async () => {
 
     return {
         newExercise,
+        otherUser,
     };
 };
 
@@ -182,6 +193,22 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
                 it('user is not logged in', async () => {
                     const response = await request.put(BASE_ENDPOINT + `/${newExercise.id}`).send(putBodyRequest);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to update another user\'s exercise', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.put(BASE_ENDPOINT + `/${newExercise.id}`).send(putBodyRequest);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 

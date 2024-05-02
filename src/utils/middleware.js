@@ -11,12 +11,12 @@ const authenticatedUser = (req, res, next) => {
         const user = req.session.passport.user;
         next();
     } catch (error) {
-        return res.status(401).send("Not logged in.");
+        return res.status(401).json({ msg: "Not logged in." });
     }
 };
 
 
-const userCanOnlyAccessItsOwnInformation = (req, res, next) => {
+const loggedUserIdEqualsUserIdInRequest = (req, res, next) => {
     const loggedUser = req.session.passport.user;
     const loggedUserId = loggedUser.id;
 
@@ -25,11 +25,27 @@ const userCanOnlyAccessItsOwnInformation = (req, res, next) => {
     if ( (loggedUserId === userIdInRequest) && (loggedUserId !== undefined) && (loggedUserId !== null) ) {
         next();
     } else {
-        return res.status(403).send("Don't have permissions");
+        return res.status(403).json({ msg: "Not authorized" });
     };
-
-
 };
+
+const exerciseBelongsToLoggedInUser = async (req, res, next) => {
+    const loggedUser = req.session.passport.user;
+    const loggedUserId = loggedUser.id;
+
+    const exerciseId = (req.params.exerciseId) ? req.params.exerciseId: req.body.exerciseId;
+
+    const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
+        exerciseId, loggedUserId, req.appIsBeingTested
+    );
+
+    if (exerciseBelongsToUser) {
+        next();
+    } else {
+        return res.status(403).json({ msg: "Not authorized" });
+    };
+};
+
 
 // This function is an example of how authorization can be implemented.
 // I have not tested it because I think I need a browser GUI to keep a session active
@@ -58,11 +74,11 @@ const processIntegerURLParameter = category => {
             intId = parseInt(id);
         } catch (error) {
             console.log(error);
-            return res.status(400).send("Invalid id");
+            return res.status(400).json({ msg: "Invalid id" });
         }
 
         if (Number.isNaN(intId)) {
-            return res.status(400).send("Invalid id");
+            return res.status(400).json({ msg: "Invalid id" });
         }
         
         req[`${category}Id`] = intId;
@@ -80,7 +96,7 @@ const validateResult = errorCodeToSend => {
             return next();
         }
 
-        res.status(errorCodeToSend).send({ errors: result.array() });
+        res.status(errorCodeToSend).json({ errors: result.array() });
     }
 };
 
@@ -239,7 +255,8 @@ const hashPassword = async (req, res, next) => {
 module.exports = {
     processIntegerURLParameter,
     authenticatedUser,
-    userCanOnlyAccessItsOwnInformation,
+    loggedUserIdEqualsUserIdInRequest,
+    exerciseBelongsToLoggedInUser,
     checkKeysInBodyRequest,
     validateResult,
     checkUserEmailAndAliasAlreadyExist,

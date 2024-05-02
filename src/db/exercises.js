@@ -162,6 +162,23 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
     });
 };
 
+const exerciseBelongsToUser = (exerciseId, userId, appIsBeingTested) => {
+    const q = "SELECT * FROM users_exercises WHERE exercise_id = $1 AND user_id = $2;";
+    const params = [exerciseId, userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            
+            if (results.rows.length > 0) {
+                resolve(true);
+            } else{
+                resolve(false)
+            }
+        }, appIsBeingTested)
+    });
+};
+
 const truncateTableTest = async (appIsBeingTested) => {
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
@@ -194,5 +211,6 @@ module.exports = {
     selectExerciseById,
     checkExerciseByIdExists,
     selectIdForExerciseName,
+    exerciseBelongsToUser,
     truncateTableTest,
 };

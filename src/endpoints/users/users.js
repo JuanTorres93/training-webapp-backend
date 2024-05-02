@@ -89,7 +89,7 @@ router.put('/:userId',
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.hashPassword,
-    mw.userCanOnlyAccessItsOwnInformation,
+    mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {
         const { userId } = req.params;
         const { alias, email, password, last_name, second_last_name, img } = req.body;
@@ -125,7 +125,7 @@ router.delete('/:userId',
     validateIntegerParameter('userId'), 
     mw.checkUserExistsById,
     mw.authenticatedUser,
-    mw.userCanOnlyAccessItsOwnInformation,
+    mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {
         const { userId } = req.params;
 
