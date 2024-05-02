@@ -267,6 +267,22 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}',  () => {
                 });
             });
 
+            describe('403 response when', () => {
+                it('trying to update another user\'s exercise', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.delete(BASE_ENDPOINT + `/${newExercise.id}`)
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
+                });
+            });
+
             describe('404 response when', () => {
                 it('exerciseid is valid but exercise with that id does not exist', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/1');

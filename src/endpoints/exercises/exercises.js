@@ -95,8 +95,8 @@ router.delete('/:exerciseId',
     validateIntegerParameter('exerciseId'), 
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
+    mw.exerciseBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { exerciseId } = req.params;
 
         const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
