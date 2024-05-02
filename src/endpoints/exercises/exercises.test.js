@@ -1,4 +1,5 @@
 const { request, BASE_ENDPOINT, newUserReq } = require('./testsSetup');
+const { query } = require('../../db/index');
 
 const successfulPostRequest = {
     alias: "first_test_exercise",
@@ -36,9 +37,11 @@ describe(`${BASE_ENDPOINT}`,  () => {
     describe('post requests', () => {
         describe('happy path', () => {
             let response;
+            let newUser;
 
             beforeAll(async () => {
-                await setUp();
+                const setUpInfo = await setUp();
+                newUser = setUpInfo.newUser;
 
                 // login user
                 await request.post('/login').send({
@@ -62,6 +65,18 @@ describe(`${BASE_ENDPOINT}`,  () => {
 
             it('returns 201 status code', () => {
                 expect(response.statusCode).toStrictEqual(201);
+            });
+
+            it('also updates users_exercises table', () => {
+                const q = "SELECT user_id, exercise_id from users_exercises WHERE exercise_id = $1;"
+                const params = [response.body.id];
+                query(q, params, (error, results) => {
+                    if (error) throw error;
+                    info = results.rows[0];
+
+                    expect(info).not.toBeUndefined();
+                    expect(info.user_id).toStrictEqual(newUser.id);
+                }, true);
             });
         });
 

@@ -47,6 +47,15 @@ Table exercises {
   description VARCHAR(500)
 }
 
+Table users_exercises {
+  user_id SERIAL [ref: > users.id]
+  exercise_id SERIAL [ref: > exercises.id]
+
+  indexes {
+    (user_id, exercise_id) [pk]
+  }
+}
+
 Table workout_template_exercises {
   workout_template_id SERIAL [ref: > workout_template.id]
   exercise_id SERIAL [ref: > exercises.id]

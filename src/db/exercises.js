@@ -1,32 +1,52 @@
 const { query, getPoolClient } = require('./index');
-const utils = require('../utils/utils.js');
 const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'exercises';
 
-const createExercise = ({ alias, description }, appIsBeingTested = undefined) => {
-    // Build query
-    let requiredFields = ['alias'];
-    let requiredValues = [alias];
+const createExercise = async (userId, { alias, description }, appIsBeingTested = undefined) => {
+    const client = await getPoolClient(appIsBeingTested);
+    let results;
+    try {
+        await client.query('BEGIN;');
 
-    let optionalFields = ['description'];
-    let optionalValues = [description];
+        // Insert delete in exercises table
+        // Build query
+        let requiredFields = ['alias'];
+        let requiredValues = [alias];
 
-    let returningFields = ['id', 'alias', 'description'];
+        let optionalFields = ['description'];
+        let optionalValues = [description];
 
-    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
-                                                           requiredFields, requiredValues,
-                                                           optionalFields, optionalValues,
-                                                           returningFields);
+        let returningFields = ['id', 'alias', 'description'];
 
-    return new Promise((resolve, reject) => {
-        query(q, params, (error, results) => {
-            if (error) reject(error);
+        const { q: insertExerciseQuery, 
+                params: insertExerciseParams } = qh.createInsertIntoTableStatement(
+                                                        TABLE_NAME, 
+                                                        requiredFields, requiredValues,
+                                                        optionalFields, optionalValues,
+                                                        returningFields);
+                                                        
+        results = await client.query(insertExerciseQuery, insertExerciseParams);
+        results = results.rows[0];
 
-            const createdExercise = results.rows[0];
-            resolve(createdExercise)
-        }, appIsBeingTested)
-    });
+        const exerciseId = results.id;
+
+        // Asign exercise to the user that created it
+        const usersExercisesQuery = "INSERT INTO users_exercises (user_id, exercise_id) " +
+                                    "VALUES ($1, $2);";
+        const usersExercisesParams = [userId, exerciseId];
+
+        await client.query(usersExercisesQuery, usersExercisesParams);
+
+        await client.query('COMMIT;');
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    return results;
 }
 
 const selectAllExercises = (appIsBeingTested) => {
@@ -86,6 +106,11 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
         const workoutsExercisesParams = [id];
         await client.query(workoutsExercisesQuery, workoutsExercisesParams);
 
+        // Delete references in users_exercises
+        const usersExercisesQuery = "DELETE FROM users_exercises WHERE exercise_id = $1;";
+        const usersExercisesParams = [id];
+        await client.query(usersExercisesQuery, usersExercisesParams);
+
         // Delete exercise itself
         const exercisesQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
                                "RETURNING id, alias, description;";
@@ -137,7 +162,7 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
     });
 };
 
-const truncateTableTest = (appIsBeingTested) => {
+const truncateTableTest = async (appIsBeingTested) => {
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
@@ -145,16 +170,20 @@ const truncateTableTest = (appIsBeingTested) => {
         });
     }
 
-    const q = "TRUNCATE " + TABLE_NAME + " CASCADE;";
-    const params = [];
+    const client = await getPoolClient(appIsBeingTested);
+    try {
+        await client.query('BEGIN;');
+        await client.query("TRUNCATE " + TABLE_NAME + " CASCADE;");
+        await client.query("TRUNCATE users_exercises CASCADE;");
+        await client.query('COMMIT;');
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
 
-    return new Promise((resolve, reject) => {
-        query(q, params, (error, results) => {
-            if (error) reject(error);
-
-            resolve('Table ' + TABLE_NAME + ' truncated in test db.')
-        }, true)
-    });
+    return 'Table ' + TABLE_NAME + ' and users_exercises truncated in test db.';
 };
 
 module.exports = {

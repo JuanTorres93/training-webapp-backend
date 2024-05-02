@@ -47,8 +47,12 @@ router.post('/',
     mw.authenticatedUser,
     async (req, res, next) => {
         // TODO implement 403 response
+        const userId = req.user.id;
+
         try {
-            const createdExercise = await dbExercises.createExercise(req.body, req.appIsBeingTested);
+            const createdExercise = await dbExercises.createExercise(
+                userId, req.body, req.appIsBeingTested
+            );
             return res.status(201).json(createdExercise);
         } catch (error) {
             return res.status(400).json({
