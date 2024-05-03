@@ -21,10 +21,10 @@ const workoutsWithExercisesQuery = "SELECT  " +
                                     "ORDER BY workout_id, exercise_id, exercise_set " +
                                     "; ";
 
-const createWorkouts = async ({ alias, description }, appIsBeingTested = undefined) => {
+const createWorkouts = async (userId, { alias, description }, appIsBeingTested = undefined) => {
     // Build query
-    let requiredFields = ['alias'];
-    let requiredValues = [alias];
+    let requiredFields = ['created_by', 'alias'];
+    let requiredValues = [userId, alias];
 
     let optionalFields = ['description'];
     let optionalValues = [description];
@@ -158,6 +158,24 @@ const checkExerciseInWorkoutExists = async (workoutId, exerciseId, appIsBeingTes
     }
 
     return Number.isInteger(selectedWorkout.workout_id);
+};
+
+
+const workoutBelongsToUser = (workoutId, userId, appIsBeingTested) => {
+    const q = "SELECT * FROM " + TABLE_NAME + " WHERE id = $1 AND created_by = $2;";
+    const params = [workoutId, userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            
+            if (results.rows.length > 0) {
+                resolve(true);
+            } else{
+                resolve(false)
+            }
+        }, appIsBeingTested)
+    });
 };
 
 const _compactWorkoutInfo = (workoutInfoDb) => {
@@ -463,6 +481,7 @@ module.exports = {
     addExerciseToWorkout,
     checkWorkoutByIdExists,
     checkExerciseInWorkoutExists,
+    workoutBelongsToUser,
     selectAllWorkouts,
     selectworkoutById,
     truncateTableTest,

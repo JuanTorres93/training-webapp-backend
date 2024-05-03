@@ -2,14 +2,23 @@ const { request, BASE_ENDPOINT, newUserReq,
         exercises, initExercisesTableInDb, 
         addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
 
+OTHER_USER_ALIAS = 'other user';
+
 // Empty database before starting tests
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/exercises/truncate');
+
+    // Add user to db
     await request.post('/users').send(newUserReq);
 
-    // Fill database with some exercises to be able to add them to workouts
-    // await initExercisesTableInDb();
+    // Add other user to db
+    const otherUserResponse = await request.post('/users').send({
+        ...newUserReq,
+        alias: OTHER_USER_ALIAS,
+        email: 'other@user.com',
+    });
+    const otherUser = otherUserResponse.body;
 }
 
 describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
@@ -193,6 +202,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                     password: newUserReq.password,
                 });
 
+                // TODO NEXT INVESTIGAR POR QUÉ FALLA DESPUÉS DE IMPLEMENTAR 403 RESPONSE
                 response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
             });
 
@@ -246,6 +256,22 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 it('user is not logged in', async () => {
                     const response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to update another user\'s exercise', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 

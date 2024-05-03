@@ -32,8 +32,8 @@ router.get('/:workoutId',
     validateIntegerParameter('workoutId'), 
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
+    mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
-    // TODO implement 403 response cases
     const { workoutId } = req.params;
 
     const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
@@ -50,8 +50,12 @@ router.post('/',
     workoutsValidators.validateCreateWorkoutParams,
     mw.authenticatedUser,
     async (req, res, next) => {
+        const userId = req.user.id;
+
         try {
-            const createdWorkout = await dbWorkouts.createWorkouts(req.body, req.appIsBeingTested);
+            const createdWorkout = await dbWorkouts.createWorkouts(
+                userId, req.body, req.appIsBeingTested
+            );
             return res.status(201).json(createdWorkout);
         } catch (error) {
             return res.status(400).json({

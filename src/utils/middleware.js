@@ -46,6 +46,23 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
     };
 };
 
+const workoutBelongsToLoggedInUser = async (req, res, next) => {
+    const loggedUser = req.session.passport.user;
+    const loggedUserId = loggedUser.id;
+
+    const workoutId = (req.params.workoutId) ? req.params.workoutId: req.body.workoutId;
+
+    const workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
+        workoutId, loggedUserId, req.appIsBeingTested
+    );
+
+    if (workoutBelongsToUser) {
+        next();
+    } else {
+        return res.status(403).json({ msg: "Not authorized" });
+    };
+};
+
 
 // This function is an example of how authorization can be implemented.
 // I have not tested it because I think I need a browser GUI to keep a session active
@@ -257,6 +274,7 @@ module.exports = {
     authenticatedUser,
     loggedUserIdEqualsUserIdInRequest,
     exerciseBelongsToLoggedInUser,
+    workoutBelongsToLoggedInUser,
     checkKeysInBodyRequest,
     validateResult,
     checkUserEmailAndAliasAlreadyExist,

@@ -19,6 +19,7 @@ Table workouts {
   id SERIAL [PK, increment]
   alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
+  created_by INTEGER [ref: > users.id, not null]
 }
 
 Table workout_template {
