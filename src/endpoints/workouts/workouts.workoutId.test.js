@@ -157,6 +157,22 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 });
             });
 
+            describe('403 response when', () => {
+                it('trying to post exercise to another user\'s workout', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.post(BASE_ENDPOINT + `/${id}`).send(addExerciseRequest);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
+                });
+            });
+
             describe('404 response when', () => {
                 it('workoutId is valid but it does not exist', async () => {
                     const response = await request.post(BASE_ENDPOINT + `/1`).send(addExerciseRequest);

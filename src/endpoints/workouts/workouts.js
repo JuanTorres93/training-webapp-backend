@@ -71,8 +71,8 @@ router.post('/:workoutId',
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
+    mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response
         const { workoutId } = req.params;
 
         const exerciseData = {
