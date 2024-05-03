@@ -388,6 +388,23 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 });
             });
 
+            describe('403 response when', () => {
+                it('trying to delete exercise in another user\'s workout template', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    const response = await request.delete(endpoint)
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
+                });
+            });
+
             describe('404 response when', () => {
                 it('templateid is valid but template with that id does not exist', async () => {
                     const endpoint = BASE_ENDPOINT + '/1' + `/exercises/${addedExercise.exerciseId}/${addedExercise.exerciseOrder}`;

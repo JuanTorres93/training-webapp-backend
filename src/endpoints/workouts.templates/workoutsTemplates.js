@@ -184,8 +184,8 @@ router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder',
     mw.checkExerciseExistsById,
     mw.checkExerciseOrderExistsInWorkoutTemplate,
     mw.authenticatedUser,
+    mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { templateId, exerciseId, exerciseOrder } = req.params;
 
         const deletedExercise = await dbWorkoutsTemplates.deleteExerciseFromWorkoutTemplate(
