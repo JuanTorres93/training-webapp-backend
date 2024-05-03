@@ -234,6 +234,23 @@ const checkWorkoutTemplateByIdExists = async (id, appIsBeingTested = undefined) 
     return Number.isInteger(selectedTemplate.id);
 }
 
+const workoutTemplateBelongsToUser = (templateId, userId, appIsBeingTested) => {
+    const q = "SELECT * FROM " + TABLE_NAME + " WHERE id = $1 AND user_id = $2;";
+    const params = [templateId, userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            
+            if (results.rows.length > 0) {
+                resolve(true);
+            } else{
+                resolve(false)
+            }
+        }, appIsBeingTested)
+    });
+};
+
 const _checkWorkoutTemplateContainsExercises = async (templateId, appIsBeingTested = undefined) => {
     let q = "SELECT exercise_id FROM workout_template_exercises WHERE workout_template_id = $1;";
     const params = [templateId]
@@ -493,6 +510,7 @@ module.exports = {
     truncateTableTest,
     addExerciseToWorkoutTemplate,
     checkWorkoutTemplateByIdExists,
+    workoutTemplateBelongsToUser,
     updateWorkoutTemplate,
     deleteWorkoutTemplate,
     checkExerciseInWorkoutTemplateExists,

@@ -2,7 +2,6 @@ const express = require('express');
 
 const workoutsTemplatesValidators = require('../../validators/workoutsTemplates.js');
 const dbWorkoutsTemplates = require('../../db/workoutsTemplates.js');
-const dbExercises = require('../../db/exercises.js');
 const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
 const mw = require('../../utils/middleware.js');
 
@@ -35,8 +34,8 @@ router.get('/:templateId',
     validateIntegerParameter('templateId'), 
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
+    mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
-    // TODO implement 403 response cases
     const { templateId } = req.params;
 
     const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);

@@ -218,7 +218,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                     password: newUserReq.password,
                 });
 
-                // TODO NEXT INVESTIGAR POR QUÉ FALLA DESPUÉS DE IMPLEMENTAR 403 RESPONSE
                 response = await request.get(BASE_ENDPOINT + `/${workoutId}`);
             });
 
@@ -276,7 +275,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
             });
 
             describe('403 response when', () => {
-                it('trying to update another user\'s exercise', async () => {
+                it('trying to read another user\'s workout', async () => {
                     // login other user
                     await request.post('/login').send({
                         username: OTHER_USER_ALIAS,

@@ -1,13 +1,23 @@
 const { request, BASE_ENDPOINT, createNewTemplateRequest, newUserReq } = require('./testsSetup');
 
+OTHER_USER_ALIAS = 'other user';
+
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/users/truncate');
     await request.get('/exercises/truncate');
 
-    // Add user to tb
+    // Add user to db
     const userResponse = await request.post('/users').send(newUserReq);
     const user = userResponse.body;
+
+    // Add other user to db
+    const otherUserResponse = await request.post('/users').send({
+        ...newUserReq,
+        alias: OTHER_USER_ALIAS,
+        email: 'other@user.com',
+    });
+    const otherUser = otherUserResponse.body;
 
     // login user
     await request.post('/login').send({
@@ -120,6 +130,22 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 it('user is not logged in', async () => {
                     const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to read another user\'s workout template', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 
