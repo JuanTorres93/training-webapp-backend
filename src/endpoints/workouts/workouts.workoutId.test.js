@@ -496,7 +496,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
-            
         });
 
         describe('happy path', () => {
