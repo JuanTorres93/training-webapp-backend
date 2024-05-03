@@ -134,8 +134,8 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
     mw.checkWorkoutTemplateExistsById,
     mw.checkExerciseOrderExistsInWorkoutTemplate,
     mw.authenticatedUser,
+    mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { templateId, exerciseId, exerciseOrder } = req.params;
         const { newExerciseOrder, exerciseSets } = req.body;
 

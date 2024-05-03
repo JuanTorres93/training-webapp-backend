@@ -1,5 +1,7 @@
 const { request, BASE_ENDPOINT, createNewTemplateRequest, newUserReq } = require('./testsSetup');
 
+OTHER_USER_ALIAS = 'other user';
+
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/users/truncate');
@@ -8,6 +10,14 @@ const setUp = async () => {
     // Add user to db
     const userResponse = await request.post('/users').send(newUserReq);
     const user = userResponse.body;
+
+    // Add other user to db
+    const otherUserResponse = await request.post('/users').send({
+        ...newUserReq,
+        alias: OTHER_USER_ALIAS,
+        email: 'other@user.com',
+    });
+    const otherUser = otherUserResponse.body;
 
     // login user
     await request.post('/login').send({
@@ -238,6 +248,29 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                         BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to update exercise in another user\'s workout template', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const req = {
+                        exerciseOrder: 9,
+                        exerciseSets: 8,
+                    };
+
+                    const response = await request.put(
+                        BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    ).send(req);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 
