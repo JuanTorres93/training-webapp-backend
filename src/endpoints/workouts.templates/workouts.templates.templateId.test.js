@@ -278,7 +278,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             });
 
             describe('403 response when', () => {
-                it('trying to read another user\'s workout template', async () => {
+                it('trying to add exercise to another user\'s workout template', async () => {
                     // login other user
                     await request.post('/login').send({
                         username: OTHER_USER_ALIAS,
@@ -433,6 +433,26 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                     };
                     const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to update exercise in another user\'s workout template', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const req = {
+                        alias: 'test 200 code',
+                        description: 'new description for 200 code',
+                    };
+                    const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 

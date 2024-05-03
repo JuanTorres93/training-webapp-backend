@@ -106,8 +106,8 @@ router.put('/:templateId',
     validateIntegerParameter('templateId'), 
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
+    mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { templateId } = req.params;
         const { alias, description } = req.body;
 
