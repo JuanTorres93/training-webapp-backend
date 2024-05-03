@@ -75,8 +75,8 @@ router.post('/:templateId',
     mw.checkWorkoutTemplateExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
+    mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response
         const { templateId } = req.params;
 
         const exercise = {

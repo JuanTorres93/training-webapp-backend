@@ -277,6 +277,22 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 });
             });
 
+            describe('403 response when', () => {
+                it('trying to read another user\'s workout template', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
+                });
+            });
+
             describe('404 response when', () => {
                 it('templateId is valid but it does not exist', async () => {
                     const response = await request.post(BASE_ENDPOINT + `/1`).send(req);
