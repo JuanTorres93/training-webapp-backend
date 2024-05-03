@@ -577,9 +577,6 @@ paths:
         '401':
           $ref: '#/components/responses/401'
 
-        '403':
-          $ref: '#/components/responses/403'
-
     post:
       tags:
         - Workouts
@@ -601,9 +598,6 @@ paths:
                 
         '401':
           $ref: '#/components/responses/401'
-
-        '403':
-          $ref: '#/components/responses/403'
                 
       requestBody:
         content:
