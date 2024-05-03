@@ -114,8 +114,8 @@ router.put('/:workoutId',
     validateIntegerParameter('workoutId'), 
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
+    mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 and 401 response cases
         const { workoutId } = req.params;
         const { alias, description } = req.body;
 
