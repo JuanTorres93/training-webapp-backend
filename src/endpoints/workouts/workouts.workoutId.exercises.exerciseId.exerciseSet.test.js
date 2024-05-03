@@ -1,17 +1,24 @@
 const { request, BASE_ENDPOINT, newUserReq,
-        exercises, initExercisesTableInDb, 
+        initExercisesTableInDb, 
         addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
 
-const successfulPostRequest = {
-    alias: "first_test_workout",
-    description: "This is the description for a test workout",
-}
+OTHER_USER_ALIAS = 'other user';
 
 // Empty database before starting tests
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
     await request.get('/exercises/truncate');
+
+    // Add user to db
     await request.post('/users').send(newUserReq);
+
+    // Add other user to db
+    const otherUserResponse = await request.post('/users').send({
+        ...newUserReq,
+        alias: OTHER_USER_ALIAS,
+        email: 'other@user.com',
+    });
+    const otherUser = otherUserResponse.body;
 
     // Fill database with some exercises to be able to add them to workouts
     // await initExercisesTableInDb();
@@ -90,6 +97,24 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
                         BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
                     )
                     expect(response.statusCode).toStrictEqual(401);
+                });
+            });
+
+            describe('403 response when', () => {
+                it('trying to delete exercise on another user\'s workout', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.delete(
+                        BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
+                    )
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
                 });
             });
 

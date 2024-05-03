@@ -84,7 +84,6 @@ router.post('/:workoutId',
         };
 
         // TODO CHECK primary key is not duplicated
-
         try {
             const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData, req.appIsBeingTested);
 
@@ -210,8 +209,8 @@ router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet',
     mw.checkExerciseExistsById,
     mw.checkExerciseSetExistsInWorkout,
     mw.authenticatedUser,
+    mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { workoutId, exerciseId, exerciseSet } = req.params;
 
         const deletedExercise = await dbWorkouts.deleteSetFromExercise(workoutId, exerciseId, exerciseSet, req.appIsBeingTested);
