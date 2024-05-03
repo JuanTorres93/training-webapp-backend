@@ -174,8 +174,8 @@ router.delete('/:workoutId',
     validateIntegerParameter('workoutId'), 
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
+    mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
-        // TODO implement 403 response cases
         const { workoutId } = req.params;
 
         const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId, req.appIsBeingTested);

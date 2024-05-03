@@ -474,6 +474,22 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 });
             });
 
+            describe('403 response when', () => {
+                it('trying to delete another user\'s workout', async () => {
+                    // login other user
+                    await request.post('/login').send({
+                        username: OTHER_USER_ALIAS,
+                        password: newUserReq.password,
+                    });
+
+                    const response = await request.delete(BASE_ENDPOINT + `/${workoutId}`)
+
+                    // logout user
+                    await request.get('/logout');
+                    expect(response.statusCode).toStrictEqual(403);
+                });
+            });
+
             describe('404 response when', () => {
                 it('workoutid is valid but workout with that id does not exist', async () => {
                     const response = await request.delete(BASE_ENDPOINT + '/1');
