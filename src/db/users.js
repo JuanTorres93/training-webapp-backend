@@ -32,6 +32,7 @@ const checkEmailInUse = async (email, appIsBeingTested) => {
     try {
         // checkStringInFieldInUse only resolves to true
         const exists = await checkStringInFieldInUse('email', email, appIsBeingTested);
+
         return exists
     } catch (error) {
         if (error.error !== null) throw error;

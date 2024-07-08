@@ -158,7 +158,9 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
     const { alias, email } = req.body;
 
     // TODO DRY this code
-    if (await dbUsers.checkEmailInUse(email, req.appIsBeingTested) === true) {
+    const emailInUse = await dbUsers.checkEmailInUse(email, req.appIsBeingTested) === true
+
+    if (emailInUse) {
         return res.status(409).json({
             msg: 'Email already in use',
         });

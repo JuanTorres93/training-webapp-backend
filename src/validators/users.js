@@ -27,7 +27,7 @@ const validateRegisterUserParams = [
         .exists().withMessage(msgs.parameterMissingMsg(password))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(password))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
-        .isStrongPassword()
+        .isStrongPassword().withMessage('Password is not strong enough. It must have at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.')
         .trim()
         .escape(),
     check(lastName)

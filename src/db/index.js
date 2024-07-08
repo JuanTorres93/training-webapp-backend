@@ -6,6 +6,9 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_USER_PASSWORD,
     port: process.env.DB_PORT,
+    // Other way to connect to the database. If want to use this way, comment the 5 lines above
+    // connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_USER_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`,
+
     // These 3 parameters below have allowed to connect to the database without errors
     idleTimeoutMillis: 10000,
     keepAlive: true,
