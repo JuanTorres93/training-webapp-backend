@@ -14,7 +14,7 @@ const pool = new Pool({
     keepAlive: true,
     ssl: true,
 });
-  
+
 const testPool = new Pool({
     user: process.env.DB_TEST_USER,
     host: process.env.DB_TEST_HOST,

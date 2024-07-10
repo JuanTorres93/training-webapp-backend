@@ -37,6 +37,7 @@ const createApp = (appIsBeingTested = false) => {
         origin: [
             process.env.CLIENT_URL,
         ],
+        credentials: true, // Required for cookies, authorization headers with HTTPS
         optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
     };
     app.use(cors(corsOptions));
