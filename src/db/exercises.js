@@ -63,6 +63,30 @@ const selectAllExercises = (appIsBeingTested) => {
     });
 };
 
+const selectAllExercisesFromUser = (userId, appIsBeingTested) => {
+    const q = "SELECT " +
+              "    ex.id,  " + 
+              "    ex.alias,  " + 
+              "    ex.description " + 
+              "FROM " + TABLE_NAME + " AS ex " + 
+              "JOIN users_exercises AS us_ex " + 
+              "ON ex.id = us_ex.exercise_id " + 
+              "JOIN users AS us " + 
+              "ON us_ex.user_id = us.id " + 
+              "WHERE us.id = $1 " + 
+              "ORDER BY ex.id; ";
+    const params = [userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const exercises = results.rows;
+
+            resolve(exercises)
+        }, appIsBeingTested)
+    });
+};
+
 const selectExerciseById = (id, appIsBeingTested) => {
     const q = "SELECT id, alias, description FROM " +
               TABLE_NAME + " WHERE id = $1;";
@@ -208,6 +232,7 @@ module.exports = {
     updateExercise,
     deleteExercise,
     selectAllExercises,
+    selectAllExercisesFromUser,
     selectExerciseById,
     checkExerciseByIdExists,
     selectIdForExerciseName,

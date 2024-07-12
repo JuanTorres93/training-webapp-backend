@@ -253,6 +253,41 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+
+  /exercises/all/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: userid
+        schema:
+          type: integer
+    get:
+      tags:
+        - Exercises
+      description: Returns all the exercises of the user
+      operationId: getAllExercisesFrom user
+      responses:
+        '200':
+          description: All exercises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                    $ref: '#/components/schemas/ResponseExercise'
+                
+        '400':
+          $ref: '#/components/responses/400'
+                
+        '401':
+          $ref: '#/components/responses/401'
+                
+        '403':
+          $ref: '#/components/responses/403'
+
+        '404':
+          $ref: '#/components/responses/404'
               
   /workouts:
     get:

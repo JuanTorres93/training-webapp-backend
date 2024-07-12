@@ -39,6 +39,20 @@ router.get('/:exerciseId',
     res.status(200).json(exercise);
 });
 
+// Get exercise by id
+router.get('/all/:userId', 
+    validateIntegerParameter('userId'), 
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
+    mw.loggedUserIdEqualsUserIdInRequest,
+    async (req, res, next) => {
+    const { userId } = req.params;
+
+    const exercises = await dbExercises.selectAllExercisesFromUser(userId, req.appIsBeingTested);
+
+    res.status(200).json(exercises);
+});
+
 // ===================================
 // ========== POST requests ==========
 // ===================================
