@@ -19,13 +19,13 @@ const createExercise = async (userId, { alias, description }, appIsBeingTested =
 
         let returningFields = ['id', 'alias', 'description'];
 
-        const { q: insertExerciseQuery, 
-                params: insertExerciseParams } = qh.createInsertIntoTableStatement(
-                                                        TABLE_NAME, 
-                                                        requiredFields, requiredValues,
-                                                        optionalFields, optionalValues,
-                                                        returningFields);
-                                                        
+        const { q: insertExerciseQuery,
+            params: insertExerciseParams } = qh.createInsertIntoTableStatement(
+                TABLE_NAME,
+                requiredFields, requiredValues,
+                optionalFields, optionalValues,
+                returningFields);
+
         results = await client.query(insertExerciseQuery, insertExerciseParams);
         results = results.rows[0];
 
@@ -33,7 +33,7 @@ const createExercise = async (userId, { alias, description }, appIsBeingTested =
 
         // Asign exercise to the user that created it
         const usersExercisesQuery = "INSERT INTO users_exercises (user_id, exercise_id) " +
-                                    "VALUES ($1, $2);";
+            "VALUES ($1, $2);";
         const usersExercisesParams = [userId, exerciseId];
 
         await client.query(usersExercisesQuery, usersExercisesParams);
@@ -65,16 +65,16 @@ const selectAllExercises = (appIsBeingTested) => {
 
 const selectAllExercisesFromUser = (userId, appIsBeingTested) => {
     const q = "SELECT " +
-              "    ex.id,  " + 
-              "    ex.alias,  " + 
-              "    ex.description " + 
-              "FROM " + TABLE_NAME + " AS ex " + 
-              "JOIN users_exercises AS us_ex " + 
-              "ON ex.id = us_ex.exercise_id " + 
-              "JOIN users AS us " + 
-              "ON us_ex.user_id = us.id " + 
-              "WHERE us.id = $1 " + 
-              "ORDER BY ex.id; ";
+        "    ex.id,  " +
+        "    ex.alias as name,  " +
+        "    ex.description " +
+        "FROM " + TABLE_NAME + " AS ex " +
+        "JOIN users_exercises AS us_ex " +
+        "ON ex.id = us_ex.exercise_id " +
+        "JOIN users AS us " +
+        "ON us_ex.user_id = us.id " +
+        "WHERE us.id = $1 " +
+        "ORDER BY ex.id; ";
     const params = [userId];
 
     return new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ const selectAllExercisesFromUser = (userId, appIsBeingTested) => {
 
 const selectExerciseById = (id, appIsBeingTested) => {
     const q = "SELECT id, alias, description FROM " +
-              TABLE_NAME + " WHERE id = $1;";
+        TABLE_NAME + " WHERE id = $1;";
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -104,9 +104,9 @@ const selectExerciseById = (id, appIsBeingTested) => {
 const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) => {
     const returningFields = ['id', 'alias', 'description'];
 
-    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id, 
-                                                        exerciseObject,
-                                                        returningFields)
+    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
+        exerciseObject,
+        returningFields)
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -137,7 +137,7 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
 
         // Delete exercise itself
         const exercisesQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-                               "RETURNING id, alias, description;";
+            "RETURNING id, alias, description;";
         const exercisesParams = [id];
         results = await client.query(exercisesQuery, exercisesParams);
 
@@ -193,10 +193,10 @@ const exerciseBelongsToUser = (exerciseId, userId, appIsBeingTested) => {
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            
+
             if (results.rows.length > 0) {
                 resolve(true);
-            } else{
+            } else {
                 resolve(false)
             }
         }, appIsBeingTested)
