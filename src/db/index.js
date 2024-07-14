@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-  
+
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -22,7 +22,7 @@ const testPool = new Pool({
     password: process.env.DB_TEST_USER_PASSWORD,
     port: process.env.DB_TEST_PORT,
 });
- 
+
 const query = (text, params, callback, appIsBeingTested) => {
     // Example of using params. This is done instead of concatenating strings to prevent SQL injection
     // query("INSERT INTO customers (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)" ,
@@ -42,8 +42,15 @@ const query = (text, params, callback, appIsBeingTested) => {
     throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
 };
 
+/**
+ * Retrieves a database connection client from the pool.
+ * This method is intended to be used when needing to use transactions.
+ *
+ * @param {boolean} appIsBeingTested - Indicates whether the app is being tested.
+ * @returns {Promise<object>} - A promise that resolves to a database connection client.
+ * @throws {Error} - If appIsBeingTested is not a boolean value.
+ */
 const getPoolClient = async (appIsBeingTested) => {
-    // This method is intended to be used when needed to use transactions
     // DOCS for transactions: https://node-postgres.com/features/transactions
     if (appIsBeingTested === true || appIsBeingTested === false) {
         if (appIsBeingTested) return await testPool.connect();
@@ -54,7 +61,25 @@ const getPoolClient = async (appIsBeingTested) => {
     throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
 };
 
+/**
+ * Retrieves the appropriate database connection pool based on the value of `appIsBeingTested`.
+ *
+ * @param {boolean} appIsBeingTested - Indicates whether the application is being tested.
+ * @returns {Object} - The database connection pool.
+ * @throws {Error} - If `appIsBeingTested` is not a boolean value.
+ */
+const getPool = (appIsBeingTested) => {
+    if (appIsBeingTested === true || appIsBeingTested === false) {
+        if (appIsBeingTested) return testPool;
+
+        return pool;
+    };
+
+    throw Error(`appIsBeingTested must be true or false. Current value is ${appIsBeingTested}`);
+};
+
 module.exports = {
     query,
+    getPool,
     getPoolClient,
 };

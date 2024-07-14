@@ -2,9 +2,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
 const morgan = require('morgan');
 const passport = require('./passport-config.js');
+const { getPool } = require('./db/index.js');
 
 // Function to create the express app. Its main use is for testing
 const createApp = (appIsBeingTested = false) => {
@@ -33,7 +35,7 @@ const createApp = (appIsBeingTested = false) => {
 
     // CORS configuration
     const corsOptions = {
-        // TODO add real client url. Maybe change value in .env
+        // TODO add real client url changing value in .env or adding a new value to include both
         origin: [
             process.env.CLIENT_URL,
         ],
@@ -49,9 +51,15 @@ const createApp = (appIsBeingTested = false) => {
 
     // IMPORTANT! Storing in-memory sessions is something that should be done only during 
     // development, NOT during production due to security risks.
-    // TODO Change store method. Can be founď here: https://www.npmjs.com/package/express-session
-    const store = new session.MemoryStore();
-
+    // DOCS This line can be uncommented for development purposes, but it should be changed in production
+    // const store = new session.MemoryStore();
+    // DOCS change store method. Can be founď here: https://www.npmjs.com/package/express-session
+    const store = new pgSession({
+        pool: getPool(appIsBeingTested),
+        tableName: 'user_sessions',
+        createTableIfMissing: true,
+    });
+    // 
     // Cookie for the browser to be able to send session ID back to the server
     const cookie = {
         maxAge: 24 * 60 * 60 * 1000, // milliseconds until cookie expires, in this case 24h
@@ -59,8 +67,8 @@ const createApp = (appIsBeingTested = false) => {
         // secure: true, // It's only sent to the server via HTTPS
         sameSite: "none", // Allow cross-site cookie through different browsers
         httpOnly: true, // Specifies whether or not the cookies should be accessible via 
-                        // JavaScript in the browser (Document.cookie). This setting is set 
-                        // to true, because it ensures that any cross-site scripting attack (XSS) is impossible
+        // JavaScript in the browser (Document.cookie). This setting is set 
+        // to true, because it ensures that any cross-site scripting attack (XSS) is impossible
         // Other properties can be 'expires' or 'httpOnly', amongst others
     };
 
