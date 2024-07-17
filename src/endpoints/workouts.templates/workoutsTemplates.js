@@ -43,6 +43,18 @@ router.get('/:templateId',
     res.status(200).json(workoutTemplate);
 });
 
+router.get('/all/:userId', 
+    validateIntegerParameter('userId'), 
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
+    mw.loggedUserIdEqualsUserIdInRequest,
+    async (req, res) => {
+        const { userId } = req.params;
+        const templates = await dbWorkoutsTemplates.selectWorkoutTemplatesByUserId(userId, req.appIsBeingTested);
+        res.status(200).json(templates);
+    }
+);
+
 
 // ===================================
 // ========== POST requests ==========

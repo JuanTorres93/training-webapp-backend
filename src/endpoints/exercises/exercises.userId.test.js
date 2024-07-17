@@ -80,11 +80,11 @@ describe(`${BASE_ENDPOINT}` + '/all/{userId}',  () => {
                 expect(Array.isArray(response.body)).toStrictEqual(true);
             });
 
-            it('exercise object has id, alias, and description properties', () => {
+            it('exercise object has id, name, and description properties', () => {
                 const exerciseObject = response.body[0];
 
                 expect(exerciseObject).toHaveProperty('id');
-                expect(exerciseObject).toHaveProperty('alias');
+                expect(exerciseObject).toHaveProperty('name');
                 expect(exerciseObject).toHaveProperty('description');
             });
         });

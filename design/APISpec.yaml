@@ -643,6 +643,39 @@ paths:
               CreateWorkoutTemplate:
                 $ref: '#/components/examples/CreateWorkoutTemplate'
 
+  /workouts/templates/all/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User id
+        schema:
+          type: integer
+    get:
+      tags:
+        - Workouts
+      description: Returns all templates from a user
+      operationId: getWorkoutAllTemplatesFromUser
+      responses:
+        '200':
+          description: Returns all templates from user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseAllWorkoutTemplates'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/AllWorkoutTemplates'
+                
+        '401':
+          $ref: '#/components/responses/401'
+                
+        '403':
+          $ref: '#/components/responses/401'
+                
+        '404':
+          $ref: '#/components/responses/401'
+
   /workouts/templates/{templateId}:
     parameters:
       - name: templateId

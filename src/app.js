@@ -51,14 +51,21 @@ const createApp = (appIsBeingTested = false) => {
 
     // IMPORTANT! Storing in-memory sessions is something that should be done only during 
     // development, NOT during production due to security risks.
-    // DOCS This line can be uncommented for development purposes, but it should be changed in production
-    // const store = new session.MemoryStore();
-    // DOCS change store method. Can be founď here: https://www.npmjs.com/package/express-session
-    const store = new pgSession({
-        pool: getPool(appIsBeingTested),
-        tableName: 'user_sessions',
-        createTableIfMissing: true,
-    });
+    let store;
+
+    if (appIsBeingTested) {
+        // DOCS This line can be uncommented for development purposes, but it should be changed in production
+        store = new session.MemoryStore();
+    } else {
+        // DOCS This line can be uncommented for development purposes, but it should be changed in production
+        // store = new session.MemoryStore();
+        // DOCS change store method. Can be founď here: https://www.npmjs.com/package/express-session
+        store = new pgSession({
+            pool: getPool(appIsBeingTested),
+            tableName: 'user_sessions',
+            createTableIfMissing: true,
+        });
+    }
     // 
     // Cookie for the browser to be able to send session ID back to the server
     const cookie = {

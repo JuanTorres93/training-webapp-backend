@@ -503,6 +503,44 @@ const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder,
     });
 };
 
+
+const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
+    const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
+    const params = [userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const everyWorkoutTemplate = results.rows;
+
+            const allTemplatesFormatted = [];
+
+            // Group results by template id
+            // Get unique templates ids
+            // DOCS: Source https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
+            const distinctWorkoutTemplatesIds = [...new Set(everyWorkoutTemplate.map((template) => {
+                return template.workout_template_id;
+            }))];
+
+            if (distinctWorkoutTemplatesIds.length === 0) {
+                resolve([]);
+            }
+
+            distinctWorkoutTemplatesIds.forEach(workoutTemplateId => {
+                const templateInfo = everyWorkoutTemplate.filter((wk) => {
+                    return wk.workout_template_id === workoutTemplateId
+                })
+
+                const workoutTemplateSpec = _compactWorkoutTemplateInfo(templateInfo);
+
+                allTemplatesFormatted.push(workoutTemplateSpec);
+            });
+
+            resolve(allTemplatesFormatted)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
@@ -516,4 +554,5 @@ module.exports = {
     checkExerciseInWorkoutTemplateExists,
     updateExerciseFromWorkoutTemplate,
     deleteExerciseFromWorkoutTemplate,
+    selectWorkoutTemplatesByUserId,
 };
