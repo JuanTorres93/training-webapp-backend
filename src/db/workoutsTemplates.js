@@ -519,7 +519,7 @@ const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
             // Get unique templates ids
             // DOCS: Source https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
             const distinctWorkoutTemplatesIds = [...new Set(everyWorkoutTemplate.map((template) => {
-                return template.workout_template_id;
+                return template.id;
             }))];
 
             if (distinctWorkoutTemplatesIds.length === 0) {
@@ -528,7 +528,7 @@ const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
 
             distinctWorkoutTemplatesIds.forEach(workoutTemplateId => {
                 const templateInfo = everyWorkoutTemplate.filter((wk) => {
-                    return wk.workout_template_id === workoutTemplateId
+                    return wk.id === workoutTemplateId
                 })
 
                 const workoutTemplateSpec = _compactWorkoutTemplateInfo(templateInfo);
