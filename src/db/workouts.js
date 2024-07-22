@@ -1,5 +1,4 @@
 const { query, getPoolClient } = require('./index');
-const utils = require('../utils/utils.js');
 const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'workouts';
@@ -22,31 +21,47 @@ const workoutsWithExercisesQuery = "SELECT  " +
                                     "; ";
 
 const createWorkouts = async (userId, { alias, description }, appIsBeingTested = undefined) => {
-    // Build query
-    let requiredFields = ['created_by', 'alias'];
-    let requiredValues = [userId, alias];
+    const client = await getPoolClient(appIsBeingTested); // Get a client from the pool
+    try {
+        await client.query('BEGIN'); // Start transaction
 
-    let optionalFields = ['description'];
-    let optionalValues = [description];
+        // Build query
+        let requiredFields = ['created_by', 'alias'];
+        let requiredValues = [userId, alias];
 
-    let returningFields = ['id', 'alias', 'description'];
+        let optionalFields = ['description'];
+        let optionalValues = [description];
 
-    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
-                                                           requiredFields, requiredValues,
-                                                           optionalFields, optionalValues,
-                                                           returningFields);
+        let returningFields = ['id', 'alias', 'description'];
 
-    return new Promise((resolve, reject) => {
-        query(q, params, (error, results) => {
-            if (error) reject(error);
+        const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
+                                                               requiredFields, requiredValues,
+                                                               optionalFields, optionalValues,
+                                                               returningFields);
 
-            const createdWorkout = results.rows[0];
-            // This is appended to the object in order to conform to the API spec.
-            // When creating a new workout it will never contain any exercise.
-            createdWorkout.exercises = [];
-            resolve(createdWorkout)
-        }, appIsBeingTested)
-    });
+        const results = await client.query(q, params); // Execute query within transaction
+
+        const createdWorkout = results.rows[0];
+        // This is appended to the object in order to conform to the API spec.
+        // When creating a new workout it will never contain any exercise.
+        createdWorkout.exercises = [];
+
+        // Insert into users_workouts user_id, workout_id and current date, including time
+        const usersWorkoutsQuery = "INSERT INTO users_workouts (user_id, workout_id, start_date) " +
+                                   "VALUES ($1, $2, NOW());";
+        const usersWorkoutsParams = [userId, createdWorkout.id];
+
+        await client.query(usersWorkoutsQuery, usersWorkoutsParams); // Execute query within transaction
+
+        await client.query('COMMIT'); // Commit transaction
+
+        return createdWorkout;
+    } catch (error) {
+        await client.query('ROLLBACK'); // Rollback transaction on error
+        throw error;
+    } finally {
+        client.release(); // Release client back to the pool
+    }
 };
 
 const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) => {
