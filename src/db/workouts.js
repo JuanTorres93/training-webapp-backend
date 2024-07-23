@@ -279,6 +279,47 @@ const selectworkoutById = (id, appIsBeingTested) => {
     });
 };
 
+const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
+    const q = `
+        SELECT
+            w.id AS workout_id,
+            w.alias AS workout_alias,
+            w.description AS workout_description,
+            uw.start_date,
+            e.id AS exercise_id,
+            e.alias AS exercise_alias,
+            w_e.exercise_set AS exercise_set,
+            w_e.exercise_reps AS exercise_reps,
+            w_e.exercise_weight AS exercise_weight,
+            w_e.exercise_time_in_seconds AS exercise_time_in_seconds
+        FROM workouts w
+        JOIN users_workouts uw ON w.id = uw.workout_id
+        JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
+        LEFT JOIN workouts_exercises w_e ON w.id = w_e.workout_id
+        LEFT JOIN exercises e ON w_e.exercise_id = e.id
+        WHERE wt.user_id = $1 AND wt.id = $2
+        ORDER BY uw.start_date DESC, w.id, e.id, w_e.exercise_set;
+    `;
+    const params = [userId, templateId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const workoutInfo = results.rows;
+            
+            // If workout does not exists
+            if (workoutInfo.length === 0) {
+                return resolve(undefined);
+            }
+
+            // Group results by workout id
+            const workoutSpec = _compactWorkoutInfo(workoutInfo);
+
+            resolve(workoutSpec);
+        }, appIsBeingTested)
+    });
+};
 
 const truncateTableTest = (appIsBeingTested) => {
     if (!appIsBeingTested) {
@@ -491,17 +532,28 @@ const deleteSetFromExercise = (workoutId, exerciseId, exerciseSet, appIsBeingTes
 };
 
 module.exports = {
+    // CREATE
     createWorkouts,
-    updateWorkout,
     addExerciseToWorkout,
+
+    // UPDATE
+    updateWorkout,
+    updateExerciseFromWorkout,
+
+    // SELECT
+    selectAllWorkouts,
+    selectworkoutById,
+    selectLastWorkoutFromUser,
+    
+    // DELETE
+    deleteWorkout,
+    deleteExerciseFromWorkout,
+    deleteSetFromExercise,
+
+    // EXTRA
+    truncateTableTest,
+
     checkWorkoutByIdExists,
     checkExerciseInWorkoutExists,
     workoutBelongsToUser,
-    selectAllWorkouts,
-    selectworkoutById,
-    truncateTableTest,
-    deleteWorkout,
-    updateExerciseFromWorkout,
-    deleteExerciseFromWorkout,
-    deleteSetFromExercise,
 };

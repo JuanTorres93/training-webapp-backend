@@ -467,6 +467,45 @@ paths:
 
         '404':
           $ref: '#/components/responses/404'
+
+  /workouts/last/{templateId}/user/{userId}:
+    parameters:
+      - name: templateId
+        in: path
+        required: true
+        description: Template id
+        schema:
+          type: integer
+      - name: userId
+        in: path
+        required: true
+        description: User id
+        schema:
+          type: integer
+    get:
+      tags:
+        - Workouts
+      description: Returns last workout based on template from user
+      operationId: getWorkoutLastTemplateWorkoutFromUser
+      responses:
+        '200':
+          description: Returns last workout from template from user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWorkout'
+              examples:
+                Workout:
+                  $ref: '#/components/examples/Workout'
+                
+        '401':
+          $ref: '#/components/responses/401'
+                
+        '403':
+          $ref: '#/components/responses/403'
+                
+        '404':
+          $ref: '#/components/responses/404'
               
   /workouts/{workoutId}/exercises/{exerciseId}:
     parameters:
@@ -671,10 +710,10 @@ paths:
           $ref: '#/components/responses/401'
                 
         '403':
-          $ref: '#/components/responses/401'
+          $ref: '#/components/responses/403'
                 
         '404':
-          $ref: '#/components/responses/401'
+          $ref: '#/components/responses/404'
 
   /workouts/templates/{templateId}:
     parameters:

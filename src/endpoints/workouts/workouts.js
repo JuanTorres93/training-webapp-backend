@@ -40,6 +40,21 @@ router.get('/:workoutId',
     res.status(200).json(workout);
 });
 
+// Get last workout of a template by user
+router.get('/last/:templateId/user/:userId', 
+    validateIntegerParameter('templateId'), 
+    validateIntegerParameter('userId'), 
+    mw.checkWorkoutTemplateExistsById,
+    mw.authenticatedUser,
+    mw.loggedUserIdEqualsUserIdInRequest,
+    async (req, res, next) => {
+    const { templateId, userId } = req.params;
+
+    const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId, req.appIsBeingTested);
+
+    res.status(200).json(workout);
+});
+
 // ===================================
 // ========== POST requests ==========
 // ===================================
