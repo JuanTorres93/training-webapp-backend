@@ -204,15 +204,23 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
         exercises: [],
     };
 
+
     workoutInfoDb.forEach(row => {
-        workoutSpec.exercises.push({
+        const exerciseSet = {
             id: row.exercise_id,
             alias: row.exercise_alias,
             set: row.exercise_set,
             reps: row.exercise_reps,
             weight: row.exercise_weight,
             time_in_seconds: row.exercise_time_in_seconds,
-        });
+        }
+
+        // Add exercise_order only if it exists
+        if (row.exercise_order !== undefined) {
+            exerciseSet.order = row.exercise_order;
+        }
+
+        workoutSpec.exercises.push(exerciseSet);
     });
 
     return workoutSpec;
@@ -281,6 +289,17 @@ const selectworkoutById = (id, appIsBeingTested) => {
 
 const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
     const q = `
+        WITH LatestDate AS (
+            SELECT MAX(uw.start_date) AS max_start_date
+            FROM workouts w
+            JOIN users_workouts uw ON w.id = uw.workout_id
+            JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
+            JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
+            JOIN workouts_exercises w_e ON w.id = w_e.workout_id
+            JOIN exercises e ON w_e.exercise_id = e.id
+            WHERE wt.user_id = $1 AND wt.id = $2
+        )
+
         SELECT
             w.id AS workout_id,
             w.alias AS workout_alias,
@@ -288,17 +307,20 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
             uw.start_date,
             e.id AS exercise_id,
             e.alias AS exercise_alias,
+            wt_e.exercise_order,
             w_e.exercise_set AS exercise_set,
             w_e.exercise_reps AS exercise_reps,
             w_e.exercise_weight AS exercise_weight,
             w_e.exercise_time_in_seconds AS exercise_time_in_seconds
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
-        LEFT JOIN workouts_exercises w_e ON w.id = w_e.workout_id
-        LEFT JOIN exercises e ON w_e.exercise_id = e.id
+        JOIN workout_template wt ON w.created_by = wt.user_id
+        JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
+        JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
+        JOIN exercises e ON w_e.exercise_id = e.id
+        JOIN LatestDate ld ON uw.start_date = ld.max_start_date
         WHERE wt.user_id = $1 AND wt.id = $2
-        ORDER BY uw.start_date DESC, w.id, e.id, w_e.exercise_set;
+        ORDER BY w.id, wt_e.exercise_order, e.id, w_e.exercise_set;
     `;
     const params = [userId, templateId];
 
