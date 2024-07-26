@@ -25,8 +25,8 @@ CREATE TABLE workout_template (
 CREATE TABLE users_workouts (
   user_id INTEGER REFERENCES users(id),
   workout_id INTEGER REFERENCES workouts(id),
-  start_date DATE NOT NULL,
-  end_date DATE,
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP,
   PRIMARY KEY (user_id, workout_id, start_date)
 );
 
