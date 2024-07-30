@@ -343,6 +343,66 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
     });
 };
 
+const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIsBeingTested) => {
+    const q = `
+        WITH LatestDates AS (
+            SELECT DISTINCT uw.start_date AS dates
+            FROM workouts w
+            JOIN users_workouts uw ON w.id = uw.workout_id
+            JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
+            JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
+            JOIN workouts_exercises w_e ON w.id = w_e.workout_id
+            JOIN exercises e ON w_e.exercise_id = e.id
+            WHERE wt.user_id = $1 AND wt.id = $2
+            ORDER BY dates DESC
+            LIMIT $3	         
+        )
+
+        SELECT
+            w.id AS workout_id,
+            w.alias AS workout_alias,
+            w.description AS workout_description,
+            uw.start_date,
+            e.id AS exercise_id,
+            e.alias AS exercise_alias,
+            wt_e.exercise_order,
+            w_e.exercise_set AS exercise_set,
+            w_e.exercise_reps AS exercise_reps,
+            w_e.exercise_weight AS exercise_weight,
+            w_e.exercise_time_in_seconds AS exercise_time_in_seconds
+        FROM workouts w
+        JOIN users_workouts uw ON w.id = uw.workout_id
+        JOIN workout_template wt ON w.created_by = wt.user_id
+        JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
+        JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
+        JOIN exercises e ON w_e.exercise_id = e.id
+        --JOIN LatestDates ld ON uw.start_date = ld.dates
+        WHERE wt.user_id = $1 AND wt.id = $2 AND uw.start_date IN (SELECT dates FROM LatestDates)
+        ORDER BY w.id, wt_e.exercise_order, e.id, w_e.exercise_set;
+    `;
+    const params = [userId, templateId, numberOfWorkouts];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            // TODO NEXT process each workout separately
+            // Maybe separate them first of leave it to db query
+            const workoutInfo = results.rows;
+            
+            // If workout does not exists
+            if (workoutInfo.length === 0) {
+                return resolve(undefined);
+            }
+
+            // Group results by workout id
+            const workoutSpec = _compactWorkoutInfo(workoutInfo);
+
+            resolve(workoutSpec);
+        }, appIsBeingTested)
+    });
+};
+
 const truncateTableTest = (appIsBeingTested) => {
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
@@ -566,6 +626,7 @@ module.exports = {
     selectAllWorkouts,
     selectworkoutById,
     selectLastWorkoutFromUser,
+    selectLastNWorkoutsFromUser,
     
     // DELETE
     deleteWorkout,
