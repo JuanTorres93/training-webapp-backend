@@ -386,19 +386,30 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIs
         query(q, params, (error, results) => {
             if (error) reject(error);
 
-            // TODO NEXT process each workout separately
-            // Maybe separate them first of leave it to db query
-            const workoutInfo = results.rows;
+            const workoutsInfo = results.rows;
             
             // If workout does not exists
-            if (workoutInfo.length === 0) {
+            if (workoutsInfo.length === 0) {
                 return resolve(undefined);
             }
 
-            // Group results by workout id
-            const workoutSpec = _compactWorkoutInfo(workoutInfo);
+            // Group results by workout start_date
+            const groupByStartDate = (data) => {
+                return data.reduce((acc, curr) => {
+                    const startDate = curr.start_date;
+                    if (!acc[startDate]) {
+                        acc[startDate] = [];
+                    }
+                    acc[startDate].push(curr);
+                    return acc;
+                }, {});
+            }
 
-            resolve(workoutSpec);
+            const groupedData = groupByStartDate(workoutsInfo);
+
+            const allWorkoutsFormatted = Object.values(groupedData).map(_compactWorkoutInfo);
+
+            resolve(allWorkoutsFormatted);
         }, appIsBeingTested)
     });
 };
