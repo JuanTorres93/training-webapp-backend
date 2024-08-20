@@ -448,6 +448,11 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
         const infoParams = [id];
         workoutInfo = await client.query(infoQuery, infoParams);
 
+        // Delete references in users_workouts
+        const usersWorkoutsQuery = "DELETE FROM users_workouts WHERE workout_id = $1;";
+        const usersWorkoutsParams = [id];
+        await client.query(usersWorkoutsQuery, usersWorkoutsParams);
+
         // Delete references in workouts_exercises
         const workoutsExercisesQuery = "DELETE FROM workouts_exercises WHERE workout_id = $1;";
         const workoutsExercisesParams = [id];

@@ -68,10 +68,6 @@ router.get('/last/:templateId/user/:userId',
 
         const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId, req.appIsBeingTested);
 
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('workout');
-        console.log(workout);
-
         res.status(200).json(workout);
     });
 
