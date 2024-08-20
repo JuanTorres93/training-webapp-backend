@@ -27,56 +27,60 @@ router.get('/truncate', async (req, res, next) => {
 });
 
 // Get workout by id
-router.get('/:workoutId', 
-    validateIntegerParameter('workoutId'), 
+router.get('/:workoutId',
+    validateIntegerParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
-    const { workoutId } = req.params;
+        const { workoutId } = req.params;
 
-    const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
+        const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
 
-    res.status(200).json(workout);
-});
+        res.status(200).json(workout);
+    });
 
 // Get last workouts of a template by user
-router.get('/last/:templateId/user/:userId/:numberOfWorkouts', 
-    validateIntegerParameter('templateId'), 
-    validateIntegerParameter('userId'), 
-    validateIntegerParameter('numberOfWorkouts'), 
+router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
+    validateIntegerParameter('templateId'),
+    validateIntegerParameter('userId'),
+    validateIntegerParameter('numberOfWorkouts'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {
-    const { templateId, userId, numberOfWorkouts } = req.params;
+        const { templateId, userId, numberOfWorkouts } = req.params;
 
-    const workout = await dbWorkouts.selectLastNWorkoutsFromUser(templateId, userId, numberOfWorkouts, req.appIsBeingTested);
+        const workout = await dbWorkouts.selectLastNWorkoutsFromUser(templateId, userId, numberOfWorkouts, req.appIsBeingTested);
 
-    res.status(200).json(workout);
-});
+        res.status(200).json(workout);
+    });
 
 // Get last workout of a template by user
-router.get('/last/:templateId/user/:userId', 
-    validateIntegerParameter('templateId'), 
-    validateIntegerParameter('userId'), 
+router.get('/last/:templateId/user/:userId',
+    validateIntegerParameter('templateId'),
+    validateIntegerParameter('userId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {
-    const { templateId, userId } = req.params;
+        const { templateId, userId } = req.params;
 
-    const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId, req.appIsBeingTested);
+        const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId, req.appIsBeingTested);
 
-    res.status(200).json(workout);
-});
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('workout');
+        console.log(workout);
+
+        res.status(200).json(workout);
+    });
 
 // ===================================
 // ========== POST requests ==========
 // ===================================
 
 // Create new workout
-router.post('/', 
+router.post('/',
     workoutsValidators.validateCreateWorkoutParams,
     mw.authenticatedUser,
     async (req, res, next) => {
@@ -92,10 +96,10 @@ router.post('/',
                 msg: "Error when creating workout"
             });
         }
-});
+    });
 
 // Add exercise to workout
-router.post('/:workoutId', 
+router.post('/:workoutId',
     workoutsValidators.validateAddExerciseToWorkoutParams,
     validateIntegerParameter('workoutId'),
     mw.checkWorkoutExistsById,
@@ -131,16 +135,16 @@ router.post('/:workoutId',
                 msg: "Error when adding exercise to workout"
             });
         }
-});
+    });
 
 // ==================================
 // ========== PUT requests ==========
 // ==================================
 
 // update workout by id
-router.put('/:workoutId', 
+router.put('/:workoutId',
     workoutsValidators.validateUpdateWorkoutParams,
-    validateIntegerParameter('workoutId'), 
+    validateIntegerParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
@@ -160,10 +164,10 @@ router.put('/:workoutId',
 );
 
 // update exercise in workout
-router.put('/:workoutId/exercises/:exerciseId', 
+router.put('/:workoutId/exercises/:exerciseId',
     workoutsValidators.validateUpdateExerciseInWorkoutParams,
-    validateIntegerParameter('workoutId'), 
-    validateIntegerParameter('exerciseId'), 
+    validateIntegerParameter('workoutId'),
+    validateIntegerParameter('exerciseId'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
@@ -199,8 +203,8 @@ router.put('/:workoutId/exercises/:exerciseId',
 // =====================================
 
 // delete workout by id
-router.delete('/:workoutId', 
-    validateIntegerParameter('workoutId'), 
+router.delete('/:workoutId',
+    validateIntegerParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
@@ -214,9 +218,9 @@ router.delete('/:workoutId',
 );
 
 // delete exercise from workout
-router.delete('/:workoutId/exercises/:exerciseId', 
-    validateIntegerParameter('workoutId'), 
-    validateIntegerParameter('exerciseId'), 
+router.delete('/:workoutId/exercises/:exerciseId',
+    validateIntegerParameter('workoutId'),
+    validateIntegerParameter('exerciseId'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
@@ -231,10 +235,10 @@ router.delete('/:workoutId/exercises/:exerciseId',
 );
 
 // delete exercise set from workout
-router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet', 
-    validateIntegerParameter('workoutId'), 
-    validateIntegerParameter('exerciseId'), 
-    validateIntegerParameter('exerciseSet'), 
+router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet',
+    validateIntegerParameter('workoutId'),
+    validateIntegerParameter('exerciseId'),
+    validateIntegerParameter('exerciseSet'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.checkExerciseSetExistsInWorkout,

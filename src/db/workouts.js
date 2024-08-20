@@ -4,21 +4,21 @@ const qh = require('./queryHelper.js');
 const TABLE_NAME = 'workouts';
 
 const workoutsWithExercisesQuery = "SELECT  " +
-                                    "	wk.id AS workout_id,  " +
-                                    "	wk.alias AS workout_alias, 	 " +
-                                    "	wk.description AS workout_description, " +
-                                    "	e.id AS exercise_id, " +
-                                    "	e.alias AS exercise_alias, " +
-                                    "	w_e.exercise_set AS exercise_set, " +
-                                    "	w_e.exercise_reps AS exercise_reps, " +
-                                    "	w_e.exercise_weight AS exercise_weight, " +
-                                    "	w_e.exercise_time_in_seconds AS exercise_time_in_seconds " +
-                                    "FROM " + TABLE_NAME + " AS wk " +
-                                    "LEFT JOIN workouts_exercises AS w_e ON wk.id = w_e.workout_id " +
-                                    "LEFT JOIN exercises AS e ON w_e.exercise_id = e.id " +
-                                    "WHERE TRUE " + // This condition is here for DRYING the code replacing it where necessary
-                                    "ORDER BY workout_id, exercise_id, exercise_set " +
-                                    "; ";
+    "	wk.id AS workout_id,  " +
+    "	wk.alias AS workout_alias, 	 " +
+    "	wk.description AS workout_description, " +
+    "	e.id AS exercise_id, " +
+    "	e.alias AS exercise_alias, " +
+    "	w_e.exercise_set AS exercise_set, " +
+    "	w_e.exercise_reps AS exercise_reps, " +
+    "	w_e.exercise_weight AS exercise_weight, " +
+    "	w_e.exercise_time_in_seconds AS exercise_time_in_seconds " +
+    "FROM " + TABLE_NAME + " AS wk " +
+    "LEFT JOIN workouts_exercises AS w_e ON wk.id = w_e.workout_id " +
+    "LEFT JOIN exercises AS e ON w_e.exercise_id = e.id " +
+    "WHERE TRUE " + // This condition is here for DRYING the code replacing it where necessary
+    "ORDER BY workout_id, exercise_id, exercise_set " +
+    "; ";
 
 const createWorkouts = async (userId, { alias, description }, appIsBeingTested = undefined) => {
     const client = await getPoolClient(appIsBeingTested); // Get a client from the pool
@@ -34,10 +34,10 @@ const createWorkouts = async (userId, { alias, description }, appIsBeingTested =
 
         let returningFields = ['id', 'alias', 'description'];
 
-        const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
-                                                               requiredFields, requiredValues,
-                                                               optionalFields, optionalValues,
-                                                               returningFields);
+        const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME,
+            requiredFields, requiredValues,
+            optionalFields, optionalValues,
+            returningFields);
 
         const results = await client.query(q, params); // Execute query within transaction
 
@@ -48,7 +48,7 @@ const createWorkouts = async (userId, { alias, description }, appIsBeingTested =
 
         // Insert into users_workouts user_id, workout_id and current date, including time
         const usersWorkoutsQuery = "INSERT INTO users_workouts (user_id, workout_id, start_date) " +
-                                   "VALUES ($1, $2, NOW());";
+            "VALUES ($1, $2, NOW());";
         const usersWorkoutsParams = [userId, createdWorkout.id];
 
         await client.query(usersWorkoutsQuery, usersWorkoutsParams); // Execute query within transaction
@@ -72,13 +72,13 @@ const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) =>
         await client.query('BEGIN;');
 
         // Update workout
-        const { q: updateQuery, params: updateParams } = qh.createUpdateTableStatement(TABLE_NAME, id, 
-                                                            workoutObject)
+        const { q: updateQuery, params: updateParams } = qh.createUpdateTableStatement(TABLE_NAME, id,
+            workoutObject)
 
         await client.query(updateQuery, updateParams);
 
-        const returnInfoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE', 
-                                                                   'WHERE wk.id = $1');
+        const returnInfoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE',
+            'WHERE wk.id = $1');
         const returnInfoParams = [id];
 
         results = await client.query(returnInfoQuery, returnInfoParams);
@@ -92,7 +92,7 @@ const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) =>
     }
 
     const workoutInfo = results.rows;
-            
+
     // If workout does not exists
     if (workoutInfo.length === 0) {
         return undefined;
@@ -100,12 +100,12 @@ const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) =>
 
     // Group results by workout id
     const workoutSpec = _compactWorkoutInfo(workoutInfo);
-    
+
     return workoutSpec;
 }
 
-const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds }, 
-                                      appIsBeingTested = undefined) => {
+const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds },
+    appIsBeingTested = undefined) => {
     // Build query
     // TODO take into account exerciseSet as primary key too, i.e. handle duplicity and something more if needed
     let requiredFields = ['workout_id', 'exercise_id', 'exercise_set'];
@@ -114,16 +114,16 @@ const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, 
     let optionalFields = ['exercise_reps', 'exercise_weight', 'exercise_time_in_seconds'];
     let optionalValues = [reps, weight, timeInSeconds];
 
-    let returningFields = ['exercise_id AS exerciseId', 
-                           'exercise_set AS exerciseSet', 
-                           'exercise_reps AS reps', 
-                           'exercise_weight AS weight', 
-                           'exercise_time_in_seconds AS time_in_seconds'];
+    let returningFields = ['exercise_id AS exerciseId',
+        'exercise_set AS exerciseSet',
+        'exercise_reps AS reps',
+        'exercise_weight AS weight',
+        'exercise_time_in_seconds AS time_in_seconds'];
 
-    const { q, params } = qh.createInsertIntoTableStatement('workouts_exercises', 
-                                                           requiredFields, requiredValues,
-                                                           optionalFields, optionalValues,
-                                                           returningFields);
+    const { q, params } = qh.createInsertIntoTableStatement('workouts_exercises',
+        requiredFields, requiredValues,
+        optionalFields, optionalValues,
+        returningFields);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -183,10 +183,10 @@ const workoutBelongsToUser = (workoutId, userId, appIsBeingTested) => {
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            
+
             if (results.rows.length > 0) {
                 resolve(true);
-            } else{
+            } else {
                 resolve(false)
             }
         }, appIsBeingTested)
@@ -264,8 +264,8 @@ const selectAllWorkouts = (appIsBeingTested) => {
 };
 
 const selectworkoutById = (id, appIsBeingTested) => {
-    const q = workoutsWithExercisesQuery.replace('WHERE TRUE', 
-                                            'WHERE wk.id = $1');
+    const q = workoutsWithExercisesQuery.replace('WHERE TRUE',
+        'WHERE wk.id = $1');
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -273,7 +273,7 @@ const selectworkoutById = (id, appIsBeingTested) => {
             if (error) reject(error);
 
             const workoutInfo = results.rows;
-            
+
             // If workout does not exists
             if (workoutInfo.length === 0) {
                 return resolve(undefined);
@@ -329,7 +329,7 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
             if (error) reject(error);
 
             const workoutInfo = results.rows;
-            
+
             // If workout does not exists
             if (workoutInfo.length === 0) {
                 return resolve(undefined);
@@ -387,7 +387,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIs
             if (error) reject(error);
 
             const workoutsInfo = results.rows;
-            
+
             // If workout does not exists
             if (workoutsInfo.length === 0) {
                 return resolve(undefined);
@@ -443,8 +443,8 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
         await client.query('BEGIN;');
 
         // Get info to be deleted to return it to user
-        const infoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE', 
-                                                'WHERE wk.id = $1');
+        const infoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE',
+            'WHERE wk.id = $1');
         const infoParams = [id];
         workoutInfo = await client.query(infoQuery, infoParams);
 
@@ -455,7 +455,7 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
 
         // Delete workout itself
         const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-                              "RETURNING id, alias, description;";
+            "RETURNING id, alias, description;";
         const workoutsParams = [id];
         await client.query(workoutsQuery, workoutsParams);
 
@@ -469,7 +469,7 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
 
     // Get results from query
     workoutInfo = workoutInfo.rows;
-            
+
     // If workout does not exists
     if (workoutInfo.length === 0) {
         return undefined;
@@ -481,8 +481,8 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
     return workoutSpec;
 }
 
-const updateExerciseFromWorkout = (workoutId, 
-    { exerciseId, exerciseSet, reps, weight, time_in_seconds }, 
+const updateExerciseFromWorkout = (workoutId,
+    { exerciseId, exerciseSet, reps, weight, time_in_seconds },
     appIsBeingTested = undefined) => {
 
     if (reps === undefined && weight === undefined && time_in_seconds === undefined) {
@@ -512,15 +512,15 @@ const updateExerciseFromWorkout = (workoutId,
 
     q = q.substring(0, q.length - 2) + " ";
     q += "WHERE ";
-    q +=    `workout_id = $${paramDolarCounter} AND `;
-    q +=    `exercise_id = $${paramDolarCounter + 1} AND `;
-    q +=    `exercise_set = $${paramDolarCounter + 2} `;
+    q += `workout_id = $${paramDolarCounter} AND `;
+    q += `exercise_id = $${paramDolarCounter + 1} AND `;
+    q += `exercise_set = $${paramDolarCounter + 2} `;
     q += "RETURNING  " +
-         "	exercise_id,  " +
-         "	exercise_set,  " +
-         "	exercise_reps AS reps,  " +
-         "	exercise_weight AS weight,  " +
-         "	exercise_time_in_seconds AS time_in_seconds;"
+        "	exercise_id,  " +
+        "	exercise_set,  " +
+        "	exercise_reps AS reps,  " +
+        "	exercise_weight AS weight,  " +
+        "	exercise_time_in_seconds AS time_in_seconds;"
 
     params.push(workoutId);
     params.push(exerciseId);
@@ -545,19 +545,19 @@ const updateExerciseFromWorkout = (workoutId,
 
 const deleteExerciseFromWorkout = (workoutId, exerciseId, appIsBeingTested) => {
     const q = " WITH deleted AS ( " +
-              " 	DELETE FROM workouts_exercises " +
-              " 	WHERE " +
-              " 		workout_id = $1 AND " +
-              " 		exercise_id = $2 " +
-              " 	RETURNING  " +
-              " 		exercise_id, " +
-              " 		exercise_set, " +
-              " 		exercise_reps, " +
-              " 		exercise_weight, " +
-              " 		exercise_time_in_seconds " +
-              " ) " +
-              " SELECT * FROM deleted " +
-              " ORDER BY exercise_id, exercise_set; ";
+        " 	DELETE FROM workouts_exercises " +
+        " 	WHERE " +
+        " 		workout_id = $1 AND " +
+        " 		exercise_id = $2 " +
+        " 	RETURNING  " +
+        " 		exercise_id, " +
+        " 		exercise_set, " +
+        " 		exercise_reps, " +
+        " 		exercise_weight, " +
+        " 		exercise_time_in_seconds " +
+        " ) " +
+        " SELECT * FROM deleted " +
+        " ORDER BY exercise_id, exercise_set; ";
 
     const params = [workoutId, exerciseId];
 
@@ -585,20 +585,20 @@ const deleteExerciseFromWorkout = (workoutId, exerciseId, appIsBeingTested) => {
 
 const deleteSetFromExercise = (workoutId, exerciseId, exerciseSet, appIsBeingTested) => {
     const q = " WITH deleted AS ( " +
-              " 	DELETE FROM workouts_exercises " +
-              " 	WHERE " +
-              " 		workout_id = $1 AND " +
-              " 		exercise_id = $2 AND " +
-              " 		exercise_set = $3 " +
-              " 	RETURNING  " +
-              " 		exercise_id, " +
-              " 		exercise_set, " +
-              " 		exercise_reps, " +
-              " 		exercise_weight, " +
-              " 		exercise_time_in_seconds " +
-              " ) " +
-              " SELECT * FROM deleted " +
-              " ORDER BY exercise_id, exercise_set; ";
+        " 	DELETE FROM workouts_exercises " +
+        " 	WHERE " +
+        " 		workout_id = $1 AND " +
+        " 		exercise_id = $2 AND " +
+        " 		exercise_set = $3 " +
+        " 	RETURNING  " +
+        " 		exercise_id, " +
+        " 		exercise_set, " +
+        " 		exercise_reps, " +
+        " 		exercise_weight, " +
+        " 		exercise_time_in_seconds " +
+        " ) " +
+        " SELECT * FROM deleted " +
+        " ORDER BY exercise_id, exercise_set; ";
 
     const params = [workoutId, exerciseId, exerciseSet];
 
@@ -638,7 +638,7 @@ module.exports = {
     selectworkoutById,
     selectLastWorkoutFromUser,
     selectLastNWorkoutsFromUser,
-    
+
     // DELETE
     deleteWorkout,
     deleteExerciseFromWorkout,

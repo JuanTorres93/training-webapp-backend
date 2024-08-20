@@ -1,6 +1,6 @@
 const { request, BASE_ENDPOINT, newUserReq,
-        exercises, initExercisesTableInDb, 
-        addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
+    exercises, initExercisesTableInDb,
+    addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
 
 OTHER_USER_ALIAS = 'other user';
 
@@ -41,7 +41,7 @@ const setUp = async () => {
     return { user, otherUser };
 }
 
-describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}',  () => {
+describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
     let id;
     let exercisesIds = {};
     let user, otherUser;
@@ -87,16 +87,26 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}',  () => {
                 console.log("EEERROOOOOOOR")
                 console.log(error);
             }
-            
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
-            const workout = pushResponse.body;
-            workoutId = workout.id;
 
+            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
 
             // login user
             await request.post('/login').send({
                 username: newUserReq.alias,
                 password: newUserReq.password,
+            });
+
+            const workoutReponse = await request.get('/workouts/' + pushResponse.body.id);
+            const workout = workoutReponse.body;
+            workoutId = workout.id;
+
+            const exercisesAndSets = {};
+            workout.exercises.forEach(exercise => {
+                if (!Object.keys(exercisesAndSets).includes(String(exercise.id))) {
+                    exercisesAndSets[exercise.id] = 1;
+                } else {
+                    exercisesAndSets[exercise.id]++;
+                }
             });
 
             // Create new template
@@ -106,6 +116,22 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}',  () => {
                 description: workout.description,
             });
             template = templateResponse.body;
+
+            // Add exercises to template
+            const promises = []
+            Object.entries(exercisesAndSets).forEach(([exerciseId, totalSets], i) => {
+                const req = {
+                    exerciseId: Number.parseInt(exerciseId),
+                    exerciseOrder: i + 1,
+                    exerciseSets: totalSets,
+                };
+
+                promises.push(
+                    request.post('/workouts/templates' + `/${template.id}`).send(req)
+                );
+            });
+
+            await Promise.all(promises);
 
             // logout user
             await request.get('/logout');
@@ -121,7 +147,9 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}',  () => {
                     password: newUserReq.password,
                 });
 
-                response = await request.get(BASE_ENDPOINT + `/last/${template.id}/user/${user.id}`);
+                const ep = BASE_ENDPOINT + `/last/${template.id}/user/${user.id}`
+
+                response = await request.get(ep);
             });
 
             afterAll(async () => {
