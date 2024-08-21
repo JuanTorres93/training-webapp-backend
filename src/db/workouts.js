@@ -204,6 +204,11 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
         exercises: [],
     };
 
+    // Add date only if it exists
+    if (firstRow.start_date !== undefined) {
+        workoutSpec.startDate = firstRow.start_date;
+    }
+
 
     workoutInfoDb.forEach(row => {
         const exerciseSet = {
@@ -385,6 +390,10 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIs
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
+
+            if (results.rows.length === 0) {
+                resolve([]);
+            }
 
             const workoutsInfo = results.rows;
 
