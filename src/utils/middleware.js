@@ -20,9 +20,9 @@ const loggedUserIdEqualsUserIdInRequest = (req, res, next) => {
     const loggedUser = req.session.passport.user;
     const loggedUserId = loggedUser.id;
 
-    const userIdInRequest = (req.params.userId) ? req.params.userId: req.body.userId;
+    const userIdInRequest = (req.params.userId) ? req.params.userId : req.body.userId;
 
-    if ( (loggedUserId === userIdInRequest) && (loggedUserId !== undefined) && (loggedUserId !== null) ) {
+    if ((loggedUserId === userIdInRequest) && (loggedUserId !== undefined) && (loggedUserId !== null)) {
         next();
     } else {
         return res.status(403).json({ msg: "Not authorized" });
@@ -33,7 +33,7 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
     const loggedUser = req.session.passport.user;
     const loggedUserId = loggedUser.id;
 
-    const exerciseId = (req.params.exerciseId) ? req.params.exerciseId: req.body.exerciseId;
+    const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
 
     const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
         exerciseId, loggedUserId, req.appIsBeingTested
@@ -50,7 +50,7 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
     const loggedUser = req.session.passport.user;
     const loggedUserId = loggedUser.id;
 
-    const workoutId = (req.params.workoutId) ? req.params.workoutId: req.body.workoutId;
+    const workoutId = (req.params.workoutId) ? req.params.workoutId : req.body.workoutId;
 
     const workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
         workoutId, loggedUserId, req.appIsBeingTested
@@ -67,7 +67,7 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
     const loggedUser = req.session.passport.user;
     const loggedUserId = loggedUser.id;
 
-    const templateId = (req.params.templateId) ? req.params.templateId: req.body.templateId;
+    const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
 
     const workoutTemplateBelongsToUser = await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
         templateId, loggedUserId, req.appIsBeingTested
@@ -87,14 +87,14 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
 // a session active due to no being a browser.
 // Probably, something like this can also be used for authenticated users
 const authorizedUser = (req, res, next) => {
-  // Check for the authorized property within the session
-  if (req.session.authorized) {
-    // next middleware function is invoked
-    res.next();
-  }
-  else {
-    res.status(403).json({ msg: "You're not authorized to view this page" });
-  }
+    // Check for the authorized property within the session
+    if (req.session.authorized) {
+        // next middleware function is invoked
+        res.next();
+    }
+    else {
+        res.status(403).json({ msg: "You're not authorized to view this page" });
+    }
 };
 
 const processIntegerURLParameter = category => {
@@ -114,7 +114,7 @@ const processIntegerURLParameter = category => {
         if (Number.isNaN(intId)) {
             return res.status(400).json({ msg: "Invalid id" });
         }
-        
+
         req[`${category}Id`] = intId;
         next();
     }
@@ -157,7 +157,6 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating user parameter
     const { alias, email } = req.body;
 
-    // TODO DRY this code
     const emailInUse = await dbUsers.checkEmailInUse(email, req.appIsBeingTested) === true
 
     if (emailInUse) {
@@ -177,7 +176,7 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
 
 const checkUserExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating userId parameter
-    const userId = (req.params.userId) ? req.params.userId: req.body.userId;
+    const userId = (req.params.userId) ? req.params.userId : req.body.userId;
 
     const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
 
@@ -207,7 +206,7 @@ const checkExerciseExistsById = async (req, res, next) => {
 
 const checkWorkoutExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
-    const workoutId = (req.params.workoutId) ? req.params.workoutId: req.body.workoutId;
+    const workoutId = (req.params.workoutId) ? req.params.workoutId : req.body.workoutId;
 
     const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
 
@@ -222,7 +221,7 @@ const checkWorkoutExistsById = async (req, res, next) => {
 
 const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
-    const workoutId = (req.params.workoutId) ? req.params.workoutId: req.body.workoutId;
+    const workoutId = (req.params.workoutId) ? req.params.workoutId : req.body.workoutId;
     const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
     const exerciseSet = (req.params.exerciseSet) ? req.params.exerciseSet : req.body.exerciseSet;
 
@@ -244,7 +243,7 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
 
 const checkWorkoutTemplateExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
-    const templateId = (req.params.templateId) ? req.params.templateId: req.body.templateId;
+    const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
 
     const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
 
@@ -259,7 +258,7 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
 
 const checkExerciseOrderExistsInWorkoutTemplate = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
-    const templateId = (req.params.templateId) ? req.params.templateId: req.body.templateId;
+    const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
     const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
     const exerciseOrder = (req.params.exerciseOrder) ? req.params.exerciseOrder : req.body.exerciseOrder;
 
