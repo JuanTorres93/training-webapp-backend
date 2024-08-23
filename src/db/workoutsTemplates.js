@@ -99,10 +99,10 @@ const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
     if (!templateHasExercises) {
         q = queryNoExercises;
     } else {
-        q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
-                                                        'WHERE wkt.id = $1');
+        q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE',
+            'WHERE wkt.id = $1');
     }
-    
+
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -110,7 +110,7 @@ const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
             if (error) reject(error);
 
             const templateInfo = results.rows;
-            
+
             // If workout does not exists
             if (templateInfo.length === 0) {
                 return resolve(undefined);
@@ -138,10 +138,10 @@ const createWorkoutTemplate = ({ userId, alias, description }, appIsBeingTested 
 
     let returningFields = ['id', 'user_id', 'alias', 'description'];
 
-    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
-                                                           requiredFields, requiredValues,
-                                                           optionalFields, optionalValues,
-                                                           returningFields);
+    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME,
+        requiredFields, requiredValues,
+        optionalFields, optionalValues,
+        returningFields);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -180,8 +180,8 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
-const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseOrder, exerciseSets }, 
-                                      appIsBeingTested = undefined) => {
+const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseOrder, exerciseSets },
+    appIsBeingTested = undefined) => {
     // Build query
     let requiredFields = ['workout_template_id', 'exercise_id', 'exercise_order', 'exercise_sets'];
     let requiredValues = [workoutTemplateId, exerciseId, exerciseOrder, exerciseSets];
@@ -191,10 +191,10 @@ const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseO
 
     let returningFields = ['workout_template_id', 'exercise_id', 'exercise_order', 'exercise_sets'];
 
-    const { q, params } = qh.createInsertIntoTableStatement('workout_template_exercises', 
-                                                            requiredFields, requiredValues,
-                                                            optionalFields, optionalValues,
-                                                            returningFields);
+    const { q, params } = qh.createInsertIntoTableStatement('workout_template_exercises',
+        requiredFields, requiredValues,
+        optionalFields, optionalValues,
+        returningFields);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -241,10 +241,10 @@ const workoutTemplateBelongsToUser = (templateId, userId, appIsBeingTested) => {
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            
+
             if (results.rows.length > 0) {
                 resolve(true);
-            } else{
+            } else {
                 resolve(false)
             }
         }, appIsBeingTested)
@@ -281,8 +281,8 @@ const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested
         await client.query('BEGIN;');
 
         // Update workout template
-        const { q: updateQuery, params: updateParams } = qh.createUpdateTableStatement(TABLE_NAME, id, 
-                                                            workoutTemplateObject)
+        const { q: updateQuery, params: updateParams } = qh.createUpdateTableStatement(TABLE_NAME, id,
+            workoutTemplateObject)
 
         await client.query(updateQuery, updateParams);
 
@@ -290,8 +290,8 @@ const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested
         let returnInfoQuery;
 
         if (hasExercises) {
-            returnInfoQuery = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
-                                                                          'WHERE wkt.id = $1');
+            returnInfoQuery = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE',
+                'WHERE wkt.id = $1');
         } else {
             returnInfoQuery = queryNoExercises;
         }
@@ -308,7 +308,7 @@ const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested
     }
 
     const workoutTemplateInfo = results.rows;
-            
+
     // If workout template does not exists
     if (workoutTemplateInfo.length === 0) {
         return undefined;
@@ -320,7 +320,7 @@ const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested
     if (!hasExercises) {
         workoutTemplateSpec.exercises = [];
     }
-    
+
     return workoutTemplateSpec;
 }
 
@@ -337,8 +337,8 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
         // Get info to be deleted to return it to user
         let infoQuery;
         if (hasExercises) {
-            infoQuery = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', 
-                                                                    'WHERE wkt.id = $1');
+            infoQuery = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE',
+                'WHERE wkt.id = $1');
         } else {
             infoQuery = queryNoExercises;
         }
@@ -353,7 +353,7 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
 
         // Delete workout itself
         const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-                              "RETURNING id, alias, description;";
+            "RETURNING id, alias, description;";
         const workoutsParams = [id];
         await client.query(workoutsQuery, workoutsParams);
 
@@ -367,7 +367,7 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
 
     // Get results from query
     templateInfo = templateInfo.rows;
-            
+
     // If workout does not exists
     if (templateInfo.length === 0) {
         return undefined;
@@ -375,7 +375,7 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
 
     // Group results by workout id
     const workoutSpec = _compactWorkoutTemplateInfo(templateInfo);
-    
+
     if (!hasExercises) {
         workoutSpec.exercises = [];
     }
@@ -404,7 +404,7 @@ const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exer
 };
 
 const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,
-    { exerciseId, exerciseSets, newExerciseOrder  }, 
+    { exerciseId, exerciseSets, newExerciseOrder },
     appIsBeingTested = undefined) => {
 
 
@@ -435,14 +435,14 @@ const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,
 
     q = q.substring(0, q.length - 2) + " ";
     q += "WHERE ";
-    q +=    `workout_template_id = $${paramDolarCounter} AND `;
-    q +=    `exercise_id = $${paramDolarCounter + 1} AND `;
-    q +=    `exercise_order = $${paramDolarCounter + 2} `;
+    q += `workout_template_id = $${paramDolarCounter} AND `;
+    q += `exercise_id = $${paramDolarCounter + 1} AND `;
+    q += `exercise_order = $${paramDolarCounter + 2} `;
     q += "RETURNING  " +
-         "	workout_template_id,  " +
-         "	exercise_id,  " +
-         "	exercise_order,  " +
-         "	exercise_sets;  "
+        "	workout_template_id,  " +
+        "	exercise_id,  " +
+        "	exercise_order,  " +
+        "	exercise_sets;  "
 
     params.push(workoutTemplateId);
     params.push(exerciseId);
@@ -466,19 +466,19 @@ const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,
 
 const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder, appIsBeingTested) => {
     const q = " WITH deleted AS ( " +
-              " 	DELETE FROM workout_template_exercises " +
-              " 	WHERE " +
-              " 		workout_template_id = $1 AND " +
-              " 		exercise_id = $2 AND " +
-              " 		exercise_order = $3 " +
-              " 	RETURNING  " +
-              " 		workout_template_id, " +
-              " 		exercise_id, " +
-              " 		exercise_order, " +
-              " 		exercise_sets " +
-              " ) " +
-              " SELECT * FROM deleted " +
-              " ORDER BY exercise_id, exercise_order; ";
+        " 	DELETE FROM workout_template_exercises " +
+        " 	WHERE " +
+        " 		workout_template_id = $1 AND " +
+        " 		exercise_id = $2 AND " +
+        " 		exercise_order = $3 " +
+        " 	RETURNING  " +
+        " 		workout_template_id, " +
+        " 		exercise_id, " +
+        " 		exercise_order, " +
+        " 		exercise_sets " +
+        " ) " +
+        " SELECT * FROM deleted " +
+        " ORDER BY exercise_id, exercise_order; ";
 
     const params = [workoutId, exerciseId, exerciseOrder];
 
@@ -541,9 +541,49 @@ const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
     });
 };
 
+const selectIdDateAndNameFromLastPerformedTemplatesByUser = (userId, numberOfWOrkouts, appIsBeingTested) => {
+    const q = `
+    WITH LatestDate AS (
+        SELECT
+            wt.id AS template_id,
+            MAX(uw.start_date) AS max_start_date,
+            wt.alias AS template_name
+        FROM workouts w
+        JOIN users_workouts uw ON w.id = uw.workout_id
+        JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
+        WHERE wt.user_id = $1
+        GROUP BY wt.id
+    )
+
+    SELECT
+        ld.template_id,
+        ld.max_start_date AS workout_date,
+        ld.template_name AS workout_name
+    FROM LatestDate ld
+    ORDER BY ld.max_start_date desc
+    LIMIT $2;
+    `;
+    const params = [userId, numberOfWOrkouts];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const lastWorkoutTemplates = results.rows;
+
+            if (lastWorkoutTemplates.length === 0) {
+                resolve([]);
+            }
+
+            resolve(lastWorkoutTemplates)
+        }, appIsBeingTested)
+    });
+};
+
 module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
+    selectWorkoutTemplatesByUserId,
+    selectIdDateAndNameFromLastPerformedTemplatesByUser,
     createWorkoutTemplate,
     truncateTableTest,
     addExerciseToWorkoutTemplate,
@@ -554,5 +594,4 @@ module.exports = {
     checkExerciseInWorkoutTemplateExists,
     updateExerciseFromWorkoutTemplate,
     deleteExerciseFromWorkoutTemplate,
-    selectWorkoutTemplatesByUserId,
 };

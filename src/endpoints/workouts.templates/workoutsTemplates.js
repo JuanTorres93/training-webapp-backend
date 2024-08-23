@@ -13,14 +13,14 @@ const router = express.Router();
 // ==================================
 
 // Get all workouts templates
-router.get('/', 
+router.get('/',
     mw.authenticatedUser,
     async (req, res, next) => {
-    // TODO modify spec and endpoint to need authenticated user
-    const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates(req.appIsBeingTested);
+        // TODO modify spec and endpoint to need authenticated user
+        const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates(req.appIsBeingTested);
 
-    res.status(200).send(templates);
-});
+        res.status(200).send(templates);
+    });
 
 // Truncate test table
 router.get('/truncate', async (req, res, next) => {
@@ -30,21 +30,21 @@ router.get('/truncate', async (req, res, next) => {
 });
 
 // Get workout template by id
-router.get('/:templateId', 
-    validateIntegerParameter('templateId'), 
+router.get('/:templateId',
+    validateIntegerParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
-    const { templateId } = req.params;
+        const { templateId } = req.params;
 
-    const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
+        const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
 
-    res.status(200).json(workoutTemplate);
-});
+        res.status(200).json(workoutTemplate);
+    });
 
-router.get('/all/:userId', 
-    validateIntegerParameter('userId'), 
+router.get('/all/:userId',
+    validateIntegerParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
@@ -55,13 +55,26 @@ router.get('/all/:userId',
     }
 );
 
+// Last templates performed and finished by a user
+router.get('/last/user/:userId/:numberOfWorkouts',
+    validateIntegerParameter('userId'),
+    validateIntegerParameter('numberOfWorkouts'),
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
+    mw.loggedUserIdEqualsUserIdInRequest,
+    async (req, res) => {
+        const { userId, numberOfWorkouts } = req.params;
+        const templates = await dbWorkoutsTemplates.selectIdDateAndNameFromLastPerformedTemplatesByUser(userId, numberOfWorkouts, req.appIsBeingTested);
+        res.status(200).json(templates);
+    }
+);
 
 // ===================================
 // ========== POST requests ==========
 // ===================================
 
 // Create new workout
-router.post('/', 
+router.post('/',
     workoutsTemplatesValidators.validateCreateWorkoutTemplateParams,
     mw.checkUserExistsById,
     mw.authenticatedUser,
@@ -78,10 +91,10 @@ router.post('/',
                 msg: "Error when creating workout"
             });
         }
-});
+    });
 
 // Add exercise to workout template
-router.post('/:templateId', 
+router.post('/:templateId',
     workoutsTemplatesValidators.validateAddExerciseToWorkoutTemplateParams,
     validateIntegerParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
@@ -105,7 +118,7 @@ router.post('/:templateId',
                 msg: "Error when adding exercise to workout template"
             });
         }
-});
+    });
 
 
 // ==================================
@@ -113,9 +126,9 @@ router.post('/:templateId',
 // ==================================
 
 // update workout template by id
-router.put('/:templateId', 
+router.put('/:templateId',
     workoutsTemplatesValidators.validateUpdateWorkoutTemplateParams,
-    validateIntegerParameter('templateId'), 
+    validateIntegerParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
@@ -137,11 +150,11 @@ router.put('/:templateId',
 );
 
 // update exercise in workout template
-router.put('/:templateId/exercises/:exerciseId/:exerciseOrder', 
+router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
     workoutsTemplatesValidators.validateUpdateExerciseInWorkoutTemplateParams,
-    validateIntegerParameter('templateId'), 
-    validateIntegerParameter('exerciseId'), 
-    validateIntegerParameter('exerciseOrder'), 
+    validateIntegerParameter('templateId'),
+    validateIntegerParameter('exerciseId'),
+    validateIntegerParameter('exerciseOrder'),
     mw.checkExerciseExistsById,
     mw.checkWorkoutTemplateExistsById,
     mw.checkExerciseOrderExistsInWorkoutTemplate,
@@ -171,8 +184,8 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
 // =====================================
 
 // delete workout by id
-router.delete('/:templateId', 
-    validateIntegerParameter('templateId'), 
+router.delete('/:templateId',
+    validateIntegerParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
@@ -188,10 +201,10 @@ router.delete('/:templateId',
 );
 
 // delete exercise from workout template
-router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder', 
-    validateIntegerParameter('templateId'), 
-    validateIntegerParameter('exerciseId'), 
-    validateIntegerParameter('exerciseOrder'), 
+router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder',
+    validateIntegerParameter('templateId'),
+    validateIntegerParameter('exerciseId'),
+    validateIntegerParameter('exerciseOrder'),
     mw.checkWorkoutTemplateExistsById,
     mw.checkExerciseExistsById,
     mw.checkExerciseOrderExistsInWorkoutTemplate,
