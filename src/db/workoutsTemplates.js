@@ -543,25 +543,16 @@ const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
 
 const selectIdDateAndNameFromLastPerformedTemplatesByUser = (userId, numberOfWOrkouts, appIsBeingTested) => {
     const q = `
-    WITH LatestDate AS (
         SELECT
-            wt.id AS template_id,
-            MAX(uw.start_date) AS max_start_date,
-            wt.alias AS template_name
+        	wt.id AS template_id,
+        	uw.start_date AS workout_date,
+        	wt.alias AS workout_name
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
         JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
         WHERE wt.user_id = $1
-        GROUP BY wt.id
-    )
-
-    SELECT
-        ld.template_id,
-        ld.max_start_date AS workout_date,
-        ld.template_name AS workout_name
-    FROM LatestDate ld
-    ORDER BY ld.max_start_date desc
-    LIMIT $2;
+        ORDER BY start_date DESC
+        LIMIT $2;
     `;
     const params = [userId, numberOfWOrkouts];
 
