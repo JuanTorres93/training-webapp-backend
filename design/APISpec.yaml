@@ -468,6 +468,42 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /workouts/addFinishDate/{workoutId}:
+    parameters:
+      - name: workoutId
+        in: path
+        required: true
+        description: Workout id
+        schema:
+          type: integer
+    get:
+      tags:
+        - Workouts
+      description: Adds current date as finish date for workout
+      operationId: addFinishDateToWorkout
+      responses:
+        "200":
+          description: Successfully updated workout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseWorkout"
+              examples:
+                UpdatedWorkout:
+                  $ref: "#/components/examples/CreateWorkout"
+
+        "400":
+          $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
+
   /workouts/last/{templateId}/user/{userId}:
     parameters:
       - name: templateId

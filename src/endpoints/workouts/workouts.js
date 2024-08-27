@@ -71,6 +71,21 @@ router.get('/last/:templateId/user/:userId',
         res.status(200).json(workout);
     });
 
+
+// Update end date of workout
+router.get('/addFinishDate/:workoutId',
+    validateIntegerParameter('workoutId'),
+    mw.checkWorkoutExistsById,
+    mw.authenticatedUser,
+    mw.workoutBelongsToLoggedInUser,
+    async (req, res, next) => {
+        const { workoutId } = req.params;
+
+        const workout = await dbWorkouts.addFinishDateToWorkout(workoutId, req.appIsBeingTested);
+
+        res.status(200).json(workout);
+    });
+
 // ===================================
 // ========== POST requests ==========
 // ===================================

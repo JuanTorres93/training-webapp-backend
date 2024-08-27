@@ -104,6 +104,46 @@ const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) =>
     return workoutSpec;
 }
 
+const addFinishDateToWorkout = async (workoutId, appIsBeingTested = undefined) => {
+    // TODO test this function
+    const client = await getPoolClient(appIsBeingTested);
+    let results;
+
+    try {
+        await client.query('BEGIN;');
+
+        const updateQuery = "UPDATE users_workouts SET end_date = NOW() WHERE workout_id = $1;";
+        const updateParams = [workoutId];
+
+        await client.query(updateQuery, updateParams);
+
+        const returnInfoQuery = workoutsWithExercisesQuery.replace('WHERE TRUE',
+            'WHERE wk.id = $1');
+        const returnInfoParams = [workoutId];
+
+        results = await client.query(returnInfoQuery, returnInfoParams);
+        await client.query('COMMIT;');
+
+    } catch (e) {
+        await client.query('ROLLBACK;');
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    const workoutInfo = results.rows;
+
+    // If workout does not exists
+    if (workoutInfo.length === 0) {
+        return undefined;
+    }
+
+    // Group results by workout id
+    const workoutSpec = _compactWorkoutInfo(workoutInfo);
+
+    return workoutSpec;
+}
+
 const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds },
     appIsBeingTested = undefined) => {
     // Build query
@@ -646,6 +686,7 @@ module.exports = {
     // UPDATE
     updateWorkout,
     updateExerciseFromWorkout,
+    addFinishDateToWorkout,
 
     // SELECT
     selectAllWorkouts,

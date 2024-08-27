@@ -63,7 +63,7 @@ loginRouter.post('/',
 
 // Post request for login with google
 // This should be opened in the web browser window
-loginRouter.get('/google', passport.authenticate("google", { scope: [ 'profile' ] }));
+loginRouter.get('/google', passport.authenticate("google", { scope: ['profile'] }));
 // This is called AFTER authentication
 loginRouter.get('/google/callback', passport.authenticate("google", {
     successRedirect: process.env.CLIENT_URL,
