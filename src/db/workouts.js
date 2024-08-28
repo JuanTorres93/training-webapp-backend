@@ -233,6 +233,35 @@ const workoutBelongsToUser = (workoutId, userId, appIsBeingTested) => {
     });
 };
 
+const getAllWorkoutsIdsFromTemplateAlias = (templateAlias, userId, appIsBeingTested) => {
+    const q = ` 
+    SELECT w.id AS workout_id
+    FROM workouts w
+    JOIN workout_template wt 
+        ON w.alias = wt.alias
+        AND w.created_by = wt.user_id
+    WHERE
+    	wt.alias = $1 and 
+    	wt.user_id = $2;
+    `;
+
+    const params = [templateAlias, userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+
+            const ids = results.rows;
+
+            if (results.rows.length > 0) {
+                resolve(ids);
+            } else {
+                resolve([])
+            }
+        }, appIsBeingTested)
+    });
+};
+
 const _compactWorkoutInfo = (workoutInfoDb) => {
     // workoutInfoDb represents all rows in the table modeling a workout
     const firstRow = workoutInfoDb[0];
@@ -693,6 +722,7 @@ module.exports = {
     selectworkoutById,
     selectLastWorkoutFromUser,
     selectLastNWorkoutsFromUser,
+    getAllWorkoutsIdsFromTemplateAlias,
 
     // DELETE
     deleteWorkout,

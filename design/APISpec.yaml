@@ -468,6 +468,35 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /workouts/all/{templateAlias}:
+    parameters:
+      - name: templateAlias
+        in: path
+        required: true
+        description: Workout id
+        schema:
+          type: string
+    get:
+      tags:
+        - Workouts
+      description: Returns every workout id for a given template
+      operationId: getWorkoutAliasesFromTemplateName
+      responses:
+        "200":
+          description: Array of workout ids
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+        "400":
+          $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
+
   /workouts/addFinishDate/{workoutId}:
     parameters:
       - name: workoutId

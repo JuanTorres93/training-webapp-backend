@@ -1,7 +1,7 @@
 const express = require('express');
 
 const workoutsValidators = require('../../validators/workouts.js');
-const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
+const { validateIntegerParameter, validateStringParameter } = require('../../validators/generalPurpose.js');
 const dbWorkouts = require('../../db/workouts.js');
 const mw = require('../../utils/middleware.js');
 
@@ -84,6 +84,22 @@ router.get('/addFinishDate/:workoutId',
         const workout = await dbWorkouts.addFinishDateToWorkout(workoutId, req.appIsBeingTested);
 
         res.status(200).json(workout);
+    });
+
+
+// Get all workouts from a template
+router.get('/all/:templateAlias',
+    validateStringParameter('templateAlias'),
+    mw.authenticatedUser,
+    async (req, res, next) => {
+        // TODO 403 and 404 responses? Maybe are not necesary
+
+        const { templateAlias } = req.params;
+        const user = req.session.passport.user;
+
+        const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateAlias(templateAlias, user.id, req.appIsBeingTested);
+
+        res.status(200).json(workoutsIds);
     });
 
 // ===================================
