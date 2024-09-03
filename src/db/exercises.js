@@ -119,11 +119,26 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
 }
 
 const deleteExercise = async (id, appIsBeingTested = undefined) => {
-    // TODO WARNING: There's a potencial risk of unreferenced items in workout_template_exercises
     const client = await getPoolClient(appIsBeingTested);
     let results;
     try {
         await client.query('BEGIN;');
+
+        // Delete references in workout_template_exercises
+        const workoutTemplateExercisesQuery = `
+            DELETE FROM workout_template_exercises 
+            WHERE exercise_id = $1 
+            RETURNING *;
+        `;
+        const workoutTemplateExercisesParams = [id];
+        const deletedExerciseFromTemplate = await client.query(workoutTemplateExercisesQuery, workoutTemplateExercisesParams);
+        const deletedExerciseFromTemplateRows = deletedExerciseFromTemplate.rows;
+        const deletedExerciseOrders = deletedExerciseFromTemplateRows.map(row => {
+            return {
+                exerciseOrder: row.exercise_order,
+                workoutTemplateId: row.workout_template_id
+            };
+        });
 
         // Delete references in workouts_exercises
         const workoutsExercisesQuery = "DELETE FROM workouts_exercises WHERE exercise_id = $1;";
@@ -140,6 +155,20 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
             "RETURNING id, alias, description;";
         const exercisesParams = [id];
         results = await client.query(exercisesQuery, exercisesParams);
+
+        const promises = [];
+        deletedExerciseOrders.forEach(exerciseInfo => {
+            // Update exercise order in workout_template_exercises
+            const updateWorkoutTemplateExercisesQuery = `
+                UPDATE workout_template_exercises 
+                SET exercise_order = exercise_order - 1 
+                WHERE workout_template_id = $1 
+                AND exercise_order > $2;
+            `;
+            promises.push(client.query(updateWorkoutTemplateExercisesQuery, [exerciseInfo.workoutTemplateId, exerciseInfo.exerciseOrder]));
+        });
+
+        await Promise.all(promises);
 
         await client.query('COMMIT;');
     } catch (e) {
