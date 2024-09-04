@@ -158,6 +158,7 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
 
         const promises = [];
         deletedExerciseOrders.forEach(exerciseInfo => {
+            const { workoutTemplateId, exerciseOrder } = exerciseInfo;
             // Update exercise order in workout_template_exercises
             const updateWorkoutTemplateExercisesQuery = `
                 UPDATE workout_template_exercises 
@@ -165,7 +166,7 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
                 WHERE workout_template_id = $1 
                 AND exercise_order > $2;
             `;
-            promises.push(client.query(updateWorkoutTemplateExercisesQuery, [exerciseInfo.workoutTemplateId, exerciseInfo.exerciseOrder]));
+            promises.push(client.query(updateWorkoutTemplateExercisesQuery, [workoutTemplateId, exerciseOrder]));
         });
 
         await Promise.all(promises);
