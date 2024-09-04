@@ -545,7 +545,7 @@ const selectIdDateAndNameFromLastPerformedTemplatesByUser = (userId, numberOfWOr
     const q = `
         SELECT
         	wt.id AS template_id,
-        	uw.start_date AS workout_date,
+        	uw.start_date AT TIME ZONE 'UTC' AS workout_date,
         	wt.alias AS workout_name
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
