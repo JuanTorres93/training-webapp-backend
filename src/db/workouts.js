@@ -48,7 +48,7 @@ const createWorkouts = async (userId, { alias, description }, appIsBeingTested =
 
         // Insert into users_workouts user_id, workout_id and current date, including time
         const usersWorkoutsQuery = "INSERT INTO users_workouts (user_id, workout_id, start_date) " +
-            "VALUES ($1, $2, NOW());";
+            "VALUES ($1, $2, NOW() AT TIME ZONE 'UTC');";
         const usersWorkoutsParams = [userId, createdWorkout.id];
 
         await client.query(usersWorkoutsQuery, usersWorkoutsParams); // Execute query within transaction
@@ -112,7 +112,7 @@ const addFinishDateToWorkout = async (workoutId, appIsBeingTested = undefined) =
     try {
         await client.query('BEGIN;');
 
-        const updateQuery = "UPDATE users_workouts SET end_date = NOW() WHERE workout_id = $1;";
+        const updateQuery = "UPDATE users_workouts SET end_date = NOW() AT TIME ZONE 'UTC' WHERE workout_id = $1;";
         const updateParams = [workoutId];
 
         await client.query(updateQuery, updateParams);
