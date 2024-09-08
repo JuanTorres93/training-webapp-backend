@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 // Regular imports
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -6,7 +9,7 @@ const pgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
 const morgan = require('morgan');
 const passport = require('./passport-config.js');
-const { getPool } = require('./db/index.js');
+const { getPool, getPoolClient } = require('./db/index.js');
 
 // Function to create the express app. Its main use is for testing
 const createApp = (appIsBeingTested = false) => {
@@ -129,6 +132,48 @@ const createApp = (appIsBeingTested = false) => {
     app.use('/logout', logoutRouter);
     // Mount checkout endpoint
     app.use('/checkout', checkoutRouter);
+
+    // =======================
+    // Cron jobs
+    // =======================
+
+    // Run this query every 2 days
+    // Delete workouts that have no exercises and are at least 1 day old
+    setInterval(async () => {
+        // Read the SQL file
+        const sqlFilePath = path.join(__dirname, 'db', 'queries', 'removeEmptyWorkouts.sql');
+        const sqlFileContent = fs.readFileSync(sqlFilePath, 'utf8');
+
+
+        // Split the file content into separate queries
+        const [deleteFromUsersWorkoutsQuery, deleteFromWorkoutsQuery] = sqlFileContent.split(';').map(query => query.trim()).filter(query => query.length > 0);
+
+        try {
+            const client = await getPoolClient(appIsBeingTested); // Get a client from the pool
+            try {
+                await client.query('BEGIN'); // Start transaction
+
+
+                const resultsWorkoutsIds = await client.query(deleteFromUsersWorkoutsQuery, []); // Execute query within transaction
+                const workoutsIds = resultsWorkoutsIds.rows.map(row => row.workout_id);
+
+                for (const workoutId of workoutsIds) {
+                    await client.query(deleteFromWorkoutsQuery, [workoutId]);
+                }
+
+                await client.query('COMMIT'); // Commit transaction
+
+                console.log('Periodic query executed: remove empty workouts');
+            } catch (error) {
+                await client.query('ROLLBACK'); // Rollback transaction on error
+                throw error;
+            } finally {
+                client.release(); // Release client back to the pool
+            }
+        } catch (err) {
+            console.error('Error executing query:', err);
+        }
+    }, 2 * 24 * 60 * 60 * 5000); // Interval set to 2 days in milliseconds
 
     return app;
 }
