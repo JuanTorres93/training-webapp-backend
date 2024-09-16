@@ -26,7 +26,8 @@
   "scripts": {
     "test": "jest --watch --runInBand --verbose",
     "start": "nodemon server.js",
-    "docker": "docker run --rm --env-file ./.envDocker --name tb -p 54321:54321 -v /app/node_modules -v \"$(pwd):/app\" training-backend"
+    "docker": "docker run --rm --env-file ./.envDocker --name tb -p 54321:54321 -v /app/node_modules -v \"$(pwd):/app\" training-backend",
+    "docker-build": "docker build -t training-backend ."
   },
   "repository": {
     "type": "git",
