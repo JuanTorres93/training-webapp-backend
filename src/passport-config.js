@@ -7,60 +7,60 @@ const { query } = require('./db/index');
 const hashing = require('./hashing');
 
 const localStrategy = new LocalStrategy(
-    {passReqToCallback: true}, // Send request to callback to be able to access req.appIsBeingTested
+    { passReqToCallback: true }, // Send request to callback to be able to access req.appIsBeingTested
     (req, username, password, done) => {
-    // username and password are the credentials sent in the body of a POST request
-    // done is a callback function whose purpose is to supply an authenticated user to 
-    // Passport if a user is authenticated. The logic within the anonymous function follows 
-    // this order:
-    // 1. Verify login details in the callback function.
-    // 2. If login details are valid, the done callback function is
-    //    invoked (see arguments below) and the user is authenticated.
-    // 3. If the user is not authenticated, pass false into the 
-    //    callback function (see arguments below).
-    //
-    // The done callback function takes in two arguments:
-    // 1. An error or null if no error is found.
-    // 2. A user or false if no user is found.
+        // username and password are the credentials sent in the body of a POST request
+        // done is a callback function whose purpose is to supply an authenticated user to 
+        // Passport if a user is authenticated. The logic within the anonymous function follows 
+        // this order:
+        // 1. Verify login details in the callback function.
+        // 2. If login details are valid, the done callback function is
+        //    invoked (see arguments below) and the user is authenticated.
+        // 3. If the user is not authenticated, pass false into the 
+        //    callback function (see arguments below).
+        //
+        // The done callback function takes in two arguments:
+        // 1. An error or null if no error is found.
+        // 2. A user or false if no user is found.
 
-    // Everything is selected in order for query to return a standar JS object and not
-    // a weird one in the shape of: { row: '(76,testUser,test@uuuser.com,,,)' }
-    // In addition, password is needed to be retrieved from db in order to compare it
-    // with the one submitted by the user.
-    const q = "SELECT * FROM users WHERE alias = $1;";
-    const params = [username];
+        // Everything is selected in order for query to return a standar JS object and not
+        // a weird one in the shape of: { row: '(76,testUser,test@uuuser.com,,,)' }
+        // In addition, password is needed to be retrieved from db in order to compare it
+        // with the one submitted by the user.
+        const q = "SELECT * FROM users WHERE alias = $1;";
+        const params = [username];
 
-    // TODO DEBUGGAR TODO ESTE MIDDLEWARE
-    query(q, params, async (error, results) => {
-        if (error) return done(error);
+        // TODO DEBUGGAR TODO ESTE MIDDLEWARE
+        query(q, params, async (error, results) => {
+            if (error) return done(error);
 
-        const userObject = results.rows[0];
+            const userObject = results.rows[0];
 
-        // TODO check this condition when debugging and no user is expected
-        if (!userObject) return done(null, false);
+            // TODO check this condition when debugging and no user is expected
+            if (!userObject) return done(null, false);
 
-        // If passwords do not match, then return no user.
-        // trim is included because I detected that my specific database
-        // was including some extra whitespaces at the end, leading to never
-        // be able to log in the user.
-        if (!(await hashing.comparePlainTextToHash(password, userObject.password.trim()))) return done(null, false);
+            // If passwords do not match, then return no user.
+            // trim is included because I detected that my specific database
+            // was including some extra whitespaces at the end, leading to never
+            // be able to log in the user.
+            if (!(await hashing.comparePlainTextToHash(password, userObject.password.trim()))) return done(null, false);
 
-        // Actual user info to be send
-        // TODO IMPORTANT SECURITY. I DON'T KNOW WHAT THIS DOES. I THOUGHT THIS TO BE
-        // THE RETURN VALUE WHEN LOGGING, BUT WHEN TESTING IT SEEMS TO BE THE VALUE
-        // RETURNED BY deserializUser function
-        const user = {
-            id: userObject.id,
-            alias: userObject.alias,
-            email: userObject.email,
-            last_name: userObject.last_name,
-            second_last_name: userObject.second_last_name,
-            img: userObject.img,
-        };
+            // Actual user info to be send
+            // TODO IMPORTANT SECURITY. I DON'T KNOW WHAT THIS DOES. I THOUGHT THIS TO BE
+            // THE RETURN VALUE WHEN LOGGING, BUT WHEN TESTING IT SEEMS TO BE THE VALUE
+            // RETURNED BY deserializUser function
+            const user = {
+                id: userObject.id,
+                alias: userObject.alias,
+                email: userObject.email,
+                last_name: userObject.last_name,
+                second_last_name: userObject.second_last_name,
+                img: userObject.img,
+            };
 
-        return done(null, user);
-    }, req.appIsBeingTested)
-})
+            return done(null, user);
+        }, req.appIsBeingTested)
+    })
 
 // const googleStrategy = new GoogleStrategy({
 //     // TODO configurar los valores en google y ponerlos en .env

@@ -10,6 +10,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const passport = require('./passport-config.js');
 const { getPool, getPoolClient } = require('./db/index.js');
+const config = require('./config.js');
+
 
 // Function to create the express app. Its main use is for testing
 const createApp = (appIsBeingTested = false) => {
@@ -72,7 +74,7 @@ const createApp = (appIsBeingTested = false) => {
     // 
     // Cookie for the browser to be able to send session ID back to the server
     const cookie = {
-        maxAge: 24 * 60 * 60 * 1000, // milliseconds until cookie expires, in this case 24h
+        maxAge: config.MAX_COOKIE_AGE_MILLISECONDS, // milliseconds until cookie expires
         // TODO uncomment in production (secure), it is now disabled due to not using https in development
         // secure: true, // It's only sent to the server via HTTPS
         sameSite: "none", // Allow cross-site cookie through different browsers

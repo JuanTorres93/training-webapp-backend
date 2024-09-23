@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const passport = require('../../passport-config.js');
 
 const loginValidator = require('../../validators/login.js');
+const config = require('../../config.js');
 
 const loginRouter = express.Router();
 loginRouter.use(bodyParser.json());
@@ -14,10 +15,19 @@ const _loginSuccessful = (req, res, next) => {
     // NOTE if needed, ot can be redirected to other endpoint instead of send response
     // res.redirect("profile");
 
+    // Cookie age from now
+    const expirationTimeInMs = config.MAX_COOKIE_AGE_MILLISECONDS //- 2 * 60 * 1000; // 2 minutes before expiration
+    const expirationDate = new Date(Date.now() + expirationTimeInMs).toISOString(); // Send as ISO string (UTC);
+
+    const user = {
+        ...req.user,
+        expirationDate
+    };
+
     // req.user comes from deserializing the user
     const response = {
         msg: "logged in",
-        user: req.user,
+        user,
     }
     return res.json(response);
 };
