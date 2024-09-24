@@ -5,6 +5,7 @@ const passport = require('../../passport-config.js');
 
 const loginValidator = require('../../validators/login.js');
 const config = require('../../config.js');
+const mw = require('../../utils/middleware.js');
 
 const loginRouter = express.Router();
 loginRouter.use(bodyParser.json());
@@ -79,5 +80,24 @@ loginRouter.get('/google/callback', passport.authenticate("google", {
     successRedirect: process.env.CLIENT_URL,
     failureRedirect: '/login/failed',
 }));
+
+// Endpoint para alargar la sesión
+loginRouter.get('/extend-session',
+    mw.authenticatedUser,
+    (req, res, next) => {
+        if (req.session) {
+            // Extend session
+            // 2h from now
+            const expirationTimeInMs = 2 * 60 * 60 * 1000; // milliseconds until cookie expires, in this case 2h
+            req.session.cookie.expires = new Date(Date.now() + expirationTimeInMs);
+            req.session.cookie.maxAge = expirationTimeInMs; // También actualizamos el maxAge
+            res.status(200).json({
+                message: 'Session successfully extended.',
+                expirationDate: req.session.cookie.expires,
+            });
+        } else {
+            res.status(400).json({ message: 'Session could not be extended.' });
+        }
+    });
 
 module.exports = loginRouter;
