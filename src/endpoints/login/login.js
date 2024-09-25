@@ -81,20 +81,33 @@ loginRouter.get('/google/callback', passport.authenticate("google", {
     failureRedirect: '/login/failed',
 }));
 
-// Endpoint para alargar la sesión
-loginRouter.get('/extend-session',
+// Extend session endpoint
+loginRouter.post('/extend-session',
     mw.authenticatedUser,
     (req, res, next) => {
         if (req.session) {
-            // Extend session
-            // 2h from now
-            const expirationTimeInMs = 2 * 60 * 60 * 1000; // milliseconds until cookie expires, in this case 2h
-            req.session.cookie.expires = new Date(Date.now() + expirationTimeInMs);
-            req.session.cookie.maxAge = expirationTimeInMs; // También actualizamos el maxAge
-            res.status(200).json({
-                message: 'Session successfully extended.',
-                expirationDate: req.session.cookie.expires,
+            // Temporarily store the authenticated Passport user
+            const user = req.user;
+
+            req.session.regenerate((err) => {
+                if (err) {
+                    return res.status(400).json({ message: 'Session could not be extended.' });
+                } else {
+                    // Restore the authenticated user in the new session
+                    req.login(user, (err) => {
+                        if (err) {
+                            return res.status(400).json({ message: 'Error restoring user after session regeneration.' });
+                        }
+
+                        // With the user restored, the cookie will be updated
+                        return res.status(200).json({
+                            message: 'Session successfully extended.',
+                            expirationDate: req.session.cookie.expires,
+                        });
+                    });
+                }
             });
+
         } else {
             res.status(400).json({ message: 'Session could not be extended.' });
         }
