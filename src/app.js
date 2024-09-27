@@ -57,12 +57,8 @@ const createApp = (appIsBeingTested = false) => {
     // Rate limiter. IMPORTANT TO BE AFTER CORS configuration
     if (!appIsBeingTested) {
         const limiter = rateLimit({
-            // windowMs: 15 * 60 * 1000, // 15 minutes
-            // TODO DELETE BELOW AND UNCOMMENT ABOVE
-            windowMs: 1 * 60 * 1000, // 15 minutes
-            // max: 200, // limit each IP to 100 requests per windowMs
-            // TODO DELETE BELOW AND UNCOMMENT ABOVE
-            max: 2, // limit each IP to 100 requests per windowMs
+            windowMs: 15 * 60 * 1000, // 15 minutes
+            max: 200, // limit each IP to 100 requests per windowMs
             message: "Too many requests, please try again later."
         });
 
