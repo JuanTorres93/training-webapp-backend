@@ -9,8 +9,13 @@ const pgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
 const morgan = require('morgan');
 const passport = require('./passport-config.js');
+const rateLimit = require('express-rate-limit');
+
+// My modules imports
 const { getPool, getPoolClient } = require('./db/index.js');
 const config = require('./config.js');
+
+
 
 
 // Function to create the express app. Its main use is for testing
@@ -48,6 +53,21 @@ const createApp = (appIsBeingTested = false) => {
         optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
     };
     app.use(cors(corsOptions));
+
+    // Rate limiter. IMPORTANT TO BE AFTER CORS configuration
+    if (!appIsBeingTested) {
+        const limiter = rateLimit({
+            // windowMs: 15 * 60 * 1000, // 15 minutes
+            // TODO DELETE BELOW AND UNCOMMENT ABOVE
+            windowMs: 1 * 60 * 1000, // 15 minutes
+            // max: 200, // limit each IP to 100 requests per windowMs
+            // TODO DELETE BELOW AND UNCOMMENT ABOVE
+            max: 2, // limit each IP to 100 requests per windowMs
+            message: "Too many requests, please try again later."
+        });
+
+        app.use(limiter);
+    }
 
 
     // =================
