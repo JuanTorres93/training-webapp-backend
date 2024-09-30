@@ -84,13 +84,17 @@ const googleStrategy = new GoogleStrategy({
 
         // TODO SELECT user by email
         const user = await dbUser.selectUserByEmail(email, false); // TODO WARNING false means app is not being tested
+        const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
 
         // TODO DELETE THESE DEBUG LOGS
         console.log('user');
         console.log(user);
 
-        if (user) {
+        if (user && userWasCreatedWithOAuth) {
             return done(null, user);
+        } else if (user && !userWasCreatedWithOAuth) {
+            const error = new Error('Email already in use');
+            return done(error, null);
         }
 
         const emailInUse = await dbUser.checkEmailInUse(email, false); // TODO WARNING false means app is not being tested
