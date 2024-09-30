@@ -74,17 +74,16 @@ router.post('/', validateRegisterUserParams,
                 msg: "Error when registering user in db"
             });
         }
-});
-
+    });
 
 // ==================================
 // ========== PUT requests ==========
 // ==================================
 
 // update user by id
-router.put('/:userId', 
+router.put('/:userId',
     validateUpdateUserParams,
-    validateIntegerParameter('userId'), 
+    validateIntegerParameter('userId'),
     mw.checkUserEmailAndAliasAlreadyExist,
     mw.checkUserExistsById,
     mw.authenticatedUser,
@@ -121,8 +120,8 @@ router.put('/:userId',
 // =====================================
 
 // update user by id
-router.delete('/:userId', 
-    validateIntegerParameter('userId'), 
+router.delete('/:userId',
+    validateIntegerParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,

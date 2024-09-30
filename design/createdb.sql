@@ -5,7 +5,8 @@ CREATE TABLE users (
   last_name VARCHAR(40),
   img TEXT,
   second_last_name VARCHAR(40),
-  password VARCHAR(60) NOT NULL
+  password VARCHAR(60) NOT NULL,
+  registeredviaoauth BOOLEAN NOT NULL,
 );
 
 CREATE TABLE workouts (

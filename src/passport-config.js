@@ -5,6 +5,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const { query } = require('./db/index');
 const hashing = require('./hashing');
+const dbUser = require('./db/users');
 
 const localStrategy = new LocalStrategy(
     { passReqToCallback: true }, // Send request to callback to be able to access req.appIsBeingTested
@@ -62,21 +63,49 @@ const localStrategy = new LocalStrategy(
         }, req.appIsBeingTested)
     })
 
-// const googleStrategy = new GoogleStrategy({
-//     // TODO configurar los valores en google y ponerlos en .env
-//     clientID: process.env.GOOGLE_API,
-//     clientSecret: process.env.GOOGLE_SECRET,
-//     callbackURL: 'http://localhost:54321/login/google/callback',
-//     scope: ['email'],
-// }, (accessToken, refreshToken, profile, done) => {
-//     // TODO Adaptar a mi base de datos y seleccionar y/o crear nuevo usuario
-//     // User.findOrCreate({ googleId: profile.id }, (err, user) => {
-//         // return done(err, user);
-//     // });
-// 
-//     // TODO UPDATE. THIS IS REALLY BASIC
-//     return done(null, profile);
-// });
+const googleStrategy = new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: '/login/google/callback',
+    scope: ['profile', 'email'],
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        // TODO Adaptar a mi base de datos y seleccionar y/o crear nuevo usuario
+        // User.findOrCreate({ googleId: profile.id }, (err, user) => {
+        // return done(err, user);
+        // });
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('profile');
+        console.log(profile);
+
+        const alias = profile.displayName;
+        const email = profile.emails[0].value;
+
+        // TODO SELECT user by email
+        const user = await dbUser.selectUserByEmail(email, false); // TODO WARNING false means app is not being tested
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('user');
+        console.log(user);
+
+        if (user) {
+            return done(null, user);
+        }
+
+        const emailInUse = await dbUser.checkEmailInUse(email, false); // TODO WARNING false means app is not being tested
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log('HAY QUE CHECAR EMAIL Y CREAR USUARIO');
+
+        // TODO if user does not exist, create it
+        // Check if email is already in use
+        // TODO encrypt
+        const password = profile.id + process.env.GOOGLE_CLIENT_SECRET;
+    } catch (error) {
+        return done(error);
+    }
+});
 
 const serializeUser = (req, user, done) => {
     // TODO research about what exactly this function does
@@ -115,10 +144,11 @@ const deserializeUser = (serializedData, done) => {
     }, serializedData.appIsBeingTested);
 }
 
+// ===== Use defined strategies =====
 // local strategy for passport
 passport.use(localStrategy);
 // google strategy for passport
-// passport.use(googleStrategy);
+passport.use(googleStrategy);
 
 // The serializeUser() function sets an id as the cookie in the user’s browser, 
 // and the deserializeUser() function uses the id to look up the user in the 

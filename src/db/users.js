@@ -2,10 +2,11 @@ const { query } = require('./index');
 const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'users';
+const SELECT_USER_FIELDS = 'id, alias, email, last_name, img, second_last_name';
 
 const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
-    const q = "SELECT " + field + 
-              " FROM " + TABLE_NAME + " WHERE LOWER(" + field + ") = LOWER($1);";
+    const q = "SELECT " + field +
+        " FROM " + TABLE_NAME + " WHERE LOWER(" + field + ") = LOWER($1);";
     const params = [value];
 
     // Must return a promise to be able to await when calling from another file
@@ -52,21 +53,29 @@ const checkAliasInUse = async (alias, appIsBeingTested) => {
     }
 };
 
-const registerNewUser = ({ alias, email, password, last_name, second_last_name },
-                                appIsBeingTested = undefined) => {
+const registerNewUser = ({
+    alias,
+    email,
+    password,
+    last_name,
+    second_last_name,
+    registeredViaOAuth,
+},
+    appIsBeingTested = undefined) => {
+
     // Build query
-    let requiredFields = ['alias', 'email', 'password'];
-    let requiredValues = [alias, email, password];
+    let requiredFields = ['alias', 'email', 'password', 'registeredviaoauth'];
+    let requiredValues = [alias, email, password, registeredViaOAuth];
 
     let optionalFields = ['last_name', 'second_last_name'];
     let optionalValues = [last_name, second_last_name];
 
     let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name']
 
-    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME, 
-                                                           requiredFields, requiredValues,
-                                                           optionalFields, optionalValues,
-                                                           returningFields);
+    const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME,
+        requiredFields, requiredValues,
+        optionalFields, optionalValues,
+        returningFields);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -79,7 +88,7 @@ const registerNewUser = ({ alias, email, password, last_name, second_last_name }
 }
 
 const selectAllUsers = (appIsBeingTested) => {
-    const q = "SELECT id, alias, email, last_name, img, second_last_name FROM " + TABLE_NAME + ";";
+    const q = "SELECT " + SELECT_USER_FIELDS + " FROM " + TABLE_NAME + ";";
     const params = [];
 
     return new Promise((resolve, reject) => {
@@ -92,8 +101,8 @@ const selectAllUsers = (appIsBeingTested) => {
 };
 
 const selectUserById = async (id, appIsBeingTested) => {
-    const q = "SELECT id, alias, email, last_name, img, second_last_name FROM " +
-              TABLE_NAME + " WHERE id = $1;";
+    const q = "SELECT " + SELECT_USER_FIELDS + " FROM " +
+        TABLE_NAME + " WHERE id = $1;";
     const params = [id];
 
     return new Promise((resolve, reject) => {
@@ -105,12 +114,41 @@ const selectUserById = async (id, appIsBeingTested) => {
     });
 };
 
+const selectUserByEmail = async (email, appIsBeingTested) => {
+    const q = "SELECT " + SELECT_USER_FIELDS + " FROM " +
+        TABLE_NAME + " WHERE email = $1;";
+    const params = [email];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const user = results.rows[0];
+            resolve(user)
+        }, appIsBeingTested)
+    });
+};
+
+const selectUserRegisteredByOAuth = async (email, appIsBeingTested) => {
+    const q = "SELECT registeredviaoauth FROM " +
+        TABLE_NAME + " WHERE email = $1;";
+    const params = [email];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const registeredViaOAuth = results.rows[0];
+            resolve(registeredViaOAuth)
+        }, appIsBeingTested)
+    });
+};
+
+
 const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
     let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
 
-    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id, 
-                                                        userObject,
-                                                        returningFields)
+    const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
+        userObject,
+        returningFields)
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -123,8 +161,8 @@ const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
 }
 
 const deleteUser = async (id, appIsBeingTested = undefined) => {
-    let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " + 
-            "RETURNING id, alias, email, last_name, img, second_last_name;";
+    let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
+        "RETURNING id, alias, email, last_name, img, second_last_name;";
     const params = [id]
 
     return new Promise((resolve, reject) => {
@@ -177,6 +215,8 @@ module.exports = {
     registerNewUser,
     selectAllUsers,
     selectUserById,
+    selectUserByEmail,
+    selectUserRegisteredByOAuth,
     updateUser,
     deleteUser,
     truncateTableTest,
