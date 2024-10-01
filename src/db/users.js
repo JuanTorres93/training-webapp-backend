@@ -136,7 +136,7 @@ const selectUserRegisteredByOAuth = async (email, appIsBeingTested) => {
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            const registeredViaOAuth = results.rows[0].registeredViaOAuth;
+            const registeredViaOAuth = results.rows[0].registeredviaoauth;
             resolve(registeredViaOAuth)
         }, appIsBeingTested)
     });

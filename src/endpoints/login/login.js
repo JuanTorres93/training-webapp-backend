@@ -10,19 +10,22 @@ const mw = require('../../utils/middleware.js');
 const loginRouter = express.Router();
 loginRouter.use(bodyParser.json());
 
+const _computeExpirationDate = () => {
+    // Cookie age from now
+    const expirationTimeInMs = config.MAX_COOKIE_AGE_MILLISECONDS //- 2 * 60 * 1000; // 2 minutes before expiration
+    const expirationDate = new Date(Date.now() + expirationTimeInMs).toISOString(); // Send as ISO string (UTC);
+
+    return expirationDate;
+}
 
 const _loginSuccessful = (req, res, next) => {
     // Callback for handling success
     // NOTE if needed, ot can be redirected to other endpoint instead of send response
     // res.redirect("profile");
 
-    // Cookie age from now
-    const expirationTimeInMs = config.MAX_COOKIE_AGE_MILLISECONDS //- 2 * 60 * 1000; // 2 minutes before expiration
-    const expirationDate = new Date(Date.now() + expirationTimeInMs).toISOString(); // Send as ISO string (UTC);
-
     const user = {
         ...req.user,
-        expirationDate
+        expirationDate: _computeExpirationDate(),
     };
 
     // req.user comes from deserializing the user
@@ -44,13 +47,20 @@ const _loginUnsuccessfull = (err, req, res, next) => {
 // Used for retrieving user info after login (with OAuth)
 loginRouter.get('/success', (req, res, next) => {
     if (req.user) {
-        res.json({
-            user: req.user,
-        });
+        const user = {
+            ...req.user,
+            expirationDate: _computeExpirationDate(),
+        };
+
+
+        const userAsURLParams = new URLSearchParams(user).toString();
+
+        res.redirect(`${process.env.CLIENT_URL}/?${userAsURLParams}`);
     }
 });
 
 // End point for failed (OAuth) login requests
+// TODO better handle failure
 loginRouter.get('/failed', (req, res, next) => {
     return res.status(401).json({
         msg: "Not logged in",
@@ -76,10 +86,11 @@ loginRouter.post('/',
 // This should be opened in the web browser window
 loginRouter.get('/google', passport.authenticate("google", { scope: ['profile', 'email'] }));
 // This is called AFTER authentication
-loginRouter.get('/google/callback', passport.authenticate("google", {
-    successRedirect: process.env.CLIENT_URL,
-    failureRedirect: '/login/failed',
-}));
+loginRouter.get('/google/callback',
+    passport.authenticate("google", {
+        successRedirect: '/login/success',
+        failureRedirect: '/login/failed',
+    }));
 
 // Extend session endpoint
 loginRouter.post('/extend-session',

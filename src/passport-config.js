@@ -40,6 +40,17 @@ const localStrategy = new LocalStrategy(
             // TODO check this condition when debugging and no user is expected
             if (!userObject) return done(null, false);
 
+
+            if (userObject) {
+                const email = userObject.email;
+                const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
+
+                if (userWasCreatedWithOAuth) {
+                    const error = new Error('User registered via other platform');
+                    return done(error, null);
+                }
+            }
+
             // If passwords do not match, then return no user.
             // trim is included because I detected that my specific database
             // was including some extra whitespaces at the end, leading to never
@@ -70,42 +81,42 @@ const googleStrategy = new GoogleStrategy({
     scope: ['profile', 'email'],
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        // TODO Adaptar a mi base de datos y seleccionar y/o crear nuevo usuario
-        // User.findOrCreate({ googleId: profile.id }, (err, user) => {
-        // return done(err, user);
-        // });
-
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('profile');
-        console.log(profile);
-
-        const alias = profile.displayName;
         const email = profile.emails[0].value;
 
-        // TODO SELECT user by email
         const user = await dbUser.selectUserByEmail(email, false); // TODO WARNING false means app is not being tested
-        const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
 
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('user');
-        console.log(user);
+        if (user) {
+            const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
+            if (userWasCreatedWithOAuth) {
+                return done(null, user);
+            } else {
+                const error = new Error('Email already in use');
+                return done(error, null);
+            }
+        }
 
-        if (user && userWasCreatedWithOAuth) {
-            return done(null, user);
-        } else if (user && !userWasCreatedWithOAuth) {
+        // I think this is not needed
+        const emailInUse = await dbUser.checkEmailInUse(email, false); // TODO WARNING false means app is not being tested
+        if (emailInUse) {
             const error = new Error('Email already in use');
             return done(error, null);
         }
 
-        const emailInUse = await dbUser.checkEmailInUse(email, false); // TODO WARNING false means app is not being tested
+        // If user does not exist, create it
+        if (!user) {
+            const alias = profile.displayName || 'Unknown Google User';
+            const plainPassword = profile.id + process.env.GOOGLE_CLIENT_SECRET;
+            const password = await hashing.plainTextHash(plainPassword)
 
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('HAY QUE CHECAR EMAIL Y CREAR USUARIO');
+            const newUser = dbUser.registerNewUser({
+                alias,
+                email,
+                password,
+                registeredViaOAuth: true,
+            }, false); // TODO WARNING false means app is not being tested
 
-        // TODO if user does not exist, create it
-        // Check if email is already in use
-        // TODO encrypt
-        const password = profile.id + process.env.GOOGLE_CLIENT_SECRET;
+            return done(null, newUser);
+        }
     } catch (error) {
         return done(error);
     }
