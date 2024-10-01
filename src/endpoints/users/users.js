@@ -28,20 +28,23 @@ router.get('/truncate', async (req, res, next) => {
 });
 
 // Get user by id
-router.get('/:userId', validateIntegerParameter('userId'), async (req, res, next) => {
-    // TODO implement 403 response case
-    const { userId } = req.params;
+router.get('/:userId',
+    validateIntegerParameter('userId'),
+    mw.authenticatedUser,
+    mw.loggedUserIdEqualsUserIdInRequest,
+    async (req, res, next) => {
+        const { userId } = req.params;
 
-    const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
+        const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
 
-    if (user === undefined) {
-        return res.status(404).json({
-            msg: "User not found",
-        });
-    }
+        if (user === undefined) {
+            return res.status(404).json({
+                msg: "User not found",
+            });
+        }
 
-    res.status(200).json(user);
-});
+        res.status(200).json(user);
+    });
 
 // Get everything from user by id (test db only)
 router.get('/:userId/allTest', validateIntegerParameter('userId'), async (req, res, next) => {
