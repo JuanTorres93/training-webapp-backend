@@ -52,7 +52,6 @@ loginRouter.get('/success', (req, res, next) => {
             expirationDate: _computeExpirationDate(),
         };
 
-
         const userAsURLParams = new URLSearchParams(user).toString();
 
         res.redirect(`${process.env.CLIENT_URL}/?${userAsURLParams}`);
@@ -60,12 +59,14 @@ loginRouter.get('/success', (req, res, next) => {
 });
 
 // End point for failed (OAuth) login requests
-// TODO better handle failure
 loginRouter.get('/failed', (req, res, next) => {
-    return res.status(401).json({
-        msg: "Not logged in",
-        err,
-    });
+    const infoForClient = {
+        msg: 'Login failed',
+    };
+
+    const infoAsURLParams = new URLSearchParams(infoForClient).toString();
+
+    res.redirect(`${process.env.CLIENT_URL}/login/?${infoAsURLParams}`);
 });
 
 // Post request for login with regular credentials

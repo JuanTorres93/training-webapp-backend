@@ -46,8 +46,7 @@ const localStrategy = new LocalStrategy(
                 const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
 
                 if (userWasCreatedWithOAuth) {
-                    const error = new Error('User registered via other platform');
-                    return done(error, null);
+                    return done(error, false, { msg: 'User registered via other platform' });
                 }
             }
 
@@ -90,16 +89,14 @@ const googleStrategy = new GoogleStrategy({
             if (userWasCreatedWithOAuth) {
                 return done(null, user);
             } else {
-                const error = new Error('Email already in use');
-                return done(error, null);
+                return done(null, false, { msg: 'Email already in use' });
             }
         }
 
         // I think this is not needed
         const emailInUse = await dbUser.checkEmailInUse(email, false); // TODO WARNING false means app is not being tested
         if (emailInUse) {
-            const error = new Error('Email already in use');
-            return done(error, null);
+            return done(null, false, { msg: 'Email already in use' });
         }
 
         // If user does not exist, create it
@@ -118,7 +115,7 @@ const googleStrategy = new GoogleStrategy({
             return done(null, newUser);
         }
     } catch (error) {
-        return done(error);
+        return done(error, false);
     }
 });
 
