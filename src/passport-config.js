@@ -123,7 +123,6 @@ const googleStrategy = new GoogleStrategy({
 });
 
 const serializeUser = (req, user, done) => {
-    // TODO research about what exactly this function does
     // When serializing a user, Passport takes that user id and stores it 
     // internally on req.session.passport which is Passport’s internal 
     // mechanism to keep track of things.
@@ -137,7 +136,6 @@ const serializeUser = (req, user, done) => {
 }
 
 const deserializeUser = (serializedData, done) => {
-    // TODO research about what exactly this function does
     const q = "SELECT * FROM users WHERE id = $1;";
     const params = [serializedData.id]
 
