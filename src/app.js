@@ -43,6 +43,7 @@ const createApp = (appIsBeingTested = false) => {
     // CORS configuration
     const corsOptions = {
         // TODO add real client url changing value in .env or adding a new value to include both
+        // TODO do it with NODE_ENV variable
         origin: [
             process.env.CLIENT_URL,
         ],
@@ -88,13 +89,14 @@ const createApp = (appIsBeingTested = false) => {
             createTableIfMissing: true,
         });
     }
-    // 
+
     // Cookie for the browser to be able to send session ID back to the server
     const cookie = {
         maxAge: config.MAX_COOKIE_AGE_MILLISECONDS, // milliseconds until cookie expires
-        // TODO uncomment in production (secure), it is now disabled due to not using https in development
-        // secure: true, // It's only sent to the server via HTTPS
-        sameSite: "none", // Allow cross-site cookie through different browsers
+        // Secure only in production
+        secure: process.env.NODE_ENV === 'production', // It's only sent to the server via HTTPS
+        // Same site only in production
+        sameSite: process.env.NODE_ENV === 'production' ? "none" : 'lax', // Allow cross-site cookie through different browsers
         httpOnly: true, // Specifies whether or not the cookies should be accessible via 
         // JavaScript in the browser (Document.cookie). This setting is set 
         // to true, because it ensures that any cross-site scripting attack (XSS) is impossible
