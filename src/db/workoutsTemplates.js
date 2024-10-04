@@ -1,6 +1,6 @@
 const { query, getPoolClient } = require('./index');
-const utils = require('../utils/utils.js');
 const qh = require('./queryHelper.js');
+const userDb = require('./users.js');
 
 const TABLE_NAME = 'workout_template';
 
@@ -503,10 +503,48 @@ const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder,
     });
 };
 
-
 const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
     const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
     const params = [userId];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) reject(error);
+            const everyWorkoutTemplate = results.rows;
+
+            const allTemplatesFormatted = [];
+
+            // Group results by template id
+            // Get unique templates ids
+            // DOCS: Source https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
+            const distinctWorkoutTemplatesIds = [...new Set(everyWorkoutTemplate.map((template) => {
+                return template.id;
+            }))];
+
+            if (distinctWorkoutTemplatesIds.length === 0) {
+                resolve([]);
+            }
+
+            distinctWorkoutTemplatesIds.forEach(workoutTemplateId => {
+                const templateInfo = everyWorkoutTemplate.filter((wk) => {
+                    return wk.id === workoutTemplateId
+                })
+
+                const workoutTemplateSpec = _compactWorkoutTemplateInfo(templateInfo);
+
+                allTemplatesFormatted.push(workoutTemplateSpec);
+            });
+
+            resolve(allTemplatesFormatted)
+        }, appIsBeingTested)
+    });
+};
+
+const selectCommonWorkoutTemplates = async (appIsBeingTested) => {
+    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL, appIsBeingTested);
+
+    const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
+    const params = [commonUserId.id];
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -574,6 +612,7 @@ module.exports = {
     selectAllWorkoutsTemplates,
     selectWorkoutTemplateById,
     selectWorkoutTemplatesByUserId,
+    selectCommonWorkoutTemplates,
     selectIdDateAndNameFromLastPerformedTemplatesByUser,
     createWorkoutTemplate,
     truncateTableTest,

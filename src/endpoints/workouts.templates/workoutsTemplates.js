@@ -29,6 +29,14 @@ router.get('/truncate', async (req, res, next) => {
     res.status(200).send(truncatedTable);
 });
 
+router.get('/common',
+    mw.authenticatedUser,
+    async (req, res) => {
+        const commonTemplates = await dbWorkoutsTemplates.selectCommonWorkoutTemplates(req.appIsBeingTested);
+        res.status(200).json(commonTemplates);
+    }
+);
+
 // Get workout template by id
 router.get('/:templateId',
     validateIntegerParameter('templateId'),

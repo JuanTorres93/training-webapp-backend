@@ -843,6 +843,26 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /workouts/templates/common:
+    get:
+      tags:
+        - Workouts
+      description: Returns all common templates
+      operationId: getWorkoutCommonTemplates
+      responses:
+        "200":
+          description: Returns all common templates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseAllWorkoutTemplates"
+              examples:
+                Workout:
+                  $ref: "#/components/examples/AllWorkoutTemplates"
+
+        "401":
+          $ref: "#/components/responses/401"
+
   /workouts/templates/{templateId}:
     parameters:
       - name: templateId
