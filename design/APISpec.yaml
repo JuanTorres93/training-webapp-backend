@@ -289,6 +289,25 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /exercises/common:
+    get:
+      tags:
+        - Exercises
+      description: Returns all common exercises that all users can see
+      operationId: getCommonExercises
+      responses:
+        "200":
+          description: All common exercises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResponseExercise"
+
+        "401":
+          $ref: "#/components/responses/401"
+
   /workouts:
     get:
       tags:

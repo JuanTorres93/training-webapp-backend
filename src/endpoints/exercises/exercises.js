@@ -26,37 +26,47 @@ router.get('/truncate', async (req, res, next) => {
     res.status(200).send(truncatedTable);
 });
 
+// Get all common exercises
+router.get('/common',
+    mw.authenticatedUser,
+    async (req, res, next) => {
+
+        const commonExercises = await dbExercises.selectCommonExercises(req.appIsBeingTested);
+
+        res.status(200).json(commonExercises);
+    });
+
 // Get exercise by id
-router.get('/:exerciseId', 
-    validateIntegerParameter('exerciseId'), 
+router.get('/:exerciseId',
+    validateIntegerParameter('exerciseId'),
     mw.checkExerciseExistsById,
     async (req, res, next) => {
-    // TODO implement 403 response case
-    const { exerciseId } = req.params;
+        // TODO implement 403 response case
+        const { exerciseId } = req.params;
 
-    const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
+        const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
 
-    res.status(200).json(exercise);
-});
+        res.status(200).json(exercise);
+    });
 
-// Get exercise by id
-router.get('/all/:userId', 
-    validateIntegerParameter('userId'), 
+// Get all exercises from user
+router.get('/all/:userId',
+    validateIntegerParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {
-    const { userId } = req.params;
+        const { userId } = req.params;
 
-    const exercises = await dbExercises.selectAllExercisesFromUser(userId, req.appIsBeingTested);
+        const exercises = await dbExercises.selectAllExercisesFromUser(userId, req.appIsBeingTested);
 
-    res.status(200).json(exercises);
-});
+        res.status(200).json(exercises);
+    });
 
 // ===================================
 // ========== POST requests ==========
 // ===================================
-router.post('/', 
+router.post('/',
     exerciseValidators.validateCreateExerciseParams,
     mw.authenticatedUser,
     async (req, res, next) => {
@@ -72,16 +82,16 @@ router.post('/',
                 msg: "Error when creating exercise in db"
             });
         }
-});
+    });
 
 // ==================================
 // ========== PUT requests ==========
 // ==================================
 
 // update exercise by id
-router.put('/:exerciseId', 
+router.put('/:exerciseId',
     exerciseValidators.validateUpdateExerciseParams,
-    validateIntegerParameter('exerciseId'), 
+    validateIntegerParameter('exerciseId'),
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.exerciseBelongsToLoggedInUser,
@@ -105,8 +115,8 @@ router.put('/:exerciseId',
 // =====================================
 
 // update user by id
-router.delete('/:exerciseId', 
-    validateIntegerParameter('exerciseId'), 
+router.delete('/:exerciseId',
+    validateIntegerParameter('exerciseId'),
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.exerciseBelongsToLoggedInUser,

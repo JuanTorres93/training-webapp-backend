@@ -82,12 +82,6 @@ app.listen(PORT, async () => {
         const exercisesResponses = await Promise.all(common_exercises_promises);
         const exercises = await Promise.all(exercisesResponses.map(response => response.json()));
         console.log('All common exercises created');
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('exercises');
-        console.log(exercises);
-
-
-
 
         console.log('Creating shared workouts templates');
 
@@ -112,19 +106,11 @@ app.listen(PORT, async () => {
         const workoutsTemplatesResponses = await Promise.all(common_workouts_templates_promises);
         const workoutsTemplates = await Promise.all(workoutsTemplatesResponses.map(response => response.json()));
         console.log('All common workouts templates created');
-        // TODO DELETE THESE DEBUG LOGS
-        console.log('workouts templates');
-        console.log(workoutsTemplates);
-
-        // TODO: ADD EXERCISES TO TEMPLATES HERE
         console.log('Adding exercises to templates');
 
         let exercisesToAddPromises;
         // Iterate over the workouts templates
         workoutsTemplates.map(async (workoutTemplate) => {
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('workoutTemplate');
-            console.log(workoutTemplate);
             let exercisesToAdd = [];
 
             if (workoutTemplate.alias === 'Push Day') {
