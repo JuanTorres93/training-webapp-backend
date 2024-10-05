@@ -80,6 +80,35 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
     };
 };
 
+const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
+    const loggedUser = req.session.passport.user;
+    const loggedUserId = loggedUser.id;
+
+    const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
+
+    const workoutTemplateBelongsToUser = await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
+        templateId, loggedUserId, req.appIsBeingTested
+    );
+
+    if (workoutTemplateBelongsToUser) {
+        return next();
+    }
+
+    // Two steps to avoid unnecessary queries to the database if the logged in user owns the template
+    const commonUser = await dbUsers.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL, req.appIsBeingTested);
+    const commonUserId = commonUser.id;
+
+    const workoutTemplateBelongsToCommonUser = await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
+        templateId, commonUserId, req.appIsBeingTested
+    );
+
+    if (workoutTemplateBelongsToCommonUser) {
+        return next();
+    }
+
+    return res.status(403).json({ msg: "Not authorized" });
+};
+
 
 // This function is an example of how authorization can be implemented.
 // I have not tested it because I think I need a browser GUI to keep a session active
@@ -294,6 +323,7 @@ module.exports = {
     exerciseBelongsToLoggedInUser,
     workoutBelongsToLoggedInUser,
     workoutTemplateBelongsToLoggedInUser,
+    workoutTemplateBelongsToLoggedInORCommonUser,
     checkKeysInBodyRequest,
     validateResult,
     checkUserEmailAndAliasAlreadyExist,

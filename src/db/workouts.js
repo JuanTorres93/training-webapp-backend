@@ -367,11 +367,11 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
             SELECT MAX(uw.start_date) AS max_start_date
             FROM workouts w
             JOIN users_workouts uw ON w.id = uw.workout_id
-            JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
+            JOIN workout_template wt ON w.alias = wt.alias --AND w.created_by = wt.user_id
             JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
             JOIN workouts_exercises w_e ON w.id = w_e.workout_id
             JOIN exercises e ON w_e.exercise_id = e.id
-            WHERE wt.user_id = $1 AND wt.id = $2
+            WHERE uw.user_id = $1 AND wt.id = $2
         )
 
         SELECT
@@ -388,12 +388,12 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
             w_e.exercise_time_in_seconds AS exercise_time_in_seconds
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.created_by = wt.user_id
+        JOIN workout_template wt ON w.alias = wt.alias
         JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
         JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
         JOIN exercises e ON w_e.exercise_id = e.id
         JOIN LatestDate ld ON uw.start_date = ld.max_start_date
-        WHERE wt.user_id = $1 AND wt.id = $2
+        WHERE uw.user_id = $1 AND wt.id = $2
         ORDER BY w.id, wt_e.exercise_order, e.id, w_e.exercise_set;
     `;
     const params = [userId, templateId];
@@ -418,16 +418,18 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
 };
 
 const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIsBeingTested) => {
-    const q = `
+    const q = `        
         WITH LatestDates AS (
-            SELECT DISTINCT uw.start_date AS dates
+            SELECT DISTINCT 
+            	uw.start_date AS dates
             FROM workouts w
             JOIN users_workouts uw ON w.id = uw.workout_id
-            JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
+            JOIN workout_template wt ON w.alias = wt.alias --AND w.created_by = wt.user_id
             JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
             JOIN workouts_exercises w_e ON w.id = w_e.workout_id
             JOIN exercises e ON w_e.exercise_id = e.id
-            WHERE wt.user_id = $1 AND wt.id = $2
+            WHERE uw.user_id = $1
+            AND wt.id = $2
             ORDER BY dates DESC
             LIMIT $3	         
         )
@@ -446,12 +448,12 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIs
             w_e.exercise_time_in_seconds AS exercise_time_in_seconds
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.created_by = wt.user_id
+        JOIN workout_template wt ON w.alias = wt.alias
         JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
         JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
         JOIN exercises e ON w_e.exercise_id = e.id
         --JOIN LatestDates ld ON uw.start_date = ld.dates
-        WHERE wt.user_id = $1 AND wt.id = $2 AND uw.start_date IN (SELECT dates FROM LatestDates)
+        WHERE uw.user_id = $1 AND wt.id = $2 AND uw.start_date IN (SELECT dates FROM LatestDates)
         ORDER BY w.id, wt_e.exercise_order, e.id, w_e.exercise_set;
     `;
     const params = [userId, templateId, numberOfWorkouts];

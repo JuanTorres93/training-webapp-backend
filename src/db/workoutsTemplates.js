@@ -579,7 +579,9 @@ const selectCommonWorkoutTemplates = async (appIsBeingTested) => {
     });
 };
 
-const selectIdDateAndNameFromLastPerformedTemplatesByUser = (userId, numberOfWOrkouts, appIsBeingTested) => {
+const selectIdDateAndNameFromLastPerformedTemplatesByUser = async (userId, numberOfWOrkouts, appIsBeingTested) => {
+    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL, appIsBeingTested);
+
     const q = `
         SELECT
         	wt.id AS template_id,
@@ -587,12 +589,13 @@ const selectIdDateAndNameFromLastPerformedTemplatesByUser = (userId, numberOfWOr
         	wt.alias AS workout_name
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.alias = wt.alias AND w.created_by = wt.user_id
-        WHERE wt.user_id = $1
+        JOIN workout_template wt ON w.alias = wt.alias --AND w.created_by = wt.user_id
+        WHERE uw.user_id = $1 OR uw.user_id = $3
         ORDER BY start_date DESC
         LIMIT $2;
     `;
-    const params = [userId, numberOfWOrkouts];
+
+    const params = [userId, numberOfWOrkouts, commonUserId.id];
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {

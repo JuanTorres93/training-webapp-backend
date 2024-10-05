@@ -42,7 +42,8 @@ router.get('/:templateId',
     validateIntegerParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
-    mw.workoutTemplateBelongsToLoggedInUser,
+    // mw.workoutTemplateBelongsToLoggedInUser,
+    mw.workoutTemplateBelongsToLoggedInORCommonUser,
     async (req, res, next) => {
         const { templateId } = req.params;
 
@@ -72,6 +73,7 @@ router.get('/last/user/:userId/:numberOfWorkouts',
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res) => {
         const { userId, numberOfWorkouts } = req.params;
+
         const templates = await dbWorkoutsTemplates.selectIdDateAndNameFromLastPerformedTemplatesByUser(userId, numberOfWorkouts, req.appIsBeingTested);
         res.status(200).json(templates);
     }
