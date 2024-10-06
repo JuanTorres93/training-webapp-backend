@@ -14,6 +14,8 @@ Table users {
   second_last_name VARCHAR(40)
   password VARCHAR(60) [NOT NULL, Note: 'Bcrypt uses 59 or 60 characters to hash']
   registeredViaOauth bool [NOT NULL]
+  is_premium bool [NOT NULL]
+  is_early_adopter bool [NOT NULL]
 }
 
 Table workouts {

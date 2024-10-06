@@ -7,6 +7,8 @@ CREATE TABLE users (
   second_last_name VARCHAR(40),
   password VARCHAR(60) NOT NULL,
   registeredviaoauth BOOLEAN NOT NULL,
+  is_premium BOOLEAN NOT NULL DEFAULT FALSE,
+  is_early_adopter BOOLEAN NOT NULL DEFAULT FALSE,
 );
 
 CREATE TABLE workouts (
