@@ -9,9 +9,9 @@ const createApp = require('../../app.js');
 const app = createApp(true);
 const BASE_ENDPOINT = '/workouts/templates';
 
-function logErrors (err, req, res, next) {
-  console.error(err.stack)
-  next(err)
+function logErrors(err, req, res, next) {
+    console.error(err.stack)
+    next(err)
 };
 
 app.use(logErrors);
@@ -33,6 +33,7 @@ const newUserReq = {
     last_name: "Manacle",
     password: "$ecur3_P@ssword",
     second_last_name: "Sanches",
+    registeredViaOAuth: false,
 };
 
 module.exports = {

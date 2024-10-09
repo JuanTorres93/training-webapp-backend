@@ -30,6 +30,7 @@ router.get('/truncate', async (req, res, next) => {
 // Get user by id
 router.get('/:userId',
     validateIntegerParameter('userId'),
+    mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {

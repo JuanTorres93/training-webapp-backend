@@ -1,4 +1,5 @@
 const { request, BASE_ENDPOINT, createNewTemplateRequest, newUserReq } = require('./testsSetup');
+const createCommonUser = require('../../createCommonUser').createCommonUser;
 
 OTHER_USER_ALIAS = 'other user';
 TEMPLATE_AND_WORKOUT_NAME = 'test_workout';
@@ -21,6 +22,8 @@ const setUp = async () => {
     });
     const otherUser = otherUserResponse.body;
 
+    // DOC first parameter does nothing, true is for app being tested
+    await createCommonUser('', true, request);
 
     // login user
     await request.post('/login').send({

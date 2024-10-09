@@ -13,6 +13,7 @@ const setUp = async () => {
         alias: USER_ALIAS,
         email: 'test@user.com',
         password: USER_PASSWORD,
+        registeredViaOAuth: false,
     });
     const newUser = newUserResponse.body;
 

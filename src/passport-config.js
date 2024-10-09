@@ -31,19 +31,17 @@ const localStrategy = new LocalStrategy(
         const q = "SELECT * FROM users WHERE alias = $1;";
         const params = [username];
 
-        // TODO DEBUGGAR TODO ESTE MIDDLEWARE
         query(q, params, async (error, results) => {
             if (error) return done(error);
 
             const userObject = results.rows[0];
 
-            // TODO check this condition when debugging and no user is expected
             if (!userObject) return done(null, false);
 
 
             if (userObject) {
                 const email = userObject.email;
-                const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
+                const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, req.appIsBeingTested);
 
                 if (userWasCreatedWithOAuth) {
                     return done(error, false, { msg: 'User registered via other platform' });
@@ -82,10 +80,10 @@ const googleStrategy = new GoogleStrategy({
     try {
         const email = profile.emails[0].value;
 
-        const user = await dbUser.selectUserByEmail(email, false); // TODO WARNING false means app is not being tested
+        const user = await dbUser.selectUserByEmail(email, req.appIsBeingTested);
 
         if (user) {
-            const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, false); // TODO WARNING false means app is not being tested
+            const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, req.appIsBeingTested);
             if (userWasCreatedWithOAuth) {
                 return done(null, user);
             } else {
@@ -94,7 +92,7 @@ const googleStrategy = new GoogleStrategy({
         }
 
         // I think this is not needed
-        const emailInUse = await dbUser.checkEmailInUse(email, false); // TODO WARNING false means app is not being tested
+        const emailInUse = await dbUser.checkEmailInUse(email, req.appIsBeingTested);
         if (emailInUse) {
             return done(null, false, { msg: 'Email already in use' });
         }
@@ -110,7 +108,7 @@ const googleStrategy = new GoogleStrategy({
                 email,
                 password,
                 registeredViaOAuth: true,
-            }, false); // TODO WARNING false means app is not being tested
+            }, req.appIsBeingTested);
 
             return done(null, newUser);
         }

@@ -7,6 +7,7 @@ const successfulPostRequest = {
     last_name: "Manacle",
     password: "$ecur3_P@ssword",
     second_last_name: "Sanches",
+    registeredViaOAuth: false,
 }
 
 const setUp = async () => {
@@ -36,7 +37,7 @@ const selectEverythingFromUserId = async (id) => {
     return response.body;
 };
 
-describe(`${BASE_ENDPOINT}/{id}`,  () => {
+describe(`${BASE_ENDPOINT}/{id}`, () => {
     let response;
     let newUser;
 
@@ -45,8 +46,17 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
         const setUpInfo = await setUp();
         newUser = setUpInfo.newUser;
 
+        // login user
+        const borrar = await request.post('/login').send({
+            username: successfulPostRequest.alias,
+            password: successfulPostRequest.password,
+        });
+
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${newUser.id}`);
+
+        // logout user
+        await request.get('/logout');
     });
 
     describe('get requests', () => {
@@ -164,7 +174,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 const userInDb = await selectEverythingFromUserId(newUser.id);
 
                 const passwordsMatch = await hash.comparePlainTextToHash(putBodyRequest.password,
-                                                                         userInDb.password);
+                    userInDb.password);
                 expect(passwordsMatch).toBe(true);
             });
         });
@@ -303,7 +313,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
-            
+
         });
 
         describe('happy path', () => {
@@ -352,7 +362,7 @@ describe(`${BASE_ENDPOINT}/{id}`,  () => {
                 // Do NOT return user password
                 expect(response.body).not.toHaveProperty('password');
             });
-            
+
         });
     });
 });

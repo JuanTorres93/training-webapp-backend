@@ -7,6 +7,7 @@ const successfulPostRequest = {
     last_name: "Manacle",
     password: "$ecur3_P@ssword",
     second_last_name: "Sanches",
+    registeredViaOAuth: false,
 }
 
 const setup = async () => {
@@ -27,7 +28,7 @@ const selectEverythingFromUserId = async (id) => {
     return response.body;
 };
 
-describe(`${BASE_ENDPOINT}`,  () => {
+describe(`${BASE_ENDPOINT}`, () => {
     describe('post requests', () => {
         let response;
 
@@ -67,7 +68,7 @@ describe(`${BASE_ENDPOINT}`,  () => {
                 const userInDb = await selectEverythingFromUserId(response.body.id);
 
                 const passwordsMatch = await hash.comparePlainTextToHash(successfulPostRequest.password,
-                                                                         userInDb.password);
+                    userInDb.password);
                 expect(passwordsMatch).toBe(true);
             });
         });
@@ -170,8 +171,8 @@ describe(`${BASE_ENDPOINT}`,  () => {
         });
 
         // describe('unhappy paths', () => {
-            // TODO test for 403 response
-            // it('unhappy path example', () => {});
+        // TODO test for 403 response
+        // it('unhappy path example', () => {});
         // });
     });
 });
