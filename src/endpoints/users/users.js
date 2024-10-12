@@ -15,14 +15,14 @@ const router = express.Router();
 
 // Get all users
 router.get('/', async (req, res, next) => {
-    const users = await dbUsers.selectAllUsers(req.appIsBeingTested);
+    const users = await dbUsers.selectAllUsers();
 
     res.status(200).send(users);
 });
 
 // Truncate test table
 router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbUsers.truncateTableTest(req.appIsBeingTested);
+    const truncatedTable = await dbUsers.truncateTableTest();
 
     res.status(200).send(truncatedTable);
 });
@@ -36,7 +36,7 @@ router.get('/:userId',
     async (req, res, next) => {
         const { userId } = req.params;
 
-        const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
+        const user = await dbUsers.selectUserById(userId);
 
         if (user === undefined) {
             return res.status(404).json({
@@ -51,7 +51,7 @@ router.get('/:userId',
 router.get('/:userId/allTest', validateIntegerParameter('userId'), async (req, res, next) => {
     const { userId } = req.params;
 
-    const user = await dbUsers.testDbSelectEverythingFromUserId(userId, req.appIsBeingTested);
+    const user = await dbUsers.testDbSelectEverythingFromUserId(userId);
 
     if (user === undefined) {
         return res.status(404).json({
@@ -71,7 +71,7 @@ router.post('/', validateRegisterUserParams,
     mw.hashPassword,
     async (req, res, next) => {
         try {
-            const createdUser = await dbUsers.registerNewUser(req.body, req.appIsBeingTested);
+            const createdUser = await dbUsers.registerNewUser(req.body);
             return res.status(201).json(createdUser);
         } catch (error) {
             return res.status(400).json({
@@ -106,7 +106,7 @@ router.put('/:userId',
             img,
         };
 
-        const updatedUser = await dbUsers.updateUser(userId, newUserInfo, req.appIsBeingTested);
+        const updatedUser = await dbUsers.updateUser(userId, newUserInfo);
 
         if (updatedUser === undefined) {
             return res.status(404).json({
@@ -132,7 +132,7 @@ router.delete('/:userId',
     async (req, res, next) => {
         const { userId } = req.params;
 
-        const deletedUser = await dbUsers.deleteUser(userId, req.appIsBeingTested);
+        const deletedUser = await dbUsers.deleteUser(userId);
 
         res.status(200).json(deletedUser);
     }

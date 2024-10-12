@@ -4,7 +4,7 @@ const qh = require('./queryHelper.js');
 const TABLE_NAME = 'users';
 const SELECT_USER_FIELDS = 'id, alias, email, last_name, img, second_last_name';
 
-const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
+const checkStringInFieldInUse = async (field, value) => {
     const q = "SELECT " + field +
         " FROM " + TABLE_NAME + " WHERE LOWER(" + field + ") = LOWER($1);";
     const params = [value];
@@ -25,14 +25,14 @@ const checkStringInFieldInUse = async (field, value, appIsBeingTested) => {
                     exists: false,
                 });
             }
-        }, appIsBeingTested);
+        });
     });
 };
 
-const checkEmailInUse = async (email, appIsBeingTested) => {
+const checkEmailInUse = async (email) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        const exists = await checkStringInFieldInUse('email', email, appIsBeingTested);
+        const exists = await checkStringInFieldInUse('email', email);
 
         return exists
     } catch (error) {
@@ -42,10 +42,10 @@ const checkEmailInUse = async (email, appIsBeingTested) => {
     }
 };
 
-const checkAliasInUse = async (alias, appIsBeingTested) => {
+const checkAliasInUse = async (alias) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        return await checkStringInFieldInUse('alias', alias, appIsBeingTested);
+        return await checkStringInFieldInUse('alias', alias);
     } catch (error) {
         if (error.error !== null) throw error;
 
@@ -60,8 +60,7 @@ const registerNewUser = ({
     last_name,
     second_last_name,
     registeredViaOAuth,
-},
-    appIsBeingTested = undefined) => {
+}) => {
 
     // Build query
     let requiredFields = ['alias', 'email', 'password', 'registeredviaoauth'];
@@ -83,11 +82,11 @@ const registerNewUser = ({
 
             const createdUser = results.rows[0];
             resolve(createdUser)
-        }, appIsBeingTested)
+        })
     });
 }
 
-const selectAllUsers = (appIsBeingTested) => {
+const selectAllUsers = () => {
     const q = "SELECT " + SELECT_USER_FIELDS + " FROM " + TABLE_NAME + ";";
     const params = [];
 
@@ -96,11 +95,11 @@ const selectAllUsers = (appIsBeingTested) => {
             if (error) reject(error);
             const users = results.rows;
             resolve(users)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectUserById = async (id, appIsBeingTested) => {
+const selectUserById = async (id) => {
     const q = "SELECT " + SELECT_USER_FIELDS + " FROM " +
         TABLE_NAME + " WHERE id = $1;";
     const params = [id];
@@ -110,11 +109,11 @@ const selectUserById = async (id, appIsBeingTested) => {
             if (error) reject(error);
             const user = results.rows[0];
             resolve(user)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectUserByEmail = async (email, appIsBeingTested) => {
+const selectUserByEmail = async (email) => {
     const q = "SELECT " + SELECT_USER_FIELDS + " FROM " +
         TABLE_NAME + " WHERE email = $1;";
     const params = [email];
@@ -124,11 +123,11 @@ const selectUserByEmail = async (email, appIsBeingTested) => {
             if (error) reject(error);
             const user = results.rows[0];
             resolve(user)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectUserRegisteredByOAuth = async (email, appIsBeingTested) => {
+const selectUserRegisteredByOAuth = async (email) => {
     const q = "SELECT registeredviaoauth FROM " +
         TABLE_NAME + " WHERE email = $1;";
     const params = [email];
@@ -138,12 +137,12 @@ const selectUserRegisteredByOAuth = async (email, appIsBeingTested) => {
             if (error) reject(error);
             const registeredViaOAuth = results.rows[0].registeredviaoauth;
             resolve(registeredViaOAuth)
-        }, appIsBeingTested)
+        })
     });
 };
 
 
-const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
+const updateUser = async (id, userObject) => {
     let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
 
     const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
@@ -156,11 +155,11 @@ const updateUser = async (id, userObject, appIsBeingTested = undefined) => {
 
             const updatedUser = results.rows[0];
             resolve(updatedUser)
-        }, appIsBeingTested)
+        })
     });
 }
 
-const deleteUser = async (id, appIsBeingTested = undefined) => {
+const deleteUser = async (id) => {
     let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
         "RETURNING id, alias, email, last_name, img, second_last_name;";
     const params = [id]
@@ -171,11 +170,14 @@ const deleteUser = async (id, appIsBeingTested = undefined) => {
 
             const deletedUser = results.rows[0];
             resolve(deletedUser)
-        }, appIsBeingTested)
+        })
     });
 }
 
-const truncateTableTest = (appIsBeingTested) => {
+const truncateTableTest = () => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
+
+    // Only allow truncating table in test environment
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
@@ -198,7 +200,17 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
-const testDbSelectEverythingFromUserId = (id, appIsBeingTested) => {
+const testDbSelectEverythingFromUserId = (id) => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
+
+    // Only allow truncating table in test environment
+    if (!appIsBeingTested) {
+        return new Promise((resolve, reject) => {
+            // Test for making malicious people think they got something
+            resolve('Nothing in ' + TABLE_NAME);
+        });
+    }
+
     const q = "SELECT * FROM " + TABLE_NAME + " WHERE id = $1;";
     const params = [id];
 

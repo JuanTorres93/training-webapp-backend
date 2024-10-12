@@ -20,8 +20,8 @@ const workoutsWithExercisesQuery = "SELECT  " +
     "ORDER BY workout_id, exercise_id, exercise_set " +
     "; ";
 
-const createWorkouts = async (userId, { alias, description }, appIsBeingTested = undefined) => {
-    const client = await getPoolClient(appIsBeingTested); // Get a client from the pool
+const createWorkouts = async (userId, { alias, description }) => {
+    const client = await getPoolClient(); // Get a client from the pool
     try {
         await client.query('BEGIN'); // Start transaction
 
@@ -64,8 +64,8 @@ const createWorkouts = async (userId, { alias, description }, appIsBeingTested =
     }
 };
 
-const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) => {
-    const client = await getPoolClient(appIsBeingTested);
+const updateWorkout = async (id, workoutObject) => {
+    const client = await getPoolClient();
     let results;
 
     try {
@@ -104,9 +104,9 @@ const updateWorkout = async (id, workoutObject, appIsBeingTested = undefined) =>
     return workoutSpec;
 }
 
-const addFinishDateToWorkout = async (workoutId, appIsBeingTested = undefined) => {
+const addFinishDateToWorkout = async (workoutId) => {
     // TODO test this function
-    const client = await getPoolClient(appIsBeingTested);
+    const client = await getPoolClient();
     let results;
 
     try {
@@ -144,8 +144,7 @@ const addFinishDateToWorkout = async (workoutId, appIsBeingTested = undefined) =
     return workoutSpec;
 }
 
-const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds },
-    appIsBeingTested = undefined) => {
+const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, weight, timeInSeconds }) => {
     // Build query
     // TODO take into account exerciseSet as primary key too, i.e. handle duplicity and something more if needed
     let requiredFields = ['workout_id', 'exercise_id', 'exercise_set'];
@@ -171,11 +170,11 @@ const addExerciseToWorkout = async ({ workoutId, exerciseId, exerciseSet, reps, 
 
             const addedExercise = results.rows[0];
             resolve(addedExercise)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
+const checkWorkoutByIdExists = async (id) => {
     let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
     const params = [id]
 
@@ -185,7 +184,7 @@ const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
 
             const workoutId = results.rows[0];
             resolve(workoutId)
-        }, appIsBeingTested)
+        })
     });
 
     if (!selectedWorkout) {
@@ -195,7 +194,7 @@ const checkWorkoutByIdExists = async (id, appIsBeingTested = undefined) => {
     return Number.isInteger(selectedWorkout.id);
 };
 
-const checkExerciseInWorkoutExists = async (workoutId, exerciseId, appIsBeingTested = undefined) => {
+const checkExerciseInWorkoutExists = async (workoutId, exerciseId) => {
     let q = "SELECT workout_id FROM workouts_exercises WHERE workout_id = $1 AND exercise_id = $2;";
     const params = [workoutId, exerciseId];
 
@@ -205,7 +204,7 @@ const checkExerciseInWorkoutExists = async (workoutId, exerciseId, appIsBeingTes
 
             const workoutId = results.rows[0];
             resolve(workoutId)
-        }, appIsBeingTested)
+        })
     });
 
     if (!selectedWorkout) {
@@ -216,7 +215,7 @@ const checkExerciseInWorkoutExists = async (workoutId, exerciseId, appIsBeingTes
 };
 
 
-const workoutBelongsToUser = (workoutId, userId, appIsBeingTested) => {
+const workoutBelongsToUser = (workoutId, userId) => {
     const q = "SELECT * FROM " + TABLE_NAME + " WHERE id = $1 AND created_by = $2;";
     const params = [workoutId, userId];
 
@@ -229,11 +228,11 @@ const workoutBelongsToUser = (workoutId, userId, appIsBeingTested) => {
             } else {
                 resolve(false)
             }
-        }, appIsBeingTested)
+        })
     });
 };
 
-const getAllWorkoutsIdsFromTemplateAlias = (templateAlias, userId, appIsBeingTested) => {
+const getAllWorkoutsIdsFromTemplateAlias = (templateAlias, userId) => {
     const q = ` 
     SELECT w.id AS workout_id
     FROM workouts w
@@ -258,7 +257,7 @@ const getAllWorkoutsIdsFromTemplateAlias = (templateAlias, userId, appIsBeingTes
             } else {
                 resolve([])
             }
-        }, appIsBeingTested)
+        })
     });
 };
 
@@ -300,7 +299,7 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
     return workoutSpec;
 }
 
-const selectAllWorkouts = (appIsBeingTested) => {
+const selectAllWorkouts = () => {
     const q = workoutsWithExercisesQuery;
     const params = [];
 
@@ -333,11 +332,11 @@ const selectAllWorkouts = (appIsBeingTested) => {
             });
 
             resolve(allWorkoutsFormatted)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectworkoutById = (id, appIsBeingTested) => {
+const selectworkoutById = (id) => {
     const q = workoutsWithExercisesQuery.replace('WHERE TRUE',
         'WHERE wk.id = $1');
     const params = [id];
@@ -357,11 +356,11 @@ const selectworkoutById = (id, appIsBeingTested) => {
             const workoutSpec = _compactWorkoutInfo(workoutInfo);
 
             resolve(workoutSpec);
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
+const selectLastWorkoutFromUser = (templateId, userId) => {
     const q = `
         WITH LatestDate AS (
             SELECT MAX(uw.start_date) AS max_start_date
@@ -413,11 +412,11 @@ const selectLastWorkoutFromUser = (templateId, userId, appIsBeingTested) => {
             const workoutSpec = _compactWorkoutInfo(workoutInfo);
 
             resolve(workoutSpec);
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIsBeingTested) => {
+const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
     const q = `        
         WITH LatestDates AS (
             SELECT DISTINCT 
@@ -490,11 +489,14 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts, appIs
             const allWorkoutsFormatted = Object.values(groupedData).map(_compactWorkoutInfo);
 
             resolve(allWorkoutsFormatted);
-        }, appIsBeingTested)
+        })
     });
 };
 
-const truncateTableTest = (appIsBeingTested) => {
+const truncateTableTest = () => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
+
+    // Only allow truncating table if app is being tested
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
@@ -514,9 +516,9 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
-const deleteWorkout = async (id, appIsBeingTested = undefined) => {
+const deleteWorkout = async (id) => {
     // TODO WARNING: There's a potencial risk of unreferenced items in workout_template_exercises
-    const client = await getPoolClient(appIsBeingTested);
+    const client = await getPoolClient();
     let workoutInfo;
 
     try {
@@ -567,8 +569,7 @@ const deleteWorkout = async (id, appIsBeingTested = undefined) => {
 }
 
 const updateExerciseFromWorkout = (workoutId,
-    { exerciseId, exerciseSet, reps, weight, time_in_seconds },
-    appIsBeingTested = undefined) => {
+    { exerciseId, exerciseSet, reps, weight, time_in_seconds }) => {
 
     if (reps === undefined && weight === undefined && time_in_seconds === undefined) {
         return
@@ -624,11 +625,11 @@ const updateExerciseFromWorkout = (workoutId,
                 time_in_seconds: updatedExercise.time_in_seconds,
             };
             resolve(updatedExerciseSpec)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const deleteExerciseFromWorkout = (workoutId, exerciseId, appIsBeingTested) => {
+const deleteExerciseFromWorkout = (workoutId, exerciseId) => {
     const q = " WITH deleted AS ( " +
         " 	DELETE FROM workouts_exercises " +
         " 	WHERE " +
@@ -664,11 +665,11 @@ const deleteExerciseFromWorkout = (workoutId, exerciseId, appIsBeingTested) => {
             });
 
             resolve(exercisesSpec)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const deleteSetFromExercise = (workoutId, exerciseId, exerciseSet, appIsBeingTested) => {
+const deleteSetFromExercise = (workoutId, exerciseId, exerciseSet) => {
     const q = " WITH deleted AS ( " +
         " 	DELETE FROM workouts_exercises " +
         " 	WHERE " +
@@ -705,7 +706,7 @@ const deleteSetFromExercise = (workoutId, exerciseId, exerciseSet, appIsBeingTes
             });
 
             resolve(exercisesSpec[0])
-        }, appIsBeingTested)
+        })
     });
 };
 

@@ -8,8 +8,7 @@ const hashing = require('./hashing');
 const dbUser = require('./db/users');
 
 const localStrategy = new LocalStrategy(
-    { passReqToCallback: true }, // Send request to callback to be able to access req.appIsBeingTested
-    (req, username, password, done) => {
+    (username, password, done) => {
         // username and password are the credentials sent in the body of a POST request
         // done is a callback function whose purpose is to supply an authenticated user to 
         // Passport if a user is authenticated. The logic within the anonymous function follows 
@@ -41,7 +40,7 @@ const localStrategy = new LocalStrategy(
 
             if (userObject) {
                 const email = userObject.email;
-                const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, req.appIsBeingTested);
+                const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email);
 
                 if (userWasCreatedWithOAuth) {
                     return done(error, false, { msg: 'User registered via other platform' });
@@ -68,7 +67,7 @@ const localStrategy = new LocalStrategy(
             };
 
             return done(null, user);
-        }, req.appIsBeingTested)
+        })
     })
 
 const googleStrategy = new GoogleStrategy({
@@ -80,10 +79,10 @@ const googleStrategy = new GoogleStrategy({
     try {
         const email = profile.emails[0].value;
 
-        const user = await dbUser.selectUserByEmail(email, req.appIsBeingTested);
+        const user = await dbUser.selectUserByEmail(email);
 
         if (user) {
-            const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email, req.appIsBeingTested);
+            const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(email);
             if (userWasCreatedWithOAuth) {
                 return done(null, user);
             } else {
@@ -92,7 +91,7 @@ const googleStrategy = new GoogleStrategy({
         }
 
         // I think this is not needed
-        const emailInUse = await dbUser.checkEmailInUse(email, req.appIsBeingTested);
+        const emailInUse = await dbUser.checkEmailInUse(email);
         if (emailInUse) {
             return done(null, false, { msg: 'Email already in use' });
         }
@@ -108,7 +107,7 @@ const googleStrategy = new GoogleStrategy({
                 email,
                 password,
                 registeredViaOAuth: true,
-            }, req.appIsBeingTested);
+            });
 
             return done(null, newUser);
         }
@@ -124,7 +123,6 @@ const serializeUser = (req, user, done) => {
 
     const serializeData = {
         id: user.id,
-        appIsBeingTested: req.appIsBeingTested,
     };
 
     done(null, serializeData);
@@ -149,7 +147,7 @@ const deserializeUser = (serializedData, done) => {
         };
 
         return done(null, user);
-    }, serializedData.appIsBeingTested);
+    });
 }
 
 // ===== Use defined strategies =====

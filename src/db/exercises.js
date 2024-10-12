@@ -3,8 +3,8 @@ const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'exercises';
 
-const createExercise = async (userId, { alias, description }, appIsBeingTested = undefined) => {
-    const client = await getPoolClient(appIsBeingTested);
+const createExercise = async (userId, { alias, description }) => {
+    const client = await getPoolClient();
     let results;
     try {
         await client.query('BEGIN;');
@@ -49,7 +49,7 @@ const createExercise = async (userId, { alias, description }, appIsBeingTested =
     return results;
 }
 
-const selectAllExercises = (appIsBeingTested) => {
+const selectAllExercises = () => {
     const q = "SELECT id, alias, description FROM " + TABLE_NAME + ";";
     const params = [];
 
@@ -59,11 +59,11 @@ const selectAllExercises = (appIsBeingTested) => {
             const exercises = results.rows;
 
             resolve(exercises)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectCommonExercises = (appIsBeingTested) => {
+const selectCommonExercises = () => {
     const q = "SELECT " +
         "    ex.id,  " +
         "    ex.alias as name,  " +
@@ -83,11 +83,11 @@ const selectCommonExercises = (appIsBeingTested) => {
             const exercises = results.rows;
 
             resolve(exercises)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectAllExercisesFromUser = (userId, appIsBeingTested) => {
+const selectAllExercisesFromUser = (userId) => {
     const q = "SELECT " +
         "    ex.id,  " +
         "    ex.alias as name,  " +
@@ -107,11 +107,11 @@ const selectAllExercisesFromUser = (userId, appIsBeingTested) => {
             const exercises = results.rows;
 
             resolve(exercises)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectExerciseById = (id, appIsBeingTested) => {
+const selectExerciseById = (id) => {
     const q = "SELECT id, alias, description FROM " +
         TABLE_NAME + " WHERE id = $1;";
     const params = [id];
@@ -121,11 +121,11 @@ const selectExerciseById = (id, appIsBeingTested) => {
             if (error) reject(error);
             const exercise = results.rows[0];
             resolve(exercise)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) => {
+const updateExercise = async (id, exerciseObject) => {
     const returningFields = ['id', 'alias', 'description'];
 
     const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
@@ -138,12 +138,12 @@ const updateExercise = async (id, exerciseObject, appIsBeingTested = undefined) 
 
             const updatedExercise = results.rows[0];
             resolve(updatedExercise)
-        }, appIsBeingTested)
+        })
     });
 }
 
-const deleteExercise = async (id, appIsBeingTested = undefined) => {
-    const client = await getPoolClient(appIsBeingTested);
+const deleteExercise = async (id) => {
+    const client = await getPoolClient();
     let results;
     try {
         await client.query('BEGIN;');
@@ -206,7 +206,7 @@ const deleteExercise = async (id, appIsBeingTested = undefined) => {
     return results.rows[0];
 }
 
-const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
+const checkExerciseByIdExists = async (id) => {
     let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
     const params = [id]
 
@@ -216,7 +216,7 @@ const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
 
             const exercise = results.rows[0];
             resolve(exercise)
-        }, appIsBeingTested)
+        })
     });
 
     if (!selectedExercise) {
@@ -226,7 +226,7 @@ const checkExerciseByIdExists = async (id, appIsBeingTested = undefined) => {
     return Number.isInteger(selectedExercise.id);
 }
 
-const selectIdForExerciseName = (name, appIsBeingTested) => {
+const selectIdForExerciseName = (name) => {
     const q = "SELECT id FROM " + TABLE_NAME + " WHERE alias = $1;";
     const params = [name];
 
@@ -236,11 +236,11 @@ const selectIdForExerciseName = (name, appIsBeingTested) => {
 
             const exerciseId = results.rows[0].id;
             resolve(exerciseId)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const exerciseBelongsToUser = (exerciseId, userId, appIsBeingTested) => {
+const exerciseBelongsToUser = (exerciseId, userId) => {
     const q = "SELECT * FROM users_exercises WHERE exercise_id = $1 AND user_id = $2;";
     const params = [exerciseId, userId];
 
@@ -253,11 +253,14 @@ const exerciseBelongsToUser = (exerciseId, userId, appIsBeingTested) => {
             } else {
                 resolve(false)
             }
-        }, appIsBeingTested)
+        })
     });
 };
 
-const truncateTableTest = async (appIsBeingTested) => {
+const truncateTableTest = async () => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
+
+    // Only allow truncating table in test environment
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
@@ -265,7 +268,7 @@ const truncateTableTest = async (appIsBeingTested) => {
         });
     }
 
-    const client = await getPoolClient(appIsBeingTested);
+    const client = await getPoolClient();
     try {
         await client.query('BEGIN;');
         await client.query("TRUNCATE " + TABLE_NAME + " CASCADE;");

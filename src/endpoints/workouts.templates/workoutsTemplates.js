@@ -17,14 +17,14 @@ router.get('/',
     mw.authenticatedUser,
     async (req, res, next) => {
         // TODO modify spec and endpoint to need authenticated user
-        const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates(req.appIsBeingTested);
+        const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates();
 
         res.status(200).send(templates);
     });
 
 // Truncate test table
 router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbWorkoutsTemplates.truncateTableTest(req.appIsBeingTested);
+    const truncatedTable = await dbWorkoutsTemplates.truncateTableTest();
 
     res.status(200).send(truncatedTable);
 });
@@ -32,7 +32,7 @@ router.get('/truncate', async (req, res, next) => {
 router.get('/common',
     mw.authenticatedUser,
     async (req, res) => {
-        const commonTemplates = await dbWorkoutsTemplates.selectCommonWorkoutTemplates(req.appIsBeingTested);
+        const commonTemplates = await dbWorkoutsTemplates.selectCommonWorkoutTemplates();
         res.status(200).json(commonTemplates);
     }
 );
@@ -47,7 +47,7 @@ router.get('/:templateId',
     async (req, res, next) => {
         const { templateId } = req.params;
 
-        const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
+        const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId);
 
         res.status(200).json(workoutTemplate);
     });
@@ -59,7 +59,7 @@ router.get('/all/:userId',
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res) => {
         const { userId } = req.params;
-        const templates = await dbWorkoutsTemplates.selectWorkoutTemplatesByUserId(userId, req.appIsBeingTested);
+        const templates = await dbWorkoutsTemplates.selectWorkoutTemplatesByUserId(userId);
         res.status(200).json(templates);
     }
 );
@@ -74,7 +74,7 @@ router.get('/last/user/:userId/:numberOfWorkouts',
     async (req, res) => {
         const { userId, numberOfWorkouts } = req.params;
 
-        const templates = await dbWorkoutsTemplates.selectIdDateAndNameFromLastPerformedTemplatesByUser(userId, numberOfWorkouts, req.appIsBeingTested);
+        const templates = await dbWorkoutsTemplates.selectIdDateAndNameFromLastPerformedTemplatesByUser(userId, numberOfWorkouts);
         res.status(200).json(templates);
     }
 );
@@ -93,7 +93,7 @@ router.post('/',
 
         try {
             const createdWorkoutTemplate = await dbWorkoutsTemplates.createWorkoutTemplate(
-                req.body, req.appIsBeingTested
+                req.body
             );
             return res.status(201).json(createdWorkoutTemplate);
         } catch (error) {
@@ -120,7 +120,7 @@ router.post('/:templateId',
         };
 
         try {
-            const addedExercise = await dbWorkoutsTemplates.addExerciseToWorkoutTemplate(exercise, req.appIsBeingTested);
+            const addedExercise = await dbWorkoutsTemplates.addExerciseToWorkoutTemplate(exercise);
 
             return res.status(201).json(addedExercise);
         } catch (error) {
@@ -152,7 +152,7 @@ router.put('/:templateId',
         };
 
         const updatedWorkoutTemplate = await dbWorkoutsTemplates.updateWorkoutTemplate(
-            templateId, updateWorkoutTemplateInfo, req.appIsBeingTested
+            templateId, updateWorkoutTemplateInfo
         );
 
         res.status(200).json(updatedWorkoutTemplate);
@@ -181,7 +181,7 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
         };
 
         const updatedExercise = await dbWorkoutsTemplates.updateExerciseFromWorkoutTemplate(
-            templateId, exerciseOrder, updateExerciseInfo, req.appIsBeingTested
+            templateId, exerciseOrder, updateExerciseInfo
         );
 
         res.status(200).json(updatedExercise);
@@ -203,7 +203,7 @@ router.delete('/:templateId',
         const { templateId } = req.params;
 
         const deletedWorkoutTemplate = await dbWorkoutsTemplates.deleteWorkoutTemplate(
-            templateId, req.appIsBeingTested
+            templateId
         );
 
         res.status(200).json(deletedWorkoutTemplate);
@@ -224,7 +224,7 @@ router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder',
         const { templateId, exerciseId, exerciseOrder } = req.params;
 
         const deletedExercise = await dbWorkoutsTemplates.deleteExerciseFromWorkoutTemplate(
-            templateId, exerciseId, exerciseOrder, req.appIsBeingTested
+            templateId, exerciseId, exerciseOrder
         );
 
         res.status(200).json(deletedExercise[0]);

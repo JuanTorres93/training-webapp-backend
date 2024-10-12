@@ -14,14 +14,14 @@ const router = express.Router();
 // Get all workouts
 router.get('/', async (req, res, next) => {
     // TODO modify spec and endpoint to need authenticated user
-    const workouts = await dbWorkouts.selectAllWorkouts(req.appIsBeingTested);
+    const workouts = await dbWorkouts.selectAllWorkouts();
 
     res.status(200).send(workouts);
 });
 
 // Truncate test table
 router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbWorkouts.truncateTableTest(req.appIsBeingTested);
+    const truncatedTable = await dbWorkouts.truncateTableTest();
 
     res.status(200).send(truncatedTable);
 });
@@ -35,7 +35,7 @@ router.get('/:workoutId',
     async (req, res, next) => {
         const { workoutId } = req.params;
 
-        const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
+        const workout = await dbWorkouts.selectworkoutById(workoutId);
 
         res.status(200).json(workout);
     });
@@ -51,7 +51,7 @@ router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
     async (req, res, next) => {
         const { templateId, userId, numberOfWorkouts } = req.params;
 
-        const workout = await dbWorkouts.selectLastNWorkoutsFromUser(templateId, userId, numberOfWorkouts, req.appIsBeingTested);
+        const workout = await dbWorkouts.selectLastNWorkoutsFromUser(templateId, userId, numberOfWorkouts);
 
         res.status(200).json(workout);
     });
@@ -66,7 +66,7 @@ router.get('/last/:templateId/user/:userId',
     async (req, res, next) => {
         const { templateId, userId } = req.params;
 
-        const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId, req.appIsBeingTested);
+        const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId);
 
         res.status(200).json(workout);
     });
@@ -81,7 +81,7 @@ router.get('/addFinishDate/:workoutId',
     async (req, res, next) => {
         const { workoutId } = req.params;
 
-        const workout = await dbWorkouts.addFinishDateToWorkout(workoutId, req.appIsBeingTested);
+        const workout = await dbWorkouts.addFinishDateToWorkout(workoutId);
 
         res.status(200).json(workout);
     });
@@ -97,7 +97,7 @@ router.get('/all/:templateAlias',
         const { templateAlias } = req.params;
         const user = req.session.passport.user;
 
-        const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateAlias(templateAlias, user.id, req.appIsBeingTested);
+        const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateAlias(templateAlias, user.id);
 
         res.status(200).json(workoutsIds);
     });
@@ -115,7 +115,7 @@ router.post('/',
 
         try {
             const createdWorkout = await dbWorkouts.createWorkouts(
-                userId, req.body, req.appIsBeingTested
+                userId, req.body
             );
             return res.status(201).json(createdWorkout);
         } catch (error) {
@@ -146,7 +146,7 @@ router.post('/:workoutId',
 
         // TODO CHECK primary key is not duplicated
         try {
-            const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData, req.appIsBeingTested);
+            const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData);
 
             const capitalizedAddedExercise = {
                 exerciseId: addedExercise.exerciseid,
@@ -184,7 +184,7 @@ router.put('/:workoutId',
             description,
         };
 
-        const updatedWorkout = await dbWorkouts.updateWorkout(workoutId, updateWorkoutInfo, req.appIsBeingTested);
+        const updatedWorkout = await dbWorkouts.updateWorkout(workoutId, updateWorkoutInfo);
 
         res.status(200).json(updatedWorkout);
     }
@@ -203,7 +203,7 @@ router.put('/:workoutId/exercises/:exerciseId',
         const { workoutId, exerciseId } = req.params;
         const { exerciseSet, reps, weight, time_in_seconds } = req.body;
 
-        const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(workoutId, exerciseId, req.appIsBeingTested);
+        const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(workoutId, exerciseId);
 
         if (!exerciseInWorkoutExists) {
             return res.status(404).json({
@@ -219,7 +219,7 @@ router.put('/:workoutId/exercises/:exerciseId',
             time_in_seconds,
         };
 
-        const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(workoutId, updateExerciseInfo, req.appIsBeingTested);
+        const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(workoutId, updateExerciseInfo);
 
         res.status(200).json(updatedExercise);
     }
@@ -238,7 +238,7 @@ router.delete('/:workoutId',
     async (req, res, next) => {
         const { workoutId } = req.params;
 
-        const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId, req.appIsBeingTested);
+        const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId);
 
         res.status(200).json(deletedWorkout);
     }
@@ -255,7 +255,7 @@ router.delete('/:workoutId/exercises/:exerciseId',
     async (req, res, next) => {
         const { workoutId, exerciseId } = req.params;
 
-        const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(workoutId, exerciseId, req.appIsBeingTested);
+        const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(workoutId, exerciseId);
 
         res.status(200).json(deletedExercise);
     }
@@ -274,7 +274,7 @@ router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet',
     async (req, res, next) => {
         const { workoutId, exerciseId, exerciseSet } = req.params;
 
-        const deletedExercise = await dbWorkouts.deleteSetFromExercise(workoutId, exerciseId, exerciseSet, req.appIsBeingTested);
+        const deletedExercise = await dbWorkouts.deleteSetFromExercise(workoutId, exerciseId, exerciseSet);
 
         res.status(200).json(deletedExercise);
     }

@@ -21,7 +21,7 @@ const setUp = async () => {
     const otherUser = otherUserResponse.body;
 
     // DOC first parameter does nothing, true is for app being tested
-    await createCommonUser('', true, request);
+    await createCommonUser('', request);
 
     // login user
     await request.post('/login').send({

@@ -16,17 +16,13 @@ const { getPool, getPoolClient } = require('./db/index.js');
 const config = require('./config.js');
 
 // Function to create the express app. Its main use is for testing
-const createApp = (appIsBeingTested = false) => {
+const createApp = () => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
     // Create server and enable body parser in order not to import it
     // in every router
     const app = express();
     // Parse HTTP request body to JSON
     app.use(bodyParser.json());
-    // Flag to know when the app is being tested by jest or in production
-    app.use((req, res, next) => {
-        req.appIsBeingTested = appIsBeingTested;
-        next();
-    });
 
     // Routers imports
     const usersRouter = require('./endpoints/users/users.js');
@@ -84,7 +80,7 @@ const createApp = (appIsBeingTested = false) => {
         // store = new session.MemoryStore();
         // DOCS change store method. Can be founď here: https://www.npmjs.com/package/express-session
         store = new pgSession({
-            pool: getPool(appIsBeingTested),
+            pool: getPool(),
             tableName: 'user_sessions',
             createTableIfMissing: true,
         });
@@ -170,7 +166,7 @@ const createApp = (appIsBeingTested = false) => {
         const [deleteFromUsersWorkoutsQuery, deleteFromWorkoutsQuery] = sqlFileContent.split(';').map(query => query.trim()).filter(query => query.length > 0);
 
         try {
-            const client = await getPoolClient(appIsBeingTested); // Get a client from the pool
+            const client = await getPoolClient(); // Get a client from the pool
             try {
                 await client.query('BEGIN'); // Start transaction
 

@@ -36,7 +36,7 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
     const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
 
     const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
-        exerciseId, loggedUserId, req.appIsBeingTested
+        exerciseId, loggedUserId
     );
 
     if (exerciseBelongsToUser) {
@@ -53,7 +53,7 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
     const workoutId = (req.params.workoutId) ? req.params.workoutId : req.body.workoutId;
 
     const workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
-        workoutId, loggedUserId, req.appIsBeingTested
+        workoutId, loggedUserId
     );
 
     if (workoutBelongsToUser) {
@@ -70,7 +70,7 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
     const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
 
     const workoutTemplateBelongsToUser = await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-        templateId, loggedUserId, req.appIsBeingTested
+        templateId, loggedUserId
     );
 
     if (workoutTemplateBelongsToUser) {
@@ -87,7 +87,7 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
     const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
 
     const workoutTemplateBelongsToUser = await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-        templateId, loggedUserId, req.appIsBeingTested
+        templateId, loggedUserId
     );
 
     if (workoutTemplateBelongsToUser) {
@@ -95,11 +95,11 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
     }
 
     // Two steps to avoid unnecessary queries to the database if the logged in user owns the template
-    const commonUser = await dbUsers.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL, req.appIsBeingTested);
+    const commonUser = await dbUsers.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL);
     const commonUserId = commonUser.id;
 
     const workoutTemplateBelongsToCommonUser = await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-        templateId, commonUserId, req.appIsBeingTested
+        templateId, commonUserId
     );
 
     if (workoutTemplateBelongsToCommonUser) {
@@ -186,7 +186,7 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating user parameter
     const { alias, email } = req.body;
 
-    const emailInUse = await dbUsers.checkEmailInUse(email, req.appIsBeingTested) === true
+    const emailInUse = await dbUsers.checkEmailInUse(email) === true
 
     if (emailInUse) {
         return res.status(409).json({
@@ -194,7 +194,7 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
         });
     }
 
-    if (await dbUsers.checkAliasInUse(alias, req.appIsBeingTested) === true) {
+    if (await dbUsers.checkAliasInUse(alias) === true) {
         return res.status(409).json({
             msg: 'Alias already in use',
         });
@@ -207,7 +207,7 @@ const checkUserExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating userId parameter
     const userId = (req.params.userId) ? req.params.userId : req.body.userId;
 
-    const user = await dbUsers.selectUserById(userId, req.appIsBeingTested);
+    const user = await dbUsers.selectUserById(userId);
 
     if (!user) {
         return res.status(404).json({
@@ -222,7 +222,7 @@ const checkExerciseExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating exerciseId parameter
     const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
 
-    const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
+    const exercise = await dbExercises.selectExerciseById(exerciseId);
 
     if (!exercise) {
         return res.status(404).json({
@@ -237,7 +237,7 @@ const checkWorkoutExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
     const workoutId = (req.params.workoutId) ? req.params.workoutId : req.body.workoutId;
 
-    const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested);
+    const workout = await dbWorkouts.selectworkoutById(workoutId);
 
     if (!workout) {
         return res.status(404).json({
@@ -254,7 +254,7 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     const exerciseId = (req.params.exerciseId) ? req.params.exerciseId : req.body.exerciseId;
     const exerciseSet = (req.params.exerciseSet) ? req.params.exerciseSet : req.body.exerciseSet;
 
-    const workout = await dbWorkouts.selectworkoutById(workoutId, req.appIsBeingTested)
+    const workout = await dbWorkouts.selectworkoutById(workoutId)
     const exercises = workout.exercises;
 
     const setExists = exercises.filter((ex) => {
@@ -274,7 +274,7 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating workoutId parameter
     const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
 
-    const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId, req.appIsBeingTested);
+    const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId);
 
     if (!template) {
         return res.status(404).json({
@@ -292,7 +292,7 @@ const checkExerciseOrderExistsInWorkoutTemplate = async (req, res, next) => {
     const exerciseOrder = (req.params.exerciseOrder) ? req.params.exerciseOrder : req.body.exerciseOrder;
 
     const exerciseInWorkoutTemplateExists = await dbWorkoutsTemplates.checkExerciseInWorkoutTemplateExists(
-        templateId, exerciseId, exerciseOrder, req.appIsBeingTested
+        templateId, exerciseId, exerciseOrder
     );
 
     if (!exerciseInWorkoutTemplateExists) {

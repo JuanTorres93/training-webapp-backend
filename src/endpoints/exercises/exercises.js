@@ -1,4 +1,3 @@
-
 const express = require('express');
 
 const exerciseValidators = require('../../validators/exercises.js');
@@ -14,14 +13,14 @@ const router = express.Router();
 
 // Get all exercises
 router.get('/', async (req, res, next) => {
-    const exercises = await dbExercises.selectAllExercises(req.appIsBeingTested);
+    const exercises = await dbExercises.selectAllExercises();
 
     res.status(200).send(exercises);
 });
 
 // Truncate test table
 router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbExercises.truncateTableTest(req.appIsBeingTested);
+    const truncatedTable = await dbExercises.truncateTableTest();
 
     res.status(200).send(truncatedTable);
 });
@@ -31,7 +30,7 @@ router.get('/common',
     mw.authenticatedUser,
     async (req, res, next) => {
 
-        const commonExercises = await dbExercises.selectCommonExercises(req.appIsBeingTested);
+        const commonExercises = await dbExercises.selectCommonExercises();
 
         res.status(200).json(commonExercises);
     });
@@ -44,7 +43,7 @@ router.get('/:exerciseId',
         // TODO implement 403 response case
         const { exerciseId } = req.params;
 
-        const exercise = await dbExercises.selectExerciseById(exerciseId, req.appIsBeingTested);
+        const exercise = await dbExercises.selectExerciseById(exerciseId);
 
         res.status(200).json(exercise);
     });
@@ -58,7 +57,7 @@ router.get('/all/:userId',
     async (req, res, next) => {
         const { userId } = req.params;
 
-        const exercises = await dbExercises.selectAllExercisesFromUser(userId, req.appIsBeingTested);
+        const exercises = await dbExercises.selectAllExercisesFromUser(userId);
 
         res.status(200).json(exercises);
     });
@@ -74,7 +73,7 @@ router.post('/',
 
         try {
             const createdExercise = await dbExercises.createExercise(
-                userId, req.body, req.appIsBeingTested
+                userId, req.body
             );
             return res.status(201).json(createdExercise);
         } catch (error) {
@@ -104,7 +103,7 @@ router.put('/:exerciseId',
             description,
         };
 
-        const updatedExercise = await dbExercises.updateExercise(exerciseId, newExerciseInfo, req.appIsBeingTested);
+        const updatedExercise = await dbExercises.updateExercise(exerciseId, newExerciseInfo);
 
         res.status(200).json(updatedExercise);
     }
@@ -123,7 +122,7 @@ router.delete('/:exerciseId',
     async (req, res, next) => {
         const { exerciseId } = req.params;
 
-        const deletedexercise = await dbExercises.deleteExercise(exerciseId, req.appIsBeingTested);
+        const deletedexercise = await dbExercises.deleteExercise(exerciseId);
 
         res.status(200).json(deletedexercise);
     }

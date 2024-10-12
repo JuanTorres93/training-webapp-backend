@@ -1,6 +1,8 @@
 const usersDB = require('./db/users');
 
-const createCommonUser = async (host, appIsBeingTested, testRequestInterface = null) => {
+const createCommonUser = async (host, testRequestInterface = null) => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
+
     const common_user = {
         alias: process.env.DB_COMMON_USER_NAME,
         password: process.env.DB_COMMON_USER_PASS,
@@ -9,7 +11,7 @@ const createCommonUser = async (host, appIsBeingTested, testRequestInterface = n
     };
 
     try {
-        const user = await usersDB.selectUserByEmail(common_user.email, appIsBeingTested);
+        const user = await usersDB.selectUserByEmail(common_user.email);
         if (user) {
             return;
         }
@@ -177,9 +179,7 @@ const createCommonUser = async (host, appIsBeingTested, testRequestInterface = n
         }
 
     } catch (err) {
-        if (!appIsBeingTested) {
-            console.error('Error:', err);
-        }
+        console.error('Error:', err);
     }
 }
 

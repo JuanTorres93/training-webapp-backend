@@ -44,7 +44,7 @@ const _compactWorkoutTemplateInfo = (workoutTemplateInfoDb) => {
     return workoutTemplateSpec;
 };
 
-const selectAllWorkoutsTemplates = (appIsBeingTested) => {
+const selectAllWorkoutsTemplates = () => {
     const q = workoutsTemplatesWithExercisesQuery;
     const params = [];
 
@@ -77,12 +77,12 @@ const selectAllWorkoutsTemplates = (appIsBeingTested) => {
             });
 
             resolve(allTemplatesFormatted)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
-    const templateExists = await checkWorkoutTemplateByIdExists(id, appIsBeingTested);
+const selectWorkoutTemplateById = async (id) => {
+    const templateExists = await checkWorkoutTemplateByIdExists(id);
 
     if (!templateExists) {
         return new Promise((resolve) => {
@@ -92,7 +92,7 @@ const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
 
     // This info is needed because if the template does not have any exercise, then it won't
     // appear in the main query
-    const templateHasExercises = await _checkWorkoutTemplateContainsExercises(id, appIsBeingTested);
+    const templateHasExercises = await _checkWorkoutTemplateContainsExercises(id);
 
     let q;
 
@@ -124,11 +124,11 @@ const selectWorkoutTemplateById = async (id, appIsBeingTested) => {
             }
 
             resolve(templateSpec);
-        }, appIsBeingTested)
+        })
     });
 };
 
-const createWorkoutTemplate = ({ userId, alias, description }, appIsBeingTested = undefined) => {
+const createWorkoutTemplate = ({ userId, alias, description }) => {
     // Build query
     let requiredFields = ['user_id', 'alias'];
     let requiredValues = [userId, alias];
@@ -156,11 +156,14 @@ const createWorkoutTemplate = ({ userId, alias, description }, appIsBeingTested 
             delete specWorkoutTemplate.user_id
 
             resolve(specWorkoutTemplate)
-        }, appIsBeingTested)
+        })
     });
 }
 
-const truncateTableTest = (appIsBeingTested) => {
+const truncateTableTest = () => {
+    const appIsBeingTested = process.env.NODE_ENV === 'test';
+
+    // Only allow truncating table if app is being tested
     if (!appIsBeingTested) {
         return new Promise((resolve, reject) => {
             // Test for making malicious people think they got something
@@ -180,8 +183,7 @@ const truncateTableTest = (appIsBeingTested) => {
     });
 };
 
-const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseOrder, exerciseSets },
-    appIsBeingTested = undefined) => {
+const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseOrder, exerciseSets }) => {
     // Build query
     let requiredFields = ['workout_template_id', 'exercise_id', 'exercise_order', 'exercise_sets'];
     let requiredValues = [workoutTemplateId, exerciseId, exerciseOrder, exerciseSets];
@@ -210,11 +212,11 @@ const addExerciseToWorkoutTemplate = ({ workoutTemplateId, exerciseId, exerciseO
             };
 
             resolve(specExercise)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const checkWorkoutTemplateByIdExists = async (id, appIsBeingTested = undefined) => {
+const checkWorkoutTemplateByIdExists = async (id) => {
     let q = "SELECT id FROM " + TABLE_NAME + " WHERE id = $1;";
     const params = [id]
 
@@ -224,7 +226,7 @@ const checkWorkoutTemplateByIdExists = async (id, appIsBeingTested = undefined) 
 
             const template = results.rows[0];
             resolve(template)
-        }, appIsBeingTested)
+        })
     });
 
     if (!selectedTemplate) {
@@ -234,7 +236,7 @@ const checkWorkoutTemplateByIdExists = async (id, appIsBeingTested = undefined) 
     return Number.isInteger(selectedTemplate.id);
 }
 
-const workoutTemplateBelongsToUser = (templateId, userId, appIsBeingTested) => {
+const workoutTemplateBelongsToUser = (templateId, userId) => {
     const q = "SELECT * FROM " + TABLE_NAME + " WHERE id = $1 AND user_id = $2;";
     const params = [templateId, userId];
 
@@ -247,11 +249,11 @@ const workoutTemplateBelongsToUser = (templateId, userId, appIsBeingTested) => {
             } else {
                 resolve(false)
             }
-        }, appIsBeingTested)
+        })
     });
 };
 
-const _checkWorkoutTemplateContainsExercises = async (templateId, appIsBeingTested = undefined) => {
+const _checkWorkoutTemplateContainsExercises = async (templateId) => {
     let q = "SELECT exercise_id FROM workout_template_exercises WHERE workout_template_id = $1;";
     const params = [templateId]
 
@@ -261,7 +263,7 @@ const _checkWorkoutTemplateContainsExercises = async (templateId, appIsBeingTest
 
             const template = results.rows[0];
             resolve(template)
-        }, appIsBeingTested)
+        })
     });
 
     if (!selectedTemplate) {
@@ -271,9 +273,9 @@ const _checkWorkoutTemplateContainsExercises = async (templateId, appIsBeingTest
     return Number.isInteger(selectedTemplate.exercise_id);
 }
 
-const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested = undefined) => {
-    const client = await getPoolClient(appIsBeingTested);
-    const hasExercises = await _checkWorkoutTemplateContainsExercises(id, appIsBeingTested);
+const updateWorkoutTemplate = async (id, workoutTemplateObject) => {
+    const client = await getPoolClient();
+    const hasExercises = await _checkWorkoutTemplateContainsExercises(id);
 
     let results;
 
@@ -324,10 +326,10 @@ const updateWorkoutTemplate = async (id, workoutTemplateObject, appIsBeingTested
     return workoutTemplateSpec;
 }
 
-const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
+const deleteWorkoutTemplate = async (id) => {
     // TODO WARNING: There's a potencial risk of unreferenced items in workout_template_exercises
-    const client = await getPoolClient(appIsBeingTested);
-    const hasExercises = await _checkWorkoutTemplateContainsExercises(id, appIsBeingTested);
+    const client = await getPoolClient();
+    const hasExercises = await _checkWorkoutTemplateContainsExercises(id);
 
     let templateInfo;
 
@@ -383,7 +385,7 @@ const deleteWorkoutTemplate = async (id, appIsBeingTested = undefined) => {
     return workoutSpec;
 }
 
-const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exerciseOrder, appIsBeingTested = undefined) => {
+const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exerciseOrder) => {
     let q = "SELECT workout_template_id FROM workout_template_exercises WHERE workout_template_id = $1 AND exercise_id = $2 AND exercise_order = $3;";
     const params = [templateId, exerciseId, exerciseOrder];
 
@@ -393,7 +395,7 @@ const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exer
 
             const workoutTemplateId = results.rows[0];
             resolve(workoutTemplateId)
-        }, appIsBeingTested)
+        })
     });
 
     if (!selectedWorkoutTemplate) {
@@ -404,8 +406,7 @@ const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exer
 };
 
 const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,
-    { exerciseId, exerciseSets, newExerciseOrder },
-    appIsBeingTested = undefined) => {
+    { exerciseId, exerciseSets, newExerciseOrder }) => {
 
 
     // If theres is nothing to update, then do nothing
@@ -460,11 +461,11 @@ const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,
                 exerciseSets: updatedExercise.exercise_sets,
             };
             resolve(updatedExerciseSpec)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder, appIsBeingTested) => {
+const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder) => {
     const q = " WITH deleted AS ( " +
         " 	DELETE FROM workout_template_exercises " +
         " 	WHERE " +
@@ -499,11 +500,11 @@ const deleteExerciseFromWorkoutTemplate = (workoutId, exerciseId, exerciseOrder,
             });
 
             resolve(exercisesSpec)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
+const selectWorkoutTemplatesByUserId = (userId) => {
     const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
     const params = [userId];
 
@@ -536,12 +537,12 @@ const selectWorkoutTemplatesByUserId = (userId, appIsBeingTested) => {
             });
 
             resolve(allTemplatesFormatted)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectCommonWorkoutTemplates = async (appIsBeingTested) => {
-    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL, appIsBeingTested);
+const selectCommonWorkoutTemplates = async () => {
+    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL);
 
     const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
     const params = [commonUserId.id];
@@ -575,12 +576,12 @@ const selectCommonWorkoutTemplates = async (appIsBeingTested) => {
             });
 
             resolve(allTemplatesFormatted)
-        }, appIsBeingTested)
+        })
     });
 };
 
-const selectIdDateAndNameFromLastPerformedTemplatesByUser = async (userId, numberOfWOrkouts, appIsBeingTested) => {
-    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL, appIsBeingTested);
+const selectIdDateAndNameFromLastPerformedTemplatesByUser = async (userId, numberOfWOrkouts) => {
+    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL);
 
     const q = `
         SELECT
@@ -607,7 +608,7 @@ const selectIdDateAndNameFromLastPerformedTemplatesByUser = async (userId, numbe
             }
 
             resolve(lastWorkoutTemplates)
-        }, appIsBeingTested)
+        })
     });
 };
 
