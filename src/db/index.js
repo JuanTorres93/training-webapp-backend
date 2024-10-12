@@ -1,27 +1,35 @@
 const { Pool } = require('pg');
 
-const pool = new Pool({
+const commonPoolInfo = {
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_USER_PASSWORD,
+};
+
+const notContainerizedPoolInfo = {
+    ...commonPoolInfo,
     port: process.env.DB_PORT,
-    // Other way to connect to the database. If want to use this way, comment the 5 lines above
-    // connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_USER_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`,
 
     // These 3 parameters below have allowed to connect to the database without errors
     idleTimeoutMillis: 10000,
     keepAlive: true,
     ssl: true,
-});
+};
 
-const testPool = new Pool({
-    user: process.env.DB_TEST_USER,
-    host: process.env.DB_TEST_HOST,
-    database: process.env.DB_TEST_NAME,
-    password: process.env.DB_TEST_USER_PASSWORD,
-    // port: process.env.DB_TEST_PORT,
-});
+let pool;
+
+if (process.env.NODE_ENV === 'test') {
+    pool = new Pool({
+        ...commonPoolInfo,
+    });
+} else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
+    pool = new Pool({
+        ...notContainerizedPoolInfo,
+    });
+} else {
+    throw Error(`NODE_ENV must be test, development or production. Current value is ${process.env.NODE_ENV}`);
+}
 
 const query = (text, params, callback, appIsBeingTested) => {
     // Example of using params. This is done instead of concatenating strings to prevent SQL injection
@@ -34,8 +42,6 @@ const query = (text, params, callback, appIsBeingTested) => {
     //          })
 
     if (appIsBeingTested === true || appIsBeingTested === false) {
-        if (appIsBeingTested) return testPool.query(text, params, callback);
-
         return pool.query(text, params, callback);
     };
 
@@ -53,8 +59,6 @@ const query = (text, params, callback, appIsBeingTested) => {
 const getPoolClient = async (appIsBeingTested) => {
     // DOCS for transactions: https://node-postgres.com/features/transactions
     if (appIsBeingTested === true || appIsBeingTested === false) {
-        if (appIsBeingTested) return await testPool.connect();
-
         return await pool.connect();
     };
 
@@ -70,8 +74,6 @@ const getPoolClient = async (appIsBeingTested) => {
  */
 const getPool = (appIsBeingTested) => {
     if (appIsBeingTested === true || appIsBeingTested === false) {
-        if (appIsBeingTested) return testPool;
-
         return pool;
     };
 
