@@ -179,7 +179,10 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         }
 
     } catch (err) {
-        console.error('Error:', err);
+        // Avoid unnecesaary error message when running tests
+        if (!appIsBeingTested) {
+            console.error('Error:', err);
+        }
     }
 }
 
