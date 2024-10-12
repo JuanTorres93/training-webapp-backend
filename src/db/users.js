@@ -188,7 +188,13 @@ const truncateTableTest = (appIsBeingTested) => {
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
-            if (error) reject(error);
+            if (error) {
+                // TODO DELETE THESE DEBUG LOGS
+                console.log('error');
+                console.log(error);
+                reject(error)
+            };
+
 
             resolve('Table ' + TABLE_NAME + ' truncated in test db.')
         }, true)

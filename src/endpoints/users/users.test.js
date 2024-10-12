@@ -11,12 +11,23 @@ const successfulPostRequest = {
 }
 
 const setup = async () => {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('enters setup');
+
     // Empty database before starting tests
     await request.get(BASE_ENDPOINT + '/truncate');
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('truncates');
 
     // Add user to db
     const newUserResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
     const newUser = newUserResponse.body;
+
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('newUser');
+    console.log(newUser);
 
     return {
         newUser,
