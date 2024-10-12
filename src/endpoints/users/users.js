@@ -24,10 +24,6 @@ router.get('/', async (req, res, next) => {
 router.get('/truncate', async (req, res, next) => {
     const truncatedTable = await dbUsers.truncateTableTest(req.appIsBeingTested);
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('truncatedTable');
-    console.log(truncatedTable);
-
     res.status(200).send(truncatedTable);
 });
 

@@ -20,7 +20,7 @@ const testPool = new Pool({
     host: process.env.DB_TEST_HOST,
     database: process.env.DB_TEST_NAME,
     password: process.env.DB_TEST_USER_PASSWORD,
-    port: process.env.DB_TEST_PORT,
+    // port: process.env.DB_TEST_PORT,
 });
 
 const query = (text, params, callback, appIsBeingTested) => {
