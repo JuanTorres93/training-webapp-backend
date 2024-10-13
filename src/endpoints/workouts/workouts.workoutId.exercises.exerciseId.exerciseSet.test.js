@@ -1,28 +1,13 @@
-const { request, BASE_ENDPOINT, newUserReq,
-        initExercisesTableInDb, 
-        addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
-
-OTHER_USER_ALIAS = 'other user';
-
-// Empty database before starting tests
-const setUp = async () => {
-    await request.get(BASE_ENDPOINT + '/truncate');
-    await request.get('/exercises/truncate');
-
-    // Add user to db
-    await request.post('/users').send(newUserReq);
-
-    // Add other user to db
-    const otherUserResponse = await request.post('/users').send({
-        ...newUserReq,
-        alias: OTHER_USER_ALIAS,
-        email: 'other@user.com',
-    });
-    const otherUser = otherUserResponse.body;
-
-    // Fill database with some exercises to be able to add them to workouts
-    // await initExercisesTableInDb();
-}
+const {
+    BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
+    request,
+    newUserReq,
+    initExercisesTableInDb,
+    addWorkoutsAndExercises,
+    getExercisesIds,
+    setUp,
+} = require('./testsSetup');
 
 describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}', () => {
     describe('delete requests', () => {
@@ -145,7 +130,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
 
         describe('happy path', () => {
             let response;
-            
+
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
@@ -162,14 +147,14 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
                 // logout user
                 await request.get('/logout');
             });
-            
+
             it("status code of 200", async () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
-            
+
             it('returns deleted exercise', () => {
                 const deletedExercise = response.body;
-                
+
                 expect(deletedExercise.exerciseId).toStrictEqual(initialExercise.id);
                 expect(deletedExercise.exerciseSet).toStrictEqual(initialExercise.set);
                 expect(deletedExercise.reps).toStrictEqual(initialExercise.reps);

@@ -1,45 +1,14 @@
-const { request, BASE_ENDPOINT, newUserReq,
-    exercises, initExercisesTableInDb,
-    addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
-
-OTHER_USER_ALIAS = 'other user';
-
-const createWorkoutRequest = {
-    alias: "workout_with_exercises",
-    description: "This is the description for a workout with exercises",
-};
-
-// Empty database before starting tests
-const setUp = async () => {
-    await request.get(BASE_ENDPOINT + '/truncate');
-    await request.get('/exercises/truncate');
-    await request.get('/users/truncate');
-    await request.get('/workouts/templates/truncate');
-
-    // Add user to db
-    const userReponse = await request.post('/users').send(newUserReq);
-    const user = userReponse.body;
-
-    // Add other user to db
-    const otherUserResponse = await request.post('/users').send({
-        ...newUserReq,
-        alias: OTHER_USER_ALIAS,
-        email: 'other@user.com',
-    });
-    const otherUser = otherUserResponse.body;
-
-
-    // login user
-    await request.post('/login').send({
-        username: newUserReq.alias,
-        password: newUserReq.password,
-    });
-
-    // logout user
-    await request.get('/logout');
-
-    return { user, otherUser };
-}
+const {
+    BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
+    request,
+    newUserReq,
+    createWorkoutRequest,
+    initExercisesTableInDb,
+    addWorkoutsAndExercises,
+    getExercisesIds,
+    setUp,
+} = require('./testsSetup');
 
 describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
     let id;

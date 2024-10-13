@@ -1,27 +1,16 @@
-const { request, BASE_ENDPOINT, newUserReq,
-        exercises, initExercisesTableInDb, 
-        addWorkoutsAndExercises, getExercisesIds } = require('./testsSetup');
+const {
+    request,
+    BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
+    newUserReq,
+    exercises,
+    initExercisesTableInDb,
+    addWorkoutsAndExercises,
+    getExercisesIds,
+    setUp,
+} = require('./testsSetup');
 
-OTHER_USER_ALIAS = 'other user';
-
-// Empty database before starting tests
-const setUp = async () => {
-    await request.get(BASE_ENDPOINT + '/truncate');
-    await request.get('/exercises/truncate');
-
-    // Add user to db
-    await request.post('/users').send(newUserReq);
-
-    // Add other user to db
-    const otherUserResponse = await request.post('/users').send({
-        ...newUserReq,
-        alias: OTHER_USER_ALIAS,
-        email: 'other@user.com',
-    });
-    const otherUser = otherUserResponse.body;
-}
-
-describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
+describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
     let id;
     let exercisesIds = {};
 
@@ -203,7 +192,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 console.log("EEERROOOOOOOR")
                 console.log(error);
             }
-            
+
             const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
             workoutId = pushResponse.body.id;
         });
@@ -527,7 +516,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}',  () => {
                 expect(deletedworkout.description).toStrictEqual(pushWorkout.description);
                 expect(deletedworkout).toHaveProperty('exercises');
             });
-            
+
         });
     });
 });

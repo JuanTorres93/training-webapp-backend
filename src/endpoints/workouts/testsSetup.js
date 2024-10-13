@@ -5,9 +5,10 @@ require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../../app.js');
 
-// true means that it should connect to test db
-const app = createApp(true);
+const app = createApp();
 const BASE_ENDPOINT = '/workouts';
+const { OTHER_USER_ALIAS } = require('../exercises/testsSetup.js');
+const dbExercises = require('../../db/exercises.js');
 
 function logErrors(err, req, res, next) {
     console.error(err.stack)
@@ -19,7 +20,10 @@ app.use(logErrors);
 // I use agent for storing user info when login in
 const request = supertest.agent(app);
 
-const dbExercises = require('../../db/exercises.js');
+const successfulPostRequest = {
+    alias: "first_test_workout",
+    description: "This is the description for a test workout",
+}
 
 const newUserReq = {
     alias: "first_test_user",
@@ -28,6 +32,11 @@ const newUserReq = {
     password: "$ecur3_P@ssword",
     second_last_name: "Sanches",
     registeredViaOAuth: false,
+};
+
+const createWorkoutRequest = {
+    alias: "workout_with_exercises",
+    description: "This is the description for a workout with exercises",
 };
 
 const exercises = [
@@ -268,12 +277,47 @@ const getExercisesIds = async () => {
     return exercisesIds;
 }
 
+const setUp = async () => {
+    await request.get(BASE_ENDPOINT + '/truncate');
+    await request.get('/exercises/truncate');
+    await request.get('/users/truncate');
+    await request.get('/workouts/templates/truncate');
+
+    // Add user to db
+    const userReponse = await request.post('/users').send(newUserReq);
+    const user = userReponse.body;
+
+    // Add other user to db
+    const otherUserResponse = await request.post('/users').send({
+        ...newUserReq,
+        alias: OTHER_USER_ALIAS,
+        email: 'other@user.com',
+    });
+    const otherUser = otherUserResponse.body;
+
+
+    // login user
+    await request.post('/login').send({
+        username: newUserReq.alias,
+        password: newUserReq.password,
+    });
+
+    // logout user
+    await request.get('/logout');
+
+    return { user, otherUser };
+}
+
 module.exports = {
-    request,
     BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
     exercises,
     newUserReq,
+    successfulPostRequest,
+    createWorkoutRequest,
+    request,
     initExercisesTableInDb,
     addWorkoutsAndExercises,
     getExercisesIds,
+    setUp,
 };
