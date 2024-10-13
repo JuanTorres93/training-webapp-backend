@@ -5,21 +5,45 @@ require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../../app.js');
 
-// true means that it should connect to test db
-const app = createApp(true);
+const app = createApp();
 const BASE_ENDPOINT = '/login';
 
-function logErrors (err, req, res, next) {
+USER_ALIAS = 'test user';
+USER_PASSWORD = 'T3st_u$eR_pAss';
+
+function logErrors(err, req, res, next) {
   console.error(err.stack)
   next(err)
 };
 
 app.use(logErrors);
 
+const setUp = async () => {
+  await request.get('/users/truncate');
+  await request.get('/exercises/truncate');
+  await request.get('/workouts/truncate');
+  await request.get('/workouts/templates/truncate');
+
+  const newUserResponse = await request.post('/users').send({
+    alias: USER_ALIAS,
+    email: 'test@user.com',
+    password: USER_PASSWORD,
+    registeredViaOAuth: false,
+  });
+  const newUser = newUserResponse.body;
+
+  return {
+    newUser,
+  };
+};
+
 // I use agent for storing user info when login in
 const request = supertest.agent(app);
 
 module.exports = {
-    request,
-    BASE_ENDPOINT,
+  BASE_ENDPOINT,
+  USER_ALIAS,
+  USER_PASSWORD,
+  request,
+  setUp,
 };

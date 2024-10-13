@@ -1,26 +1,10 @@
-const { request, BASE_ENDPOINT } = require('./testsSetup');
-
-USER_ALIAS = 'test user';
-USER_PASSWORD = 'T3st_u$eR_pAss';
-
-const setUp = async () => {
-    await request.get('/users/truncate');
-    await request.get('/exercises/truncate');
-    await request.get('/workouts/truncate');
-    await request.get('/workouts/templates/truncate');
-
-    const newUserResponse = await request.post('/users').send({
-        alias: USER_ALIAS,
-        email: 'test@user.com',
-        password: USER_PASSWORD,
-        registeredViaOAuth: false,
-    });
-    const newUser = newUserResponse.body;
-
-    return {
-        newUser,
-    };
-};
+const {
+    request,
+    BASE_ENDPOINT,
+    USER_ALIAS,
+    USER_PASSWORD,
+    setUp,
+} = require('./testsSetup');
 
 describe(BASE_ENDPOINT, () => {
     describe('post requests', () => {
