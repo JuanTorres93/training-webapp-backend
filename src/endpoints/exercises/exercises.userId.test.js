@@ -1,49 +1,11 @@
-const { request, BASE_ENDPOINT, newUserReq } = require('./testsSetup');
+const {
+    request,
+    BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
+    newUserReq,
+    setUp } = require('./testsSetup');
 
-OTHER_USER_ALIAS = 'other user';
-
-const successfulPostRequest = {
-    alias: "first_test_exercise",
-    description: "This is the description for a test exercise",
-}
-
-const setUp = async () => {
-    await request.get(BASE_ENDPOINT + '/truncate');
-    await request.get('/users/truncate');
-
-    // Add user to db
-    const newUserResponse = await request.post('/users').send(newUserReq);
-    const newUser = newUserResponse.body;
-
-    // Add other user to db
-    const otherUserResponse = await request.post('/users').send({
-        ...newUserReq,
-        alias: OTHER_USER_ALIAS,
-        email: 'other@user.com',
-    });
-    const otherUser = otherUserResponse.body;
-
-    // login user
-    await request.post('/login').send({
-        username: newUserReq.alias,
-        password: newUserReq.password,
-    });
-
-    // Add exercise to db
-    const newExercisesResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
-    const newExercise = newExercisesResponse.body;
-
-    // logout user
-    await request.get('/logout');
-
-    return {
-        newUser,
-        newExercise,
-        otherUser,
-    };
-};
-
-describe(`${BASE_ENDPOINT}` + '/all/{userId}',  () => {
+describe(`${BASE_ENDPOINT}` + '/all/{userId}', () => {
     let newExercise;
 
     describe('get requests', () => {
