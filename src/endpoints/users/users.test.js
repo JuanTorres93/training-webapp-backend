@@ -1,27 +1,10 @@
-const { request, BASE_ENDPOINT } = require('./testsSetup');
+const {
+    request,
+    BASE_ENDPOINT,
+    successfulPostRequest,
+    setUp,
+} = require('./testsSetup');
 const hash = require('../../hashing.js');
-
-const successfulPostRequest = {
-    alias: "first_test_user",
-    email: "first_user@domain.com",
-    last_name: "Manacle",
-    password: "$ecur3_P@ssword",
-    second_last_name: "Sanches",
-    registeredViaOAuth: false,
-}
-
-const setup = async () => {
-    // Empty database before starting tests
-    await request.get(BASE_ENDPOINT + '/truncate');
-
-    // Add user to db
-    const newUserResponse = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
-    const newUser = newUserResponse.body;
-
-    return {
-        newUser,
-    };
-}
 
 const selectEverythingFromUserId = async (id) => {
     const response = await request.get(BASE_ENDPOINT + `/${id}/allTest`)
@@ -33,7 +16,7 @@ describe(`${BASE_ENDPOINT}`, () => {
         let response;
 
         beforeAll(async () => {
-            await setup();
+            await setUp();
             response = await request.post(BASE_ENDPOINT).send({
                 ...successfulPostRequest,
                 alias: "second test user",
@@ -144,7 +127,7 @@ describe(`${BASE_ENDPOINT}`, () => {
         let response;
 
         beforeEach(async () => {
-            await setup();
+            await setUp();
             response = await request.get(BASE_ENDPOINT);
         });
 
