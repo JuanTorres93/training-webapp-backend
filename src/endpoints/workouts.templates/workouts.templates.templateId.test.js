@@ -1,55 +1,11 @@
-const { request, BASE_ENDPOINT, createNewTemplateRequest, newUserReq } = require('./testsSetup');
-const createCommonUser = require('../../createCommonUser').createCommonUser;
-
-OTHER_USER_ALIAS = 'other user';
-
-const setUp = async () => {
-    await request.get(BASE_ENDPOINT + '/truncate');
-    await request.get('/users/truncate');
-    await request.get('/exercises/truncate');
-
-    // Add user to db
-    const userResponse = await request.post('/users').send(newUserReq);
-    const user = userResponse.body;
-
-    // Add other user to db
-    const otherUserResponse = await request.post('/users').send({
-        ...newUserReq,
-        alias: OTHER_USER_ALIAS,
-        email: 'other@user.com',
-    });
-    const otherUser = otherUserResponse.body;
-
-    // DOC first parameter does nothing, true is for app being tested
-    await createCommonUser('', request);
-
-    // login user
-    await request.post('/login').send({
-        username: newUserReq.alias,
-        password: newUserReq.password,
-    });
-
-    // Add template to db
-    const reqNewTemplate = createNewTemplateRequest(user.id, 'setup template', 'set up template description')
-    const responseNewTemplate = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
-    const newTemplate = responseNewTemplate.body;
-
-    // Add exercise to db
-    const exerciseResponse = await request.post('/exercises').send({
-        alias: "Pull up",
-        description: "Fucks your shoulder",
-    });
-    const newExercise = exerciseResponse.body;
-
-    // logout user
-    await request.get('/logout');
-
-    return {
-        user,
-        newTemplate,
-        newExercise,
-    };
-};
+const {
+    BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
+    request,
+    newUserReq,
+    reqNewTemplate,
+    setUp,
+} = require('./testsSetup');
 
 describe(BASE_ENDPOINT + '/{templateId}', () => {
     describe('get requests', () => {
@@ -84,25 +40,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('returns template object when it has no exercises', async () => {
-                const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
-                const workoutTemplateObject = response.body;
-
-                expect(workoutTemplateObject).toHaveProperty('id');
-                expect(workoutTemplateObject).toHaveProperty('alias');
-                expect(workoutTemplateObject).toHaveProperty('description');
-                expect(workoutTemplateObject).toHaveProperty('exercises');
-
-                expect(workoutTemplateObject.exercises.length).toStrictEqual(0);
-            });
-
-            it('returns template object when it do have exercises', async () => {
-                await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
-                    exerciseId: newExercise.id,
-                    exerciseOrder: 1,
-                    exerciseSets: 3,
-                });
-
+            it('returns template object when it DO HAVE exercises', async () => {
                 const getResponse = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
                 const workoutTemplateObject = getResponse.body;
 
@@ -117,6 +55,21 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 expect(exercise).toHaveProperty('alias');
                 expect(exercise).toHaveProperty('order');
                 expect(exercise).toHaveProperty('sets');
+            });
+
+            it('returns template object when it has NO exercises', async () => {
+                // IMPORTANT: This test must be the last one to run because it deletes the exercise in the template
+                await request.delete(BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/1`);
+
+                const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+                const workoutTemplateObject = response.body;
+
+                expect(workoutTemplateObject).toHaveProperty('id');
+                expect(workoutTemplateObject).toHaveProperty('alias');
+                expect(workoutTemplateObject).toHaveProperty('description');
+                expect(workoutTemplateObject).toHaveProperty('exercises');
+
+                expect(workoutTemplateObject.exercises.length).toStrictEqual(0);
             });
         });
 
@@ -166,6 +119,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
         let user;
         let newTemplate;
         let newExercise;
+        let reqNewTemplate;
 
         beforeAll(async () => {
             const setUpInfo = await setUp();
@@ -173,6 +127,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             user = setUpInfo.user;
             newTemplate = setUpInfo.newTemplate;
             newExercise = setUpInfo.newExercise;
+            reqNewTemplate = setUpInfo.reqNewTemplate;
         });
 
         describe('happy path', () => {
@@ -190,6 +145,14 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                     username: newUserReq.alias,
                     password: newUserReq.password,
                 });
+
+                // delete template and recreate it
+                // This is done because template is created in setUp function and this
+                // very endpoint is in charge of creating them
+                await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+                response = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
+                newTemplate = response.body;
+
 
                 response = await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
             });
@@ -349,29 +312,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('returns updated template with NO exercises', async () => {
-                const req = {
-                    alias: 'test no exercises',
-                    description: 'new description no exercises',
-                };
-                const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
-                const workoutTemplate = response.body;
-
-                expect(workoutTemplate).toHaveProperty('id');
-                expect(workoutTemplate).toHaveProperty('alias');
-                expect(workoutTemplate).toHaveProperty('description');
-                expect(workoutTemplate).toHaveProperty('exercises');
-
-                expect(workoutTemplate.exercises.length).toStrictEqual(0);
-            });
-
             it('returns updated template with exercises', async () => {
-                await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
-                    exerciseId: newExercise.id,
-                    exerciseOrder: 1,
-                    exerciseSets: 3,
-                });
-
                 const req = {
                     alias: 'test with exercises',
                     description: 'new description with exercises',
@@ -390,6 +331,25 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 expect(exercise).toHaveProperty('alias');
                 expect(exercise).toHaveProperty('order');
                 expect(exercise).toHaveProperty('sets');
+            });
+
+            it('returns updated template with NO exercises', async () => {
+                // IMPORTANT: This test must be the last one to run because it deletes the exercise in the template
+                await request.delete(BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/1`);
+
+                const req = {
+                    alias: 'test no exercises',
+                    description: 'new description no exercises',
+                };
+                const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
+                const workoutTemplate = response.body;
+
+                expect(workoutTemplate).toHaveProperty('id');
+                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('description');
+                expect(workoutTemplate).toHaveProperty('exercises');
+
+                expect(workoutTemplate.exercises.length).toStrictEqual(0);
             });
         });
 
@@ -556,43 +516,13 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('returns deleted template with NO exercises', async () => {
+            it('returns deleted template with exercises', async () => {
                 const { newTemplate } = await setUp();
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
                     username: newUserReq.alias,
                     password: newUserReq.password,
-                });
-
-                const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
-
-                // logout user
-                await request.get('/logout');
-
-                const workoutTemplate = response.body;
-
-                expect(workoutTemplate).toHaveProperty('id');
-                expect(workoutTemplate).toHaveProperty('alias');
-                expect(workoutTemplate).toHaveProperty('description');
-                expect(workoutTemplate).toHaveProperty('exercises');
-
-                expect(workoutTemplate.exercises.length).toStrictEqual(0);
-            });
-
-            it('returns deleted template with exercises', async () => {
-                const { newTemplate, newExercise } = await setUp();
-
-                // login user. HERE CAUSE setUp ends loggin out
-                await request.post('/login').send({
-                    username: newUserReq.alias,
-                    password: newUserReq.password,
-                });
-
-                await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
-                    exerciseId: newExercise.id,
-                    exerciseOrder: 1,
-                    exerciseSets: 3,
                 });
 
                 const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
@@ -613,6 +543,33 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 expect(exercise).toHaveProperty('alias');
                 expect(exercise).toHaveProperty('order');
                 expect(exercise).toHaveProperty('sets');
+            });
+
+            it('returns deleted template with NO exercises', async () => {
+                // IMPORTANT: This test must be the last one to run because it deletes the exercise in the template
+                const { newTemplate, newExercise } = await setUp();
+
+                // login user. HERE CAUSE setUp ends loggin out
+                await request.post('/login').send({
+                    username: newUserReq.alias,
+                    password: newUserReq.password,
+                });
+
+                await request.delete(BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/1`);
+
+                const response = await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
+
+                // logout user
+                await request.get('/logout');
+
+                const workoutTemplate = response.body;
+
+                expect(workoutTemplate).toHaveProperty('id');
+                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('description');
+                expect(workoutTemplate).toHaveProperty('exercises');
+
+                expect(workoutTemplate.exercises.length).toStrictEqual(0);
             });
 
         });

@@ -1,6 +1,10 @@
-const { request, BASE_ENDPOINT, createNewTemplateRequest, newUserReq } = require('./testsSetup');
-
-OTHER_USER_ALIAS = 'other user';
+const {
+    request,
+    BASE_ENDPOINT,
+    OTHER_USER_ALIAS,
+    newUserReq,
+    createNewTemplateRequest,
+} = require('./testsSetup');
 
 const setUp = async () => {
     await request.get(BASE_ENDPOINT + '/truncate');
@@ -43,7 +47,7 @@ const setUp = async () => {
         exerciseOrder: 1,
         exerciseSets: 3,
     });
-    const addedExercise = addedExerciseResponse.body;
+    const newExerciseInTemplate = addedExerciseResponse.body;
 
     // logout user
     await request.get('/logout');
@@ -52,7 +56,7 @@ const setUp = async () => {
         user,
         newTemplate,
         newExercise,
-        addedExercise,
+        newExerciseInTemplate,
     };
 };
 
@@ -61,14 +65,14 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
         describe('happy path', () => {
             let newTemplate;
             let newExercise;
-            let addedExercise;
+            let newExerciseInTemplate;
 
             beforeEach(async () => {
                 const setUpInfo = await setUp();
 
                 newTemplate = setUpInfo.newTemplate;
                 newExercise = setUpInfo.newExercise;
-                addedExercise = setUpInfo.addedExercise;
+                newExerciseInTemplate = setUpInfo.newExerciseInTemplate;
             });
 
             it('returns 200 status code', async () => {
@@ -84,9 +88,9 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 });
 
                 const response = await request.put(
-                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                 ).send(req);
-                
+
                 // logout user
                 await request.get('/logout');
 
@@ -105,18 +109,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 });
 
                 const response = await request.put(
-                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                 ).send(req);
-                
+
                 // logout user
                 await request.get('/logout');
 
                 const updatedWorkoutTemplateExercise = response.body;
 
-                expect(updatedWorkoutTemplateExercise.exerciseOrder).not.toEqual(addedExercise.exerciseOrder);
-                expect(updatedWorkoutTemplateExercise.exerciseSets).toStrictEqual(addedExercise.exerciseSets);
-                expect(updatedWorkoutTemplateExercise.id).toStrictEqual(addedExercise.id);
-                expect(updatedWorkoutTemplateExercise.alias).toStrictEqual(addedExercise.alias);
+                expect(updatedWorkoutTemplateExercise.exerciseOrder).not.toEqual(newExerciseInTemplate.exerciseOrder);
+                expect(updatedWorkoutTemplateExercise.exerciseSets).toStrictEqual(newExerciseInTemplate.exerciseSets);
+                expect(updatedWorkoutTemplateExercise.id).toStrictEqual(newExerciseInTemplate.id);
+                expect(updatedWorkoutTemplateExercise.alias).toStrictEqual(newExerciseInTemplate.alias);
             });
 
             it('updates only exercise sets', async () => {
@@ -131,18 +135,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 });
 
                 const response = await request.put(
-                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                 ).send(req);
-                
+
                 // logout user
                 await request.get('/logout');
 
                 const updatedWorkoutTemplateExercise = response.body;
 
-                expect(updatedWorkoutTemplateExercise.exerciseOrder).toStrictEqual(addedExercise.exerciseOrder);
-                expect(updatedWorkoutTemplateExercise.exerciseSets).not.toEqual(addedExercise.exerciseSets);
-                expect(updatedWorkoutTemplateExercise.id).toStrictEqual(addedExercise.id);
-                expect(updatedWorkoutTemplateExercise.alias).toStrictEqual(addedExercise.alias);
+                expect(updatedWorkoutTemplateExercise.exerciseOrder).toStrictEqual(newExerciseInTemplate.exerciseOrder);
+                expect(updatedWorkoutTemplateExercise.exerciseSets).not.toEqual(newExerciseInTemplate.exerciseSets);
+                expect(updatedWorkoutTemplateExercise.id).toStrictEqual(newExerciseInTemplate.id);
+                expect(updatedWorkoutTemplateExercise.alias).toStrictEqual(newExerciseInTemplate.alias);
             });
         });
 
@@ -150,7 +154,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
             let req;
             let newTemplate;
             let newExercise;
-            let addedExercise;
+            let newExerciseInTemplate;
 
             beforeAll(async () => {
                 req = {
@@ -162,7 +166,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 newTemplate = setUpInfo.newTemplate;
                 newExercise = setUpInfo.newExercise;
-                addedExercise = setUpInfo.addedExercise;
+                newExerciseInTemplate = setUpInfo.newExerciseInTemplate;
 
                 // Ensure user is logged out
                 await request.post('/login').send({
@@ -175,63 +179,63 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
             describe('returns 400 error code when', () => {
                 it('templateid is string', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + '/wrongId' + `/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + '/wrongId' + `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('templateid is boolean', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + '/true' + `/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + '/true' + `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('templateid is not positive', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + '/-23' + `/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + '/-23' + `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is string', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is boolean', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is not positive', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseOrder is string', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/wrongId`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${newExerciseInTemplate.exerciseOrder}/wrongId`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseOrder is boolean', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/true`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${newExerciseInTemplate.exerciseOrder}/true`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseOrder is not positive', async () => {
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/-23`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${newExerciseInTemplate.exerciseOrder}/-23`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(400);
                 });
@@ -245,7 +249,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                     };
 
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(401);
                 });
@@ -265,7 +269,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                     };
 
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     ).send(req);
 
                     // logout user
@@ -295,14 +299,14 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
     describe('delete requests', () => {
         let newTemplate;
         let newExercise;
-        let addedExercise;
+        let newExerciseInTemplate;
 
         beforeAll(async () => {
             const setUpInfo = await setUp();
 
             newTemplate = setUpInfo.newTemplate;
             newExercise = setUpInfo.newExercise;
-            addedExercise = setUpInfo.addedExercise;
+            newExerciseInTemplate = setUpInfo.newExerciseInTemplate;
         });
 
         describe('unhappy path', () => {
@@ -318,63 +322,63 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
             describe('returns 400 error code when', () => {
                 it('templateid is string', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + '/wrongId' + `/exercises/${addedExercise.id}/${addedExercise.order}`
+                        BASE_ENDPOINT + '/wrongId' + `/exercises/${newExerciseInTemplate.id}/${newExerciseInTemplate.order}`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('templateid is boolean', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + '/true' + `/exercises/${addedExercise.id}/${addedExercise.order}`
+                        BASE_ENDPOINT + '/true' + `/exercises/${newExerciseInTemplate.id}/${newExerciseInTemplate.order}`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('templateid is not positive', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + '/-23' + `/exercises/${addedExercise.id}/${addedExercise.order}`
+                        BASE_ENDPOINT + '/-23' + `/exercises/${newExerciseInTemplate.id}/${newExerciseInTemplate.order}`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is string', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId/${addedExercise.order}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/wrongId/${newExerciseInTemplate.order}`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is boolean', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true/${addedExercise.order}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/true/${newExerciseInTemplate.order}`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseid is not positive', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${addedExercise.order}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/-23/${newExerciseInTemplate.order}`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseOrder is string', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/wrongId`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${newExerciseInTemplate.exerciseOrder}/wrongId`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseOrder is boolean', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/true`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${newExerciseInTemplate.exerciseOrder}/true`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
 
                 it('exerciseOrder is not positive', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${addedExercise.exerciseOrder}/-23`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${newExerciseInTemplate.exerciseOrder}/-23`
                     );
                     expect(response.statusCode).toStrictEqual(400);
                 });
@@ -382,7 +386,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
             describe('401 response when', () => {
                 it('user is not logged in', async () => {
-                    const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     const response = await request.delete(endpoint)
                     expect(response.statusCode).toStrictEqual(401);
                 });
@@ -396,7 +400,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                         password: newUserReq.password,
                     });
 
-                    const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                    const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
                     const response = await request.delete(endpoint)
 
                     // logout user
@@ -407,14 +411,14 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
             describe('404 response when', () => {
                 it('templateid is valid but template with that id does not exist', async () => {
-                    const endpoint = BASE_ENDPOINT + '/1' + `/exercises/${addedExercise.exerciseId}/${addedExercise.exerciseOrder}`;
+                    const endpoint = BASE_ENDPOINT + '/1' + `/exercises/${newExerciseInTemplate.exerciseId}/${newExerciseInTemplate.exerciseOrder}`;
                     const response = await request.delete(endpoint);
                     expect(response.statusCode).toStrictEqual(404);
                 });
 
                 it('exerciseId is valid but exercise with that id does not exist', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/1/${addedExercise.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/1/${newExerciseInTemplate.exerciseOrder}`
                     );
                     expect(response.statusCode).toStrictEqual(404);
                 });
@@ -424,18 +428,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
         describe('happy path', () => {
             let newTemplate;
             let newExercise;
-            let addedExercise;
+            let newExerciseInTemplate;
 
             beforeEach(async () => {
                 const setUpInfo = await setUp();
 
                 newTemplate = setUpInfo.newTemplate;
                 newExercise = setUpInfo.newExercise;
-                addedExercise = setUpInfo.addedExercise;
+                newExerciseInTemplate = setUpInfo.newExerciseInTemplate;
             });
 
             it("status code of 200", async () => {
-                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
@@ -452,7 +456,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
             });
 
             it('returns deleted exercise', async () => {
-                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${addedExercise.exerciseOrder}`
+                const endpoint = BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
@@ -467,10 +471,10 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 const deletedExercise = response.body;
 
-                expect(deletedExercise.workoutTemplateId).toStrictEqual(addedExercise.workoutTemplateId);
-                expect(deletedExercise.exerciseId).toStrictEqual(addedExercise.exerciseId);
-                expect(deletedExercise.exerciseSets).toStrictEqual(addedExercise.exerciseSets);
-                expect(deletedExercise.exerciseOrder).toStrictEqual(addedExercise.exerciseOrder);
+                expect(deletedExercise.workoutTemplateId).toStrictEqual(newExerciseInTemplate.workoutTemplateId);
+                expect(deletedExercise.exerciseId).toStrictEqual(newExerciseInTemplate.exerciseId);
+                expect(deletedExercise.exerciseSets).toStrictEqual(newExerciseInTemplate.exerciseSets);
+                expect(deletedExercise.exerciseOrder).toStrictEqual(newExerciseInTemplate.exerciseOrder);
             });
         });
     });

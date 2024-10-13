@@ -1,55 +1,10 @@
-const { request, BASE_ENDPOINT, newUserReq,
-        createNewTemplateRequest } = require('./testsSetup');
-
-
-const setUp = async () => {
-    await request.get(BASE_ENDPOINT + '/truncate');
-    await request.get('/users/truncate');
-
-    // Add user to db
-    const userResponse = await request.post('/users').send(newUserReq);
-    const user = userResponse.body;
-
-    // login user
-    await request.post('/login').send({
-        username: newUserReq.alias,
-        password: newUserReq.password,
-    });
-
-    // Add template to db
-    const reqNewTemplate = createNewTemplateRequest(user.id, 'setup template', 'set up template description')
-    const responseNewTemplate = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
-    const newTemplate = responseNewTemplate.body;
-
-    // Add exercise to db
-    const exerciseResponse = await request.post('/exercises').send({
-        alias: "Pull up",
-        description: "Fucks your shoulder",
-    });
-    const newExercise = exerciseResponse.body;
-
-    // Add exercise to template
-    const reqAddExerciseToTemplate = {
-        exerciseId: newExercise.id,
-        exerciseOrder: 1,
-        exerciseSets: 3,
-    };
-    const responseAddExerciseToTemplate = await request.post(
-        BASE_ENDPOINT + `/${newTemplate.id}`
-    ).send(reqAddExerciseToTemplate);
-    const newExerciseInTemplate = responseAddExerciseToTemplate.body;
-
-
-    // logout user
-    await request.get('/logout');
-
-    return {
-        user,
-        newTemplate,
-        newExercise,
-        newExerciseInTemplate,
-    };
-};
+const {
+    request,
+    BASE_ENDPOINT,
+    newUserReq,
+    createNewTemplateRequest,
+    setUp,
+} = require('./testsSetup');
 
 describe(BASE_ENDPOINT, () => {
     describe('get requests', () => {
