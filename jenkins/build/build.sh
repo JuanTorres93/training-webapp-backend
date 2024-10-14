@@ -1,9 +1,19 @@
 #!/bin/bash
 
 # TODO Create global directory for jenkins_home and system env variable with the path
-WORKSPACE=/home/juan/hdd/Cursos/Jenkins/jenkins-data/jenkins_home/workspace/trackoverload-backend-pipeline
+WORKSPACE=/home/juan/hdd/webapps/trackoverload/jenkins_home/workspace/trackoverload-backend-pipeline
 
-#echo "Changing to workspace directory: $WORKSPACE"
-
+echo "***********************"
 echo "Installing dependencies"
-docker run --rm -v /app/node_modules node npm install
+echo "***********************"
+
+docker run -it --rm \
+           -w /usr/src \
+           -v $WORKSPACE:/usr/src \
+           -v node_modules \
+           node \
+           npm install
+
+echo "***********************************"
+echo "Dependencies successfully installed"
+echo "***********************************"

@@ -4,8 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    pwd
-                    ./build/build.sh
+                    ./jenkins/build/build.sh
                 '''
             }
         }
