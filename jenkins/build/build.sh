@@ -6,4 +6,4 @@ WORKSPACE=/home/juan/hdd/Cursos/Jenkins/jenkins-data/jenkins_home/workspace/trac
 #echo "Changing to workspace directory: $WORKSPACE"
 
 echo "Installing dependencies"
-docker run --rm --name -v /app/node_modules node npm install
+docker run --rm -v /app/node_modules node npm install

@@ -1,8 +1,11 @@
 node_modules
+.git
 .env
 .envDocker
 .env.sample
 .gitignore
+.dockerignore
 Dockerfile
 server.csr
 server.key
+package-lock.json
