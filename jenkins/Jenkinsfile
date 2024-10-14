@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    // TODO make WORKSPACE an environment variable
     stages {
         stage('Build') {
             steps {
@@ -10,23 +11,30 @@ pipeline {
         }
         stage('Test') {
             steps {
-                echo 'Launching from git push..'
-                echo 'Testing..'
+                sh '''
+                    ./jenkins/test/test.sh
+                '''
             }
         }
         stage('Create Docker Image') {
             steps {
                 echo 'Creating Docker image..'
+                // TODO Remove when implementing this step
+                exit 1
             }
         }
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing Docker image..'
+                // TODO Remove when implementing this step
+                exit 1
             }
         }
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
+                // TODO Remove when implementing this step
+                exit 1
             }
         }
     }
