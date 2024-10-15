@@ -2,8 +2,9 @@ pipeline {
     agent any
     // TODO make WORKSPACE an environment variable
     environment {
-        TEST_VAR = 'test'
+        TEST_ENV_FILE = credentials('trackoverload_test_back_env')
     }
+
     stages {
         stage('Build') {
             steps {
