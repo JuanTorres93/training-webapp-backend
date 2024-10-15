@@ -17,7 +17,7 @@ echo "***********************"
 echo "Launching test database"
 echo "***********************"
 
-docker run --rm \
+docker run --rm -d \
            --name $TEST_DB_CONTAINER_NAME \
            --env-file $TEST_DB_ENV_FILE \
            --network $JENKINS_DOCKER_TEST_NET \

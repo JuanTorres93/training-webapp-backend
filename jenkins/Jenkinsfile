@@ -20,6 +20,7 @@ pipeline {
                 success {
                     sh '''
                         ./jenkins/test/upTestDB.sh
+                        sleep 5 # Wait for the database to start
                     '''
                 }
                 failure {
