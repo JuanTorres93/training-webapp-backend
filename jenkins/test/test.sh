@@ -11,6 +11,7 @@ echo "*******************"
 
 docker run --rm \
            --env-file $TEST_BACK_ENV_FILE \
+           --env DB_HOST=$TEST_DB_CONTAINER_NAME \
            -w /usr/src \
            -v $WORKSPACE:/usr/src \
            -v cicd-trackoverload-back-node-modules:/usr/src/node_modules \
