@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# TODO Create global directory for jenkins_home and system env variable with the path
-WORKSPACE=/home/juan/hdd/webapps/trackoverload/jenkins_home/workspace/trackoverload-backend-pipeline
-
 echo "***********************"
 echo "Installing dependencies"
 echo "***********************"
@@ -14,6 +11,6 @@ docker run --rm \
            node \
            npm install
 
-echo "***********************************"
-echo "Dependencies successfully installed"
-echo "***********************************"
+# IMPORTANT!!!: DO NOT INCLUDE ANY COMMAND AFTER THIS LINE. IT COULD ALTER THE EXIT CODE OF THE SCRIPT AND,
+# HENCE, LEAD TO A WRONG RESULT IN THE JENKINS JOB. MORE PRECISELY, THE PIPELINE COULD CONTINUE EVEN IF
+# TESTS FAIL.
