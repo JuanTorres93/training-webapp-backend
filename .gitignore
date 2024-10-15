@@ -3,3 +3,4 @@ node_modules
 .envDocker
 server.csr
 server.key
+cookies
