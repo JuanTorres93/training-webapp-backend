@@ -10,10 +10,11 @@ echo "*******************"
 
 
 docker run --rm \
-           --env-file $TEST_ENV_FILE \
+           --env-file $TEST_BACK_ENV_FILE \
            -w /usr/src \
            -v $WORKSPACE:/usr/src \
            -v cicd-trackoverload-back-node-modules:/usr/src/node_modules \
+           --network $JENKINS_DOCKER_TEST_NET \
            node \
            npm run jenkins-test
 

@@ -7,7 +7,7 @@ echo "***********************"
 echo "Installing dependencies"
 echo "***********************"
 
-docker run -it --rm \
+docker run --rm \
            -w /usr/src \
            -v $WORKSPACE:/usr/src \
            -v cicd-trackoverload-back-node-modules:/usr/src/node_modules \

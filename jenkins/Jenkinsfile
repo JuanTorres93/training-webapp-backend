@@ -2,7 +2,10 @@ pipeline {
     agent any
     // TODO make WORKSPACE an environment variable
     environment {
-        TEST_ENV_FILE = credentials('trackoverload_test_back_env')
+        TEST_BACK_ENV_FILE = credentials('trackoverload_test_back_env')
+        TEST_DB_ENV_FILE = credentials('trackoverload_test_db_env')
+        JENKINS_DOCKER_TEST_NET = 'jenkins-docker-test-net'
+        TEST_DB_CONTAINER_NAME = 'jenkins-trackoverload-test-db'
     }
 
     stages {
@@ -12,12 +15,31 @@ pipeline {
                     ./jenkins/build/build.sh
                 '''
             }
+
+            post {
+                success {
+                    sh '''
+                        ./jenkins/test/upTestDB.sh
+                    '''
+                }
+                failure {
+                    exit 1
+                }
+            }
         }
         stage('Test') {
             steps {
                 sh '''
                     ./jenkins/test/test.sh
                 '''
+            }
+
+            post {
+                always {
+                    sh '''
+                        docker stop ${TEST_DB_CONTAINER_NAME}
+                    '''
+                }
             }
         }
         stage('Create Docker Image') {
