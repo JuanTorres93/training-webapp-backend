@@ -30,16 +30,9 @@ pipeline {
         }
         stage('Test') {
             steps {
-                script {
-                    try {
-                        sh '''
-                            ./jenkins/test/test.sh
-                        '''
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "Tests failed"
-                    }
-                }
+                sh '''
+                    ./jenkins/test/test.sh
+                '''
             }
 
             post {
