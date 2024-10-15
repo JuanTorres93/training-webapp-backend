@@ -10,7 +10,7 @@ echo "***********************"
 docker run -it --rm \
            -w /usr/src \
            -v $WORKSPACE:/usr/src \
-           -v cicd-trackoverload-back-node-modules:node_modules \
+           -v cicd-trackoverload-back-node-modules:/usr/src/node_modules \
            node \
            npm install
 

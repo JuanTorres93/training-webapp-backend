@@ -7,10 +7,10 @@ echo "*******************"
 echo "Testing application"
 echo "*******************"
 
-docker run -it --rm \
+docker run --rm \
            -w /usr/src \
            -v $WORKSPACE:/usr/src \
-           -v cicd-trackoverload-back-node-modules:node_modules \
+           -v cicd-trackoverload-back-node-modules:/usr/src/node_modules \
            node \
            jest
 
