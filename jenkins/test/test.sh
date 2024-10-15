@@ -18,7 +18,3 @@ docker run --rm \
            --network $JENKINS_DOCKER_TEST_NET \
            node \
            npm run jenkins-test
-
-echo "****************"
-echo "Testing finished"
-echo "****************"
