@@ -1,6 +1,9 @@
 pipeline {
     agent any
     // TODO make WORKSPACE an environment variable
+    environment {
+        TEST_VAR = 'test'
+    }
     stages {
         stage('Build') {
             steps {
