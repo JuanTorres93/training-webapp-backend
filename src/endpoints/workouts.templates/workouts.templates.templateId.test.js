@@ -109,9 +109,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
                     const response = await request.get(BASE_ENDPOINT + '/1365873');
-                    // expect(response.statusCode).toStrictEqual(404);
-                    // TODO uncomment line above and delete line below 
-                    expect(response.statusCode).toStrictEqual(398);
+                    expect(response.statusCode).toStrictEqual(404);
                 });
             });
         });
