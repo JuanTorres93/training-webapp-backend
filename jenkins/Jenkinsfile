@@ -30,18 +30,9 @@ pipeline {
         }
         stage('Test') {
             steps {
-                script {
-                    def result = sh(
-                        script: '''
-                            ./jenkins/test/test.sh
-                        ''', 
-                        returnStatus: true
-                    )
-                    if (result != 0) {
-                        error "Tests failed"
-                        exit 1
-                    }
-                }
+                sh '''
+                    ./jenkins/test/test.sh
+                '''
             }
 
             post {
