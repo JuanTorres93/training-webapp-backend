@@ -20,12 +20,10 @@ pipeline {
 
             post {
                 success {
-                    // TODO Remove exit 0, just for speeding up development
-                    exit 0
-
                     sh '''
-                        ./jenkins/test/upTestDB.sh
-                        sleep 5 # Wait for the database to start
+                        # TODO UNCOMMENT
+                        # ./jenkins/test/upTestDB.sh
+                        # sleep 5 # Wait for the database to start
                     '''
                 }
                 failure {
@@ -35,21 +33,17 @@ pipeline {
         }
         stage('Test') {
             steps {
-                // TODO Remove exit 0, just for speeding up development
-                exit 0
-
                 sh '''
-                    ./jenkins/test/test.sh
+                    # TODO UNCOMMENT
+                    # ./jenkins/test/test.sh
                 '''
             }
 
             post {
                 always {
-                    // TODO Remove exit 0, just for speeding up development
-                    exit 0
-
                     sh '''
-                        docker stop ${TEST_DB_CONTAINER_NAME}
+                        # TODO UNCOMMENT
+                        # docker stop ${TEST_DB_CONTAINER_NAME}
                     '''
                 }
             }
