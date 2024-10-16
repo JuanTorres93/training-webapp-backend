@@ -21,9 +21,8 @@ pipeline {
             post {
                 success {
                     sh '''
-                        # TODO UNCOMMENT
-                        # ./jenkins/test/upTestDB.sh
-                        # sleep 5 # Wait for the database to start
+                        ./jenkins/test/upTestDB.sh
+                        sleep 5 # Wait for the database to start
                     '''
                 }
                 failure {
@@ -34,16 +33,14 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    # TODO UNCOMMENT
-                    # ./jenkins/test/test.sh
+                    ./jenkins/test/test.sh
                 '''
             }
 
             post {
                 always {
                     sh '''
-                        # TODO UNCOMMENT
-                        # docker stop ${TEST_DB_CONTAINER_NAME}
+                        docker stop ${TEST_DB_CONTAINER_NAME}
                     '''
                 }
             }
