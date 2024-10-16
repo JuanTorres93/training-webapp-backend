@@ -47,9 +47,9 @@ pipeline {
         }
         stage('Create Docker Image') {
             steps {
-                echo 'Creating Docker image..'
-                // TODO Remove when implementing this step
-                exit 1
+                sh '''
+                    ./jenkins/createDockerImage/createDockerImage.sh
+                '''
             }
         }
         stage('Push Docker Image') {
