@@ -4,11 +4,16 @@ pipeline {
     environment {
         // TODO Create global directory for jenkins_home and system env variable with the path
         WORKSPACE = '/home/juan/hdd/webapps/trackoverload/jenkins_home/workspace/trackoverload-backend-pipeline'
+
         TEST_BACK_ENV_FILE = credentials('trackoverload_test_back_env')
         TEST_DB_ENV_FILE = credentials('trackoverload_test_db_env')
         JENKINS_DOCKER_TEST_NET = 'jenkins-docker-test-net'
         TEST_DB_CONTAINER_NAME = 'jenkins-trackoverload-test-db'
+
         FINAL_DOCKER_IMAGE_NAME = 'kashyr26/trackoverload-backend'
+
+        DOCKERHUB_USERNAME = credentials('dockerhub-username')
+        DOCKERHUB_PASSWORD = credentials('dockerhub-password')
     }
 
     stages {
@@ -52,12 +57,28 @@ pipeline {
                     ./jenkins/createDockerImage/createDockerImage.sh
                 '''
             }
+
+            post {
+                success {
+                    sh '''
+                        docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+                    '''
+                }
+            }
         }
         stage('Push Docker Image') {
             steps {
                 sh '''
                     ./jenkins/pushDockerImage/pushDockerImage.sh
                 '''
+            }
+
+            post {
+                always {
+                    sh '''
+                        docker logout
+                    '''
+                }
             }
         }
         stage('Deploy') {
