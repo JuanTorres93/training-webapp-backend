@@ -6,7 +6,7 @@ echo "*********************"
 
 cd /var/jenkins_home/workspace/trackoverload-backend-pipeline
 
-cat ${TRACKOVERLOAD_BACKEND_DOCKERFILE_CONTENT} > Dockerfile
+echo ${TRACKOVERLOAD_BACKEND_DOCKERFILE_CONTENT} > Dockerfile
 
 docker build \
             -t kashyr26/trackoverload-backend:$BUILD_NUMBER \
