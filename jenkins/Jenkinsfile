@@ -8,6 +8,7 @@ pipeline {
         TEST_DB_ENV_FILE = credentials('trackoverload_test_db_env')
         JENKINS_DOCKER_TEST_NET = 'jenkins-docker-test-net'
         TEST_DB_CONTAINER_NAME = 'jenkins-trackoverload-test-db'
+        FINAL_DOCKER_IMAGE_NAME = 'kashyr26/trackoverload-backend'
     }
 
     stages {
@@ -54,9 +55,9 @@ pipeline {
         }
         stage('Push Docker Image') {
             steps {
-                echo 'Pushing Docker image..'
-                // TODO Remove when implementing this step
-                exit 1
+                sh '''
+                    ./jenkins/pushDockerImage/pushDockerImage.sh
+                '''
             }
         }
         stage('Deploy') {
