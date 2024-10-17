@@ -92,6 +92,7 @@ const googleStrategy = new GoogleStrategy({
 
         // I think this is not needed
         const emailInUse = await dbUser.checkEmailInUse(email);
+
         if (emailInUse) {
             return done(null, false, { msg: 'Email already in use' });
         }
@@ -102,7 +103,7 @@ const googleStrategy = new GoogleStrategy({
             const plainPassword = profile.id + process.env.GOOGLE_CLIENT_SECRET;
             const password = await hashing.plainTextHash(plainPassword)
 
-            const newUser = dbUser.registerNewUser({
+            const newUser = await dbUser.registerNewUser({
                 alias,
                 email,
                 password,
