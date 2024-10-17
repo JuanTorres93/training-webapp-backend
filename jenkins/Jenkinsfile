@@ -14,6 +14,8 @@ pipeline {
 
         DOCKERHUB_USERNAME = credentials('dockerhub-username')
         DOCKERHUB_PASSWORD = credentials('dockerhub-password')
+
+        KUBERNETES_CONFIG_PATH = '/var/jenkins_home/trackoverload-kubernetes';
     }
 
     stages {
@@ -83,9 +85,9 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying....'
-                // TODO Remove when implementing this step
-                exit 1
+                sh '''
+                    ./jenkins/deploy/deploy.sh
+                '''
             }
         }
     }
