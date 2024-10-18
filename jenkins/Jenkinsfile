@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        // TODO Create global directory for jenkins_home and system env variable with the path 
+        // TODO Create global directory for jenkins_home and system env variable with the path
         // WORKSPACE = '/var/jenkins_home/workspace/test-pipeline'
         WORKSPACE = '/home/juan/hdd/webapps/trackoverload/jenkins_home/workspace/trackoverload-backend-pipeline'
 
