@@ -38,8 +38,6 @@ const createApp = () => {
 
     // CORS configuration
     const corsOptions = {
-        // TODO add real client url changing value in .env or adding a new value to include both
-        // TODO do it with NODE_ENV variable
         origin: [
             process.env.CLIENT_URL,
         ],

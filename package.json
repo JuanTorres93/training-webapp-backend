@@ -26,7 +26,7 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --watch --runInBand --verbose",
-    "docker-test": "jest --watchAll --runInBand --verbose",
+    "docker-test": "jest --watchAll --runInBand --verbose #MUST BE RUN WITH DOCKER COMPOSE",
     "jenkins-test": "jest --runInBand --forceExit --detectOpenHandles --ci --bail",
     "start": "nodemon server.js",
     "docker": "docker run --rm --env-file ./.envDocker --name tb -p 54321:54321 -v /app/node_modules -v \"$(pwd):/app\" training-backend",
