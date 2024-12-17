@@ -233,7 +233,13 @@ const checkWorkoutTemplateByIdExists = async (id) => {
         return false;
     }
 
-    return Number.isInteger(selectedTemplate.id);
+    // check selectedTemplate.id is an UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    if (!selectedTemplate.id.match(uuidRegex)) {
+        return false;
+    }
+
+    return true;
 }
 
 const workoutTemplateBelongsToUser = (templateId, userId) => {
@@ -270,7 +276,13 @@ const _checkWorkoutTemplateContainsExercises = async (templateId) => {
         return false;
     }
 
-    return Number.isInteger(selectedTemplate.exercise_id);
+    // check selectedTemplate.exercise_id is UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    if (!selectedTemplate.exercise_id.match(uuidRegex)) {
+        return false;
+    }
+
+    return true;
 }
 
 const updateWorkoutTemplate = async (id, workoutTemplateObject) => {
@@ -402,7 +414,13 @@ const checkExerciseInWorkoutTemplateExists = async (templateId, exerciseId, exer
         return false;
     }
 
-    return Number.isInteger(selectedWorkoutTemplate.workout_template_id);
+    // Check if selectedWorkoutTemplate.workout_template_id is an UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    if (!selectedWorkoutTemplate.workout_template_id.match(uuidRegex)) {
+        return false;
+    }
+
+    return true;
 };
 
 const updateExerciseFromWorkoutTemplate = (workoutTemplateId, exerciseOrder,

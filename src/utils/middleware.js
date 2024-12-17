@@ -271,7 +271,7 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
 }
 
 const checkWorkoutTemplateExistsById = async (req, res, next) => {
-    // IMPORTANT: This middleware must be called after validating workoutId parameter
+    // IMPORTANT: This middleware must be called after validating templateId parameter
     const templateId = (req.params.templateId) ? req.params.templateId : req.body.templateId;
 
     const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId);

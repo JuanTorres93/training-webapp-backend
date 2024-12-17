@@ -411,14 +411,18 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
             describe('404 response when', () => {
                 it('templateid is valid but template with that id does not exist', async () => {
-                    const endpoint = BASE_ENDPOINT + '/1' + `/exercises/${newExerciseInTemplate.exerciseId}/${newExerciseInTemplate.exerciseOrder}`;
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const endpoint = BASE_ENDPOINT + '/' + uuid + `/exercises/${newExerciseInTemplate.exerciseId}/${newExerciseInTemplate.exerciseOrder}`;
                     const response = await request.delete(endpoint);
                     expect(response.statusCode).toStrictEqual(404);
                 });
 
                 it('exerciseId is valid but exercise with that id does not exist', async () => {
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/1/${newExerciseInTemplate.exerciseOrder}`
+                        BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/${uuid}/${newExerciseInTemplate.exerciseOrder}`
                     );
                     expect(response.statusCode).toStrictEqual(404);
                 });

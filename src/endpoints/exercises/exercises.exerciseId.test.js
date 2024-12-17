@@ -75,7 +75,9 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
             describe('404 response when', () => {
                 it('exerciseId is valid but exercise with that id does not exist', async () => {
-                    const response = await request.get(BASE_ENDPOINT + '/1');
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.get(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
@@ -180,7 +182,9 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
             describe('404 response when', () => {
                 it('exerciseid is valid but exercise with that id does not exist', async () => {
-                    const response = await request.put(BASE_ENDPOINT + '/1').send({
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.put(BASE_ENDPOINT + '/' + uuid).send({
                         ...putBodyRequest,
                         alias: 'updated alias with put modified',
                         description: 'updated_description_with_put_modified',
@@ -251,7 +255,9 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
             describe('404 response when', () => {
                 it('exerciseid is valid but exercise with that id does not exist', async () => {
-                    const response = await request.delete(BASE_ENDPOINT + '/1');
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.delete(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });

@@ -1,7 +1,11 @@
 const express = require('express');
 
 const workoutsValidators = require('../../validators/workouts.js');
-const { validateIntegerParameter, validateStringParameter } = require('../../validators/generalPurpose.js');
+const {
+    validateIntegerParameter,
+    validateStringParameter,
+    validateUUIDParameter,
+} = require('../../validators/generalPurpose.js');
 const dbWorkouts = require('../../db/workouts.js');
 const mw = require('../../utils/middleware.js');
 
@@ -28,7 +32,7 @@ router.get('/truncate', async (req, res, next) => {
 
 // Get workout by id
 router.get('/:workoutId',
-    validateIntegerParameter('workoutId'),
+    validateUUIDParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
@@ -42,8 +46,8 @@ router.get('/:workoutId',
 
 // Get last workouts of a template by user
 router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
-    validateIntegerParameter('templateId'),
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('templateId'),
+    validateUUIDParameter('userId'),
     validateIntegerParameter('numberOfWorkouts'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
@@ -58,8 +62,8 @@ router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
 
 // Get last workout of a template by user
 router.get('/last/:templateId/user/:userId',
-    validateIntegerParameter('templateId'),
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('templateId'),
+    validateUUIDParameter('userId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
@@ -74,7 +78,7 @@ router.get('/last/:templateId/user/:userId',
 
 // Update end date of workout
 router.get('/addFinishDate/:workoutId',
-    validateIntegerParameter('workoutId'),
+    validateUUIDParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
@@ -128,7 +132,7 @@ router.post('/',
 // Add exercise to workout
 router.post('/:workoutId',
     workoutsValidators.validateAddExerciseToWorkoutParams,
-    validateIntegerParameter('workoutId'),
+    validateUUIDParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
@@ -171,7 +175,7 @@ router.post('/:workoutId',
 // update workout by id
 router.put('/:workoutId',
     workoutsValidators.validateUpdateWorkoutParams,
-    validateIntegerParameter('workoutId'),
+    validateUUIDParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
@@ -193,8 +197,8 @@ router.put('/:workoutId',
 // update exercise in workout
 router.put('/:workoutId/exercises/:exerciseId',
     workoutsValidators.validateUpdateExerciseInWorkoutParams,
-    validateIntegerParameter('workoutId'),
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('workoutId'),
+    validateUUIDParameter('exerciseId'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
@@ -231,7 +235,7 @@ router.put('/:workoutId/exercises/:exerciseId',
 
 // delete workout by id
 router.delete('/:workoutId',
-    validateIntegerParameter('workoutId'),
+    validateUUIDParameter('workoutId'),
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
@@ -246,8 +250,8 @@ router.delete('/:workoutId',
 
 // delete exercise from workout
 router.delete('/:workoutId/exercises/:exerciseId',
-    validateIntegerParameter('workoutId'),
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('workoutId'),
+    validateUUIDParameter('exerciseId'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
@@ -263,8 +267,8 @@ router.delete('/:workoutId/exercises/:exerciseId',
 
 // delete exercise set from workout
 router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet',
-    validateIntegerParameter('workoutId'),
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('workoutId'),
+    validateUUIDParameter('exerciseId'),
     validateIntegerParameter('exerciseSet'),
     mw.checkWorkoutExistsById,
     mw.checkExerciseExistsById,

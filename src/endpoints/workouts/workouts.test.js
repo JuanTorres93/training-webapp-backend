@@ -38,6 +38,11 @@ describe(`${BASE_ENDPOINT}`, () => {
                 expect(response.body).toHaveProperty('exercises');
             });
 
+            it('id is UUID', () => {
+                const uuidRegex = new RegExp('^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$');
+                expect(response.body.id).toMatch(uuidRegex);
+            })
+
             it('returns 201 status code', () => {
                 expect(response.statusCode).toStrictEqual(201);
             });

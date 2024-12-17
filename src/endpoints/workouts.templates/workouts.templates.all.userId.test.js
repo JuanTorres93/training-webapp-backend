@@ -96,7 +96,9 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
 
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
-                    const response = await request.get(BASE_ENDPOINT + '/all/1');
+                    // generate a valid UUID that probably won't be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.get(BASE_ENDPOINT + '/all/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });

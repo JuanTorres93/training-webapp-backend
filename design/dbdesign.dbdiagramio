@@ -6,7 +6,7 @@ Project training_webapp {
 }
 
 Table users {
-  id SERIAL [PRIMARY KEY, increment]
+  id UUID [PRIMARY KEY, increment]
   alias VARCHAR(40) [NOT NULL, UNIQUE, Note: 'Use alias instead of name due to postgres limitations']
   email VARCHAR(70) [NOT NULL, UNIQUE]
   last_name VARCHAR(40)
@@ -19,15 +19,15 @@ Table users {
 }
 
 Table workouts {
-  id SERIAL [PK, increment]
+  id UUID [PK, increment]
   alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
-  created_by INTEGER [ref: > users.id, not null]
+  created_by UUID [ref: > users.id, not null]
 }
 
 Table workout_template {
-  id SERIAL [PK, increment]
-  user_id INTEGER [ref: > users.id, not null]
+  id UUID [PK, increment]
+  user_id UUID [ref: > users.id, not null]
   alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
 
@@ -35,8 +35,8 @@ Table workout_template {
 }
 
 Table users_workouts {
-  user_id SERIAL [ref: > users.id]
-  workout_id SERIAL [ref: > workouts.id]
+  user_id UUID [ref: > users.id]
+  workout_id UUID [ref: > workouts.id]
   start_date DATE [not null]
   end_date DATE
 
@@ -46,14 +46,14 @@ Table users_workouts {
 }
 
 Table exercises {
-  id SERIAL [PK, increment]
+  id UUID [PK, increment]
   alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
 }
 
 Table users_exercises {
-  user_id SERIAL [ref: > users.id]
-  exercise_id SERIAL [ref: > exercises.id]
+  user_id UUID [ref: > users.id]
+  exercise_id UUID [ref: > exercises.id]
 
   indexes {
     (user_id, exercise_id) [pk]
@@ -61,8 +61,8 @@ Table users_exercises {
 }
 
 Table workout_template_exercises {
-  workout_template_id SERIAL [ref: > workout_template.id]
-  exercise_id SERIAL [ref: > exercises.id]
+  workout_template_id UUID [ref: > workout_template.id]
+  exercise_id UUID [ref: > exercises.id]
   exercise_order integer [NOT NULL]
   exercise_sets INTEGER [not null, Note: 'Number of the sets to perform']
 
@@ -72,8 +72,8 @@ Table workout_template_exercises {
 }
 
 Table workouts_exercises {
-  workout_id SERIAL [ref: > workouts.id]
-  exercise_id SERIAL [ref: > exercises.id]
+  workout_id UUID [ref: > workouts.id]
+  exercise_id UUID [ref: > exercises.id]
   exercise_set INTEGER [not null, Note: 'Number of the set']
   exercise_reps INTEGER
   exercise_weight real

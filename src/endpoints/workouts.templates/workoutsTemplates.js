@@ -2,7 +2,7 @@ const express = require('express');
 
 const workoutsTemplatesValidators = require('../../validators/workoutsTemplates.js');
 const dbWorkoutsTemplates = require('../../db/workoutsTemplates.js');
-const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
+const { validateIntegerParameter, validateUUIDParameter } = require('../../validators/generalPurpose.js');
 const mw = require('../../utils/middleware.js');
 
 const router = express.Router();
@@ -39,7 +39,7 @@ router.get('/common',
 
 // Get workout template by id
 router.get('/:templateId',
-    validateIntegerParameter('templateId'),
+    validateUUIDParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     // mw.workoutTemplateBelongsToLoggedInUser,
@@ -53,7 +53,7 @@ router.get('/:templateId',
     });
 
 router.get('/all/:userId',
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
@@ -66,7 +66,7 @@ router.get('/all/:userId',
 
 // Last templates performed and finished by a user
 router.get('/last/user/:userId/:numberOfWorkouts',
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('userId'),
     validateIntegerParameter('numberOfWorkouts'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
@@ -83,7 +83,7 @@ router.get('/last/user/:userId/:numberOfWorkouts',
 // ========== POST requests ==========
 // ===================================
 
-// Create new workout
+// Create new workout template
 router.post('/',
     workoutsTemplatesValidators.validateCreateWorkoutTemplateParams,
     mw.checkUserExistsById,
@@ -106,7 +106,7 @@ router.post('/',
 // Add exercise to workout template
 router.post('/:templateId',
     workoutsTemplatesValidators.validateAddExerciseToWorkoutTemplateParams,
-    validateIntegerParameter('templateId'),
+    validateUUIDParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
@@ -138,7 +138,7 @@ router.post('/:templateId',
 // update workout template by id
 router.put('/:templateId',
     workoutsTemplatesValidators.validateUpdateWorkoutTemplateParams,
-    validateIntegerParameter('templateId'),
+    validateUUIDParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
@@ -162,8 +162,8 @@ router.put('/:templateId',
 // update exercise in workout template
 router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
     workoutsTemplatesValidators.validateUpdateExerciseInWorkoutTemplateParams,
-    validateIntegerParameter('templateId'),
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('templateId'),
+    validateUUIDParameter('exerciseId'),
     validateIntegerParameter('exerciseOrder'),
     mw.checkExerciseExistsById,
     mw.checkWorkoutTemplateExistsById,
@@ -195,7 +195,7 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
 
 // delete workout by id
 router.delete('/:templateId',
-    validateIntegerParameter('templateId'),
+    validateUUIDParameter('templateId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
@@ -212,8 +212,8 @@ router.delete('/:templateId',
 
 // delete exercise from workout template
 router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder',
-    validateIntegerParameter('templateId'),
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('templateId'),
+    validateUUIDParameter('exerciseId'),
     validateIntegerParameter('exerciseOrder'),
     mw.checkWorkoutTemplateExistsById,
     mw.checkExerciseExistsById,

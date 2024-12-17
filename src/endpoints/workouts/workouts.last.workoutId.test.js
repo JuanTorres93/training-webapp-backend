@@ -90,7 +90,7 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
             const promises = []
             Object.entries(exercisesAndSets).forEach(([exerciseId, totalSets], i) => {
                 const req = {
-                    exerciseId: Number.parseInt(exerciseId),
+                    exerciseId,
                     exerciseOrder: i + 1,
                     exerciseSets: totalSets,
                 };
@@ -192,7 +192,9 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
 
             describe('404 response when', () => {
                 it('templateId is valid but workout with that id does not exist', async () => {
-                    const response = await request.get(BASE_ENDPOINT + '/last/1/user/1');
+                    // generate a valid that probably won't exist UUID
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.get(BASE_ENDPOINT + '/last/' + uuid + '/user/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });

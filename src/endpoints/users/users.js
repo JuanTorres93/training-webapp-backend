@@ -1,7 +1,7 @@
 const express = require('express');
 
 const { validateRegisterUserParams, validateUpdateUserParams } = require('../../validators/users.js');
-const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
+const { validateUUIDParameter } = require('../../validators/generalPurpose.js');
 const dbUsers = require('../../db/users.js');
 const mw = require('../../utils/middleware.js');
 
@@ -29,7 +29,7 @@ router.get('/truncate', async (req, res, next) => {
 
 // Get user by id
 router.get('/:userId',
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
@@ -48,19 +48,21 @@ router.get('/:userId',
     });
 
 // Get everything from user by id (test db only)
-router.get('/:userId/allTest', validateIntegerParameter('userId'), async (req, res, next) => {
-    const { userId } = req.params;
+router.get('/:userId/allTest',
+    validateUUIDParameter('userId'),
+    async (req, res, next) => {
+        const { userId } = req.params;
 
-    const user = await dbUsers.testDbSelectEverythingFromUserId(userId);
+        const user = await dbUsers.testDbSelectEverythingFromUserId(userId);
 
-    if (user === undefined) {
-        return res.status(404).json({
-            msg: "User not found",
-        });
-    }
+        if (user === undefined) {
+            return res.status(404).json({
+                msg: "User not found",
+            });
+        }
 
-    res.status(200).json(user);
-});
+        res.status(200).json(user);
+    });
 
 
 // ===================================
@@ -87,7 +89,7 @@ router.post('/', validateRegisterUserParams,
 // update user by id
 router.put('/:userId',
     validateUpdateUserParams,
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('userId'),
     mw.checkUserEmailAndAliasAlreadyExist,
     mw.checkUserExistsById,
     mw.authenticatedUser,
@@ -125,7 +127,7 @@ router.put('/:userId',
 
 // update user by id
 router.delete('/:userId',
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,

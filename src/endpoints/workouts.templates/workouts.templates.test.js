@@ -40,6 +40,7 @@ describe(BASE_ENDPOINT, () => {
 
             it('workout template object has correct properties', async () => {
                 const response = await request.get(BASE_ENDPOINT);
+
                 const workoutTemplate = response.body[0];
 
                 expect(workoutTemplate).toHaveProperty('id');
@@ -47,6 +48,13 @@ describe(BASE_ENDPOINT, () => {
                 expect(workoutTemplate).toHaveProperty('alias');
                 expect(workoutTemplate).toHaveProperty('description');
             });
+
+            it('id is UUID', async () => {
+                const response = await request.get(BASE_ENDPOINT);
+                const workoutTemplate = response.body[0];
+
+                expect(workoutTemplate.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            })
         });
 
         describe('unhappy path', () => {

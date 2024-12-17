@@ -3,6 +3,8 @@ const { check } = require('express-validator');
 const mw = require('../utils/middleware');
 const msgs = require('./errorMessages');
 
+const { validateUUIDParameter } = require('../validators/generalPurpose');
+
 // Workout params
 const alias = 'alias';
 const description = 'description';
@@ -27,7 +29,7 @@ const validateCreateWorkoutParams = [
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 
@@ -46,17 +48,12 @@ const validateUpdateWorkoutParams = [
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 
 const validateAddExerciseToWorkoutParams = [
-    check(exerciseId)
-        // TODO share this validators with exerciseSet and maybe reps and weight
-        .exists().withMessage(msgs.parameterMissingMsg(exerciseId))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseId))
-        .isInt()
-        .escape(),
+    validateUUIDParameter(exerciseId),
     check(exerciseSet)
         .exists().withMessage(msgs.parameterMissingMsg(exerciseSet))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseSet))
@@ -83,17 +80,12 @@ const validateAddExerciseToWorkoutParams = [
         // .not().isEmpty().withMessage(msgs.parameterEmptyMsg(timeInSeconds))
         // .isInt()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 
 const validateUpdateExerciseInWorkoutParams = [
-    check(exerciseId)
-        // TODO share this validators with exerciseSet and maybe reps and weight
-        .exists().withMessage(msgs.parameterMissingMsg(exerciseId))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseId))
-        .isInt()
-        .escape(),
+    validateUUIDParameter(exerciseId),
     check(exerciseSet)
         .exists().withMessage(msgs.parameterMissingMsg(exerciseSet))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseSet))
@@ -120,7 +112,7 @@ const validateUpdateExerciseInWorkoutParams = [
         // .not().isEmpty().withMessage(msgs.parameterEmptyMsg(timeInSeconds))
         // .isInt()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 

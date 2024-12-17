@@ -1,4 +1,3 @@
-
 const { check } = require('express-validator');
 
 const mw = require('../utils/middleware');
@@ -17,6 +16,19 @@ const validateIntegerParameter = paramName => {
             .trim()
             .escape()
             .toInt(),
+
+        mw.validateResult(400)
+    ];
+}
+
+const validateUUIDParameter = paramName => {
+    return [
+        check(paramName)
+            .exists().withMessage(msgs.parameterMissingMsg(paramName))
+            .not().isEmpty().withMessage(msgs.parameterEmptyMsg(paramName))
+            .isUUID().withMessage(msgs.parameterMustBeTypeMsg('UUID'))
+            .trim()
+            .escape(),
 
         mw.validateResult(400)
     ];
@@ -42,4 +54,5 @@ const validateStringParameter = paramName => {
 module.exports = {
     validateIntegerParameter,
     validateStringParameter,
+    validateUUIDParameter,
 };

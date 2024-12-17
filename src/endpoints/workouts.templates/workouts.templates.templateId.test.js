@@ -37,6 +37,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             it("status code of 200", async () => {
                 const response = await request.get(BASE_ENDPOINT + `/${newTemplate.id}`);
+
                 expect(response.statusCode).toStrictEqual(200);
             });
 
@@ -108,7 +109,9 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
-                    const response = await request.get(BASE_ENDPOINT + '/1365873');
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.get(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
@@ -152,7 +155,6 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
                 response = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
                 newTemplate = response.body;
-
 
                 response = await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
             });
@@ -262,14 +264,18 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             describe('404 response when', () => {
                 it('templateId is valid but it does not exist', async () => {
-                    const response = await request.post(BASE_ENDPOINT + `/1`).send(req);
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.post(BASE_ENDPOINT + `/` + uuid).send(req);
                     expect(response.statusCode).toStrictEqual(404);
                 });
 
                 it('templateId is valid and exists, but exercise with that id does not exist', async () => {
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
                         ...req,
-                        exerciseId: 1,
+                        exerciseId: uuid,
                     });
                     expect(response.statusCode).toStrictEqual(404);
                 });
@@ -422,7 +428,9 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
-                    const response = await request.put(BASE_ENDPOINT + '/1').send(req);
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.put(BASE_ENDPOINT + '/' + uuid).send(req);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
@@ -494,7 +502,9 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             describe('404 response when', () => {
                 it('templateId is valid but template with that id does not exist', async () => {
-                    const response = await request.delete(BASE_ENDPOINT + '/1');
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.delete(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });

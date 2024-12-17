@@ -3,6 +3,8 @@ const { check } = require('express-validator');
 const mw = require('../utils/middleware');
 const msgs = require('./errorMessages');
 
+const { validateUUIDParameter } = require('./generalPurpose');
+
 // Workout params
 const userId = 'userId';
 const alias = 'alias';
@@ -16,13 +18,7 @@ const exerciseSets = 'exerciseSets';
 
 
 const validateCreateWorkoutTemplateParams = [
-    check(userId)
-        .exists().withMessage(msgs.parameterMissingMsg(userId))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(userId))
-        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
-        .trim()
-        .escape()
-        .toInt(),
+    validateUUIDParameter(userId),
     check(alias)
         .exists().withMessage(msgs.parameterMissingMsg(alias))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
@@ -35,19 +31,13 @@ const validateCreateWorkoutTemplateParams = [
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 
 
 const validateAddExerciseToWorkoutTemplateParams = [
-    check(exerciseId)
-        .exists().withMessage(msgs.parameterMissingMsg(exerciseId))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseId))
-        .isInt().withMessage(msgs.parameterMustBeTypeMsg('integer'))
-        .trim()
-        .escape()
-        .toInt(),
+    validateUUIDParameter(exerciseId),
     check(exerciseOrder)
         .exists().withMessage(msgs.parameterMissingMsg(exerciseOrder))
         .not().isEmpty().withMessage(msgs.parameterEmptyMsg(exerciseOrder))
@@ -62,7 +52,7 @@ const validateAddExerciseToWorkoutTemplateParams = [
         .trim()
         .escape()
         .toInt(),
-    
+
     mw.validateResult(400)
 ];
 
@@ -79,7 +69,7 @@ const validateUpdateWorkoutTemplateParams = [
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 
@@ -99,7 +89,7 @@ const validateUpdateExerciseInWorkoutTemplateParams = [
         .trim()
         .escape()
         .toInt(),
-    
+
     mw.validateResult(400)
 ];
 

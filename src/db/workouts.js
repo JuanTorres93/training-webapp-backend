@@ -21,6 +21,7 @@ const workoutsWithExercisesQuery = "SELECT  " +
     "; ";
 
 const createWorkouts = async (userId, { alias, description }) => {
+
     const client = await getPoolClient(); // Get a client from the pool
     try {
         await client.query('BEGIN'); // Start transaction
@@ -42,6 +43,7 @@ const createWorkouts = async (userId, { alias, description }) => {
         const results = await client.query(q, params); // Execute query within transaction
 
         const createdWorkout = results.rows[0];
+
         // This is appended to the object in order to conform to the API spec.
         // When creating a new workout it will never contain any exercise.
         createdWorkout.exercises = [];
@@ -198,6 +200,7 @@ const checkExerciseInWorkoutExists = async (workoutId, exerciseId) => {
     let q = "SELECT workout_id FROM workouts_exercises WHERE workout_id = $1 AND exercise_id = $2;";
     const params = [workoutId, exerciseId];
 
+
     const selectedWorkout = await new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
@@ -211,7 +214,14 @@ const checkExerciseInWorkoutExists = async (workoutId, exerciseId) => {
         return false;
     }
 
-    return Number.isInteger(selectedWorkout.workout_id);
+    // check selectedWorkout is UUID
+    const uuidRegex = new RegExp('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$');
+
+    if (!uuidRegex.test(selectedWorkout.workout_id)) {
+        return false;
+    }
+
+    return true;
 };
 
 

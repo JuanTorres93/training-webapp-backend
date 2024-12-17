@@ -164,14 +164,18 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
             describe('404 response when', () => {
                 it('workoutId is valid but it does not exist', async () => {
-                    const response = await request.post(BASE_ENDPOINT + `/1`).send(addExerciseRequest);
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.post(BASE_ENDPOINT + `/` + uuid).send(addExerciseRequest);
                     expect(response.statusCode).toStrictEqual(404);
                 });
 
                 it('workoutId is valid and exists, but exercise with that id does not exist', async () => {
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.post(BASE_ENDPOINT + `/${id}`).send({
                         ...addExerciseRequest,
-                        exerciseId: 1,
+                        exerciseId: uuid,
                     });
                     expect(response.statusCode).toStrictEqual(404);
                 });
@@ -281,7 +285,9 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
             describe('404 response when', () => {
                 it('workoutId is valid but workout with that id does not exist', async () => {
-                    const response = await request.get(BASE_ENDPOINT + '/1');
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.get(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
@@ -396,7 +402,9 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
             describe('404 response when', () => {
                 it('workoutid is valid but workout with that id does not exist', async () => {
-                    const response = await request.put(BASE_ENDPOINT + '/1').send({
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.put(BASE_ENDPOINT + '/' + uuid).send({
                         ...putBodyRequest,
                         alias: 'updated alias with put modified',
                         description: 'updated_description_with_put_modified',
@@ -480,7 +488,9 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
             describe('404 response when', () => {
                 it('workoutid is valid but workout with that id does not exist', async () => {
-                    const response = await request.delete(BASE_ENDPOINT + '/1');
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.delete(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });

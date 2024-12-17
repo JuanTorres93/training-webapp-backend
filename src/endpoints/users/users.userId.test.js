@@ -73,7 +73,9 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
 
             describe('404 response when', () => {
                 it('userid is valid but user with that id does not exist', async () => {
-                    const response = await request.get(BASE_ENDPOINT + '/1');
+                    // generate a valid UUID that probably won't be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.get(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });
@@ -211,7 +213,10 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
                 it('userid is valid but user with that id does not exist', async () => {
                     // alias and email need to be modified again to avoid 409 conflict
                     // response due to violating unique constraints.
-                    const response = await request.put(BASE_ENDPOINT + '/1').send({
+
+                    // generate a valid UUID that probably won't be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.put(BASE_ENDPOINT + '/' + uuid).send({
                         ...putBodyRequest,
                         alias: 'updated alias with put modified',
                         email: 'updated_email_with_put_modified@domain.com',
@@ -283,7 +288,10 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
                 it('userid is valid but user with that id does not exist', async () => {
                     // alias and email need to be modified again to avoid 409 conflict
                     // response due to violating unique constraints.
-                    const response = await request.delete(BASE_ENDPOINT + '/1');
+
+                    // generate a valid UUID that probably won't be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
+                    const response = await request.delete(BASE_ENDPOINT + '/' + uuid);
                     expect(response.statusCode).toStrictEqual(404);
                 });
             });

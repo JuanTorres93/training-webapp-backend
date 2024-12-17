@@ -36,6 +36,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
 
         workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
         workout = workout.body;
+
         initialExercise = workout.exercises[0];
 
         // logout user
@@ -44,7 +45,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
 
     describe('put requests', () => {
         describe('happy path', () => {
-            afterEach(async () => {
+            beforeEach(async () => {
                 await setUp();
                 await initExercisesTableInDb();
 
@@ -257,15 +258,19 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
 
             describe('404 response when', () => {
                 it('workoutid is valid but workout with that id does not exist', async () => {
+                    // valid UUID that is unlikely to be in the db
+                    const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.put(
-                        BASE_ENDPOINT + '/1' + `/exercises/${initialExercise.id}`
+                        BASE_ENDPOINT + '/' + uuid + `/exercises/${initialExercise.id}`
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(404);
                 });
 
                 it('exerciseId is valid but exercise with that id does not exist', async () => {
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.put(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/1`
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/` + uuid
                     ).send(req);
                     expect(response.statusCode).toStrictEqual(404);
                 });
@@ -384,16 +389,20 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
             });
 
             describe('404 response when', () => {
+                // valid UUID that is unlikely to be in the db
+                const uuid = '00000000-0000-0000-0000-000000000000';
                 it('workoutid is valid but workout with that id does not exist', async () => {
                     const response = await request.delete(
-                        BASE_ENDPOINT + '/1' + `/exercises/${initialExercise.id}`
+                        BASE_ENDPOINT + '/' + uuid + `/exercises/${initialExercise.id}`
                     );
                     expect(response.statusCode).toStrictEqual(404);
                 });
 
                 it('exerciseId is valid but exercise with that id does not exist', async () => {
+                    // Valid UUID but (probably) not existing in the database
+                    const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/1`
+                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/` + uuid
                     );
                     expect(response.statusCode).toStrictEqual(404);
                 });

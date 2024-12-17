@@ -1,7 +1,7 @@
 const express = require('express');
 
 const exerciseValidators = require('../../validators/exercises.js');
-const { validateIntegerParameter } = require('../../validators/generalPurpose.js');
+const { validateUUIDParameter } = require('../../validators/generalPurpose.js');
 const dbExercises = require('../../db/exercises.js');
 const mw = require('../../utils/middleware.js');
 
@@ -37,7 +37,7 @@ router.get('/common',
 
 // Get exercise by id
 router.get('/:exerciseId',
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('exerciseId'),
     mw.checkExerciseExistsById,
     async (req, res, next) => {
         // TODO implement 403 response case
@@ -50,7 +50,7 @@ router.get('/:exerciseId',
 
 // Get all exercises from user
 router.get('/all/:userId',
-    validateIntegerParameter('userId'),
+    validateUUIDParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
@@ -90,7 +90,7 @@ router.post('/',
 // update exercise by id
 router.put('/:exerciseId',
     exerciseValidators.validateUpdateExerciseParams,
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('exerciseId'),
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.exerciseBelongsToLoggedInUser,
@@ -115,7 +115,7 @@ router.put('/:exerciseId',
 
 // update user by id
 router.delete('/:exerciseId',
-    validateIntegerParameter('exerciseId'),
+    validateUUIDParameter('exerciseId'),
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.exerciseBelongsToLoggedInUser,
