@@ -83,3 +83,10 @@ Table workouts_exercises {
     (workout_id, exercise_id, exercise_set) [pk]
   }
 }
+
+Table subscriptions {
+  id UUID [PK]
+  type VARCHAR(20) [NOT NULL, UNIQUE]
+  description TEXT [NOT NULL]
+  base_price_in_eur_cents INTEGER [NOT NULL]
+}

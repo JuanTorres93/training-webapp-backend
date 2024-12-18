@@ -1,7 +1,13 @@
 -- Enable the uuid-ossp extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Modify the users table to use UUIDs
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  type VARCHAR(20) NOT NULL UNIQUE,
+  description TEXT NOT NULL,
+  base_price_in_eur_cents INTEGER NOT NULL
+);
+
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   alias VARCHAR(40) NOT NULL UNIQUE,
