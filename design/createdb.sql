@@ -74,5 +74,6 @@ CREATE TABLE workouts_exercises (
   exercise_reps INTEGER,
   exercise_weight REAL,
   exercise_time_in_seconds INTEGER,
+  notes VARCHAR(400),
   PRIMARY KEY (workout_id, exercise_id, exercise_set)
 );

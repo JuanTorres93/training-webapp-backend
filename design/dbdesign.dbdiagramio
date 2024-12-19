@@ -5,6 +5,13 @@ Project training_webapp {
   database_type: 'PostgreSQL'
 }
 
+Table subscriptions {
+  id UUID [PK]
+  type VARCHAR(20) [NOT NULL, UNIQUE]
+  description TEXT [NOT NULL]
+  base_price_in_eur_cents INTEGER [NOT NULL]
+}
+
 Table users {
   id UUID [PRIMARY KEY]
   username VARCHAR(40) [NOT NULL, UNIQUE]
@@ -81,15 +88,9 @@ Table workouts_exercises {
   exercise_reps INTEGER
   exercise_weight real
   exercise_time_in_seconds INTEGER
+  notes VARCHAR(400)
 
   indexes {
     (workout_id, exercise_id, exercise_set) [pk]
   }
-}
-
-Table subscriptions {
-  id UUID [PK]
-  type VARCHAR(20) [NOT NULL, UNIQUE]
-  description TEXT [NOT NULL]
-  base_price_in_eur_cents INTEGER [NOT NULL]
 }
