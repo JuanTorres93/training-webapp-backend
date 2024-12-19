@@ -120,7 +120,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 expect(updatedWorkoutTemplateExercise.exerciseOrder).not.toEqual(newExerciseInTemplate.exerciseOrder);
                 expect(updatedWorkoutTemplateExercise.exerciseSets).toStrictEqual(newExerciseInTemplate.exerciseSets);
                 expect(updatedWorkoutTemplateExercise.id).toStrictEqual(newExerciseInTemplate.id);
-                expect(updatedWorkoutTemplateExercise.alias).toStrictEqual(newExerciseInTemplate.alias);
+                expect(updatedWorkoutTemplateExercise.name).toStrictEqual(newExerciseInTemplate.name);
             });
 
             it('updates only exercise sets', async () => {
@@ -146,7 +146,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
                 expect(updatedWorkoutTemplateExercise.exerciseOrder).toStrictEqual(newExerciseInTemplate.exerciseOrder);
                 expect(updatedWorkoutTemplateExercise.exerciseSets).not.toEqual(newExerciseInTemplate.exerciseSets);
                 expect(updatedWorkoutTemplateExercise.id).toStrictEqual(newExerciseInTemplate.id);
-                expect(updatedWorkoutTemplateExercise.alias).toStrictEqual(newExerciseInTemplate.alias);
+                expect(updatedWorkoutTemplateExercise.name).toStrictEqual(newExerciseInTemplate.name);
             });
         });
 

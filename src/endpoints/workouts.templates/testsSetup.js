@@ -23,10 +23,10 @@ app.use(logErrors);
 // I use agent for storing user info when login in
 const request = supertest.agent(app);
 
-const createNewTemplateRequest = (userId, alias, description) => {
+const createNewTemplateRequest = (userId, name, description) => {
     return {
         userId,
-        alias,
+        name,
         description,
     };
 };
@@ -87,7 +87,7 @@ const setUp = async () => {
 
     // Add workout to db
     const workoutResponse = await request.post('/workouts').send({
-        alias: TEMPLATE_AND_WORKOUT_NAME,
+        name: TEMPLATE_AND_WORKOUT_NAME,
         description: "This is the description for a test workout",
     });
     const newWorkout = workoutResponse.body;

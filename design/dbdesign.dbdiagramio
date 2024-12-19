@@ -23,7 +23,7 @@ Table users {
 
 Table workouts {
   id UUID [PK, increment]
-  alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
+  name VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
   created_by UUID [ref: > users.id, not null]
 }
@@ -31,7 +31,7 @@ Table workouts {
 Table workout_template {
   id UUID [PK, increment]
   user_id UUID [ref: > users.id, not null]
-  alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
+  name VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
 
   Note: 'Used for saving templates, executed workouts are stored in workouts_exercises'

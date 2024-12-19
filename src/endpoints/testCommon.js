@@ -15,7 +15,13 @@ const newExerciseRequest = {
     description: "This is the description for a test exercise",
 }
 
+const newWorkoutRequest = {
+    name: "first_test_workout",
+    description: "This is the description for a test workout",
+}
+
 module.exports = {
     newUserRequestNoOauth,
     newExerciseRequest,
+    newWorkoutRequest,
 };

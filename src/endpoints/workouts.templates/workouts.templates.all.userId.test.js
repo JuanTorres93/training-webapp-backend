@@ -55,7 +55,7 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
 
 
                 expect(workoutTemplateObject).toHaveProperty('id');
-                expect(workoutTemplateObject).toHaveProperty('alias');
+                expect(workoutTemplateObject).toHaveProperty('name');
                 expect(workoutTemplateObject).toHaveProperty('description');
                 expect(workoutTemplateObject).toHaveProperty('exercises');
             });

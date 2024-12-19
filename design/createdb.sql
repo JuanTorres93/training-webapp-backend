@@ -27,7 +27,7 @@ CREATE TABLE users (
 
 CREATE TABLE workouts (
   id UUID PRIMARY KEY  DEFAULT uuid_generate_v4(),
-  alias VARCHAR(40) NOT NULL,
+  name VARCHAR(40) NOT NULL,
   description VARCHAR(500),
   created_by UUID NOT NULL REFERENCES users(id)
 );
@@ -35,7 +35,7 @@ CREATE TABLE workouts (
 CREATE TABLE workout_template (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id),
-  alias VARCHAR(40) NOT NULL,
+  name VARCHAR(40) NOT NULL,
   description VARCHAR(500)
 );
 

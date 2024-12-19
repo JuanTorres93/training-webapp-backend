@@ -6,7 +6,7 @@ const msgs = require('./errorMessages');
 const { validateUUIDParameter } = require('../validators/generalPurpose');
 
 // Workout params
-const alias = 'alias';
+const name = 'name';
 const description = 'description';
 
 // Exercises params
@@ -17,9 +17,9 @@ const weight = 'weight';
 const timeInSeconds = 'time_in_seconds';
 
 const validateCreateWorkoutParams = [
-    check(alias)
-        .exists().withMessage(msgs.parameterMissingMsg(alias))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+    check(name)
+        .exists().withMessage(msgs.parameterMissingMsg(name))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(name))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
@@ -34,11 +34,11 @@ const validateCreateWorkoutParams = [
 ];
 
 const validateUpdateWorkoutParams = [
-    check(alias)
+    check(name)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
-        .exists().withMessage(msgs.parameterMissingMsg(alias))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+        .exists().withMessage(msgs.parameterMissingMsg(name))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(name))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),

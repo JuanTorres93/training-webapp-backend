@@ -81,7 +81,7 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
             // Create new template
             const templateResponse = await request.post('/workouts/templates').send({
                 userId: user.id,
-                alias: workout.alias,
+                name: workout.name,
                 description: workout.description,
             });
             template = templateResponse.body;
@@ -130,11 +130,11 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('workout object has id, alias, exercises and description properties', () => {
+            it('workout object has id, name, exercises and description properties', () => {
                 const workoutObject = response.body;
 
                 expect(workoutObject).toHaveProperty('id');
-                expect(workoutObject).toHaveProperty('alias');
+                expect(workoutObject).toHaveProperty('name');
                 expect(workoutObject).toHaveProperty('description');
                 expect(workoutObject).toHaveProperty('exercises');
             });

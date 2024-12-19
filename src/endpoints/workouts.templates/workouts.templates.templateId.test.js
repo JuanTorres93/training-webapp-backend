@@ -46,7 +46,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 const workoutTemplateObject = getResponse.body;
 
                 expect(workoutTemplateObject).toHaveProperty('id');
-                expect(workoutTemplateObject).toHaveProperty('alias');
+                expect(workoutTemplateObject).toHaveProperty('name');
                 expect(workoutTemplateObject).toHaveProperty('description');
                 expect(workoutTemplateObject).toHaveProperty('exercises');
                 expect(workoutTemplateObject.exercises.length).toBeGreaterThan(0);
@@ -66,7 +66,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 const workoutTemplateObject = response.body;
 
                 expect(workoutTemplateObject).toHaveProperty('id');
-                expect(workoutTemplateObject).toHaveProperty('alias');
+                expect(workoutTemplateObject).toHaveProperty('name');
                 expect(workoutTemplateObject).toHaveProperty('description');
                 expect(workoutTemplateObject).toHaveProperty('exercises');
 
@@ -311,7 +311,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             it('returns 200 status code', async () => {
                 const req = {
-                    alias: 'test 200 code',
+                    name: 'test 200 code',
                     description: 'new description for 200 code',
                 };
                 const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
@@ -320,14 +320,14 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             it('returns updated template with exercises', async () => {
                 const req = {
-                    alias: 'test with exercises',
+                    name: 'test with exercises',
                     description: 'new description with exercises',
                 };
                 const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
                 const workoutTemplate = response.body;
 
                 expect(workoutTemplate).toHaveProperty('id');
-                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('name');
                 expect(workoutTemplate).toHaveProperty('description');
                 expect(workoutTemplate).toHaveProperty('exercises');
                 expect(workoutTemplate.exercises.length).toBeGreaterThan(0);
@@ -344,14 +344,14 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 await request.delete(BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/1`);
 
                 const req = {
-                    alias: 'test no exercises',
+                    name: 'test no exercises',
                     description: 'new description no exercises',
                 };
                 const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
                 const workoutTemplate = response.body;
 
                 expect(workoutTemplate).toHaveProperty('id');
-                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('name');
                 expect(workoutTemplate).toHaveProperty('description');
                 expect(workoutTemplate).toHaveProperty('exercises');
 
@@ -364,7 +364,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
             beforeAll(async () => {
                 req = {
-                    alias: "new alias",
+                    name: "new name",
                     description: "new description",
                 };
 
@@ -398,7 +398,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             describe('401 response when', () => {
                 it('user is not logged in', async () => {
                     const req = {
-                        alias: 'test 200 code',
+                        name: 'test 200 code',
                         description: 'new description for 200 code',
                     };
                     const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
@@ -415,7 +415,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                     });
 
                     const req = {
-                        alias: 'test 200 code',
+                        name: 'test 200 code',
                         description: 'new description for 200 code',
                     };
                     const response = await request.put(BASE_ENDPOINT + `/${newTemplate.id}`).send(req);
@@ -543,7 +543,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 const workoutTemplate = response.body;
 
                 expect(workoutTemplate).toHaveProperty('id');
-                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('name');
                 expect(workoutTemplate).toHaveProperty('description');
                 expect(workoutTemplate).toHaveProperty('exercises');
                 expect(workoutTemplate.exercises.length).toBeGreaterThan(0);
@@ -575,7 +575,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
                 const workoutTemplate = response.body;
 
                 expect(workoutTemplate).toHaveProperty('id');
-                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('name');
                 expect(workoutTemplate).toHaveProperty('description');
                 expect(workoutTemplate).toHaveProperty('exercises');
 

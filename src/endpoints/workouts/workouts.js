@@ -180,10 +180,10 @@ router.put('/:workoutId',
     mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
         const { workoutId } = req.params;
-        const { alias, description } = req.body;
+        const { name, description } = req.body;
 
         const updateWorkoutInfo = {
-            alias,
+            name,
             description,
         };
 

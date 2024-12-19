@@ -45,7 +45,7 @@ describe(BASE_ENDPOINT, () => {
 
                 expect(workoutTemplate).toHaveProperty('id');
                 expect(workoutTemplate).toHaveProperty('exercises');
-                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('name');
                 expect(workoutTemplate).toHaveProperty('description');
             });
 
@@ -114,7 +114,7 @@ describe(BASE_ENDPOINT, () => {
 
                 expect(workoutTemplate).toHaveProperty('id');
                 expect(workoutTemplate).toHaveProperty('userId');
-                expect(workoutTemplate).toHaveProperty('alias');
+                expect(workoutTemplate).toHaveProperty('name');
                 expect(workoutTemplate).toHaveProperty('description');
             });
         });
@@ -133,14 +133,14 @@ describe(BASE_ENDPOINT, () => {
                 it('mandatory parameter is missing', async () => {
                     // Missing userId
                     const reqMissingUserId = {
-                        alias: 'test',
+                        name: 'test',
                     }
 
                     let response = await request.post(BASE_ENDPOINT).send(reqMissingUserId);
 
                     expect(response.statusCode).toStrictEqual(400);
 
-                    // Missing alias
+                    // Missing name
                     const reqMissingAlias = {
                         userId: 1,
                     }

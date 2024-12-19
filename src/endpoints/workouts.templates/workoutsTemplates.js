@@ -144,10 +144,10 @@ router.put('/:templateId',
     mw.workoutTemplateBelongsToLoggedInUser,
     async (req, res, next) => {
         const { templateId } = req.params;
-        const { alias, description } = req.body;
+        const { name, description } = req.body;
 
         const updateWorkoutTemplateInfo = {
-            alias,
+            name,
             description,
         };
 

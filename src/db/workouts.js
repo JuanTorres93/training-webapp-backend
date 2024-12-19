@@ -5,7 +5,7 @@ const TABLE_NAME = 'workouts';
 
 const workoutsWithExercisesQuery = "SELECT  " +
     "	wk.id AS workout_id,  " +
-    "	wk.alias AS workout_alias, 	 " +
+    "	wk.name AS workout_name, 	 " +
     "	wk.description AS workout_description, " +
     "	e.id AS exercise_id, " +
     "	e.name AS exercise_name, " +
@@ -20,20 +20,20 @@ const workoutsWithExercisesQuery = "SELECT  " +
     "ORDER BY workout_id, exercise_id, exercise_set " +
     "; ";
 
-const createWorkouts = async (userId, { alias, description }) => {
+const createWorkouts = async (userId, { name, description }) => {
 
     const client = await getPoolClient(); // Get a client from the pool
     try {
         await client.query('BEGIN'); // Start transaction
 
         // Build query
-        let requiredFields = ['created_by', 'alias'];
-        let requiredValues = [userId, alias];
+        let requiredFields = ['created_by', 'name'];
+        let requiredValues = [userId, name];
 
         let optionalFields = ['description'];
         let optionalValues = [description];
 
-        let returningFields = ['id', 'alias', 'description'];
+        let returningFields = ['id', 'name', 'description'];
 
         const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME,
             requiredFields, requiredValues,
@@ -247,10 +247,10 @@ const getAllWorkoutsIdsFromTemplateAlias = (templateAlias, userId) => {
     SELECT w.id AS workout_id
     FROM workouts w
     JOIN workout_template wt 
-        ON w.alias = wt.alias
+        ON w.name = wt.name
         AND w.created_by = wt.user_id
     WHERE
-    	wt.alias = $1 and 
+    	wt.name = $1 and 
     	wt.user_id = $2;
     `;
 
@@ -277,7 +277,7 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
 
     const workoutSpec = {
         id: firstRow.workout_id,
-        alias: firstRow.workout_alias,
+        name: firstRow.workout_name,
         description: firstRow.workout_description,
         exercises: [],
     };
@@ -291,7 +291,7 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
     workoutInfoDb.forEach(row => {
         const exerciseSet = {
             id: row.exercise_id,
-            alias: row.exercise_alias,
+            name: row.exercise_name,
             set: row.exercise_set,
             reps: row.exercise_reps,
             weight: row.exercise_weight,
@@ -376,7 +376,7 @@ const selectLastWorkoutFromUser = (templateId, userId) => {
             SELECT MAX(uw.start_date) AS max_start_date
             FROM workouts w
             JOIN users_workouts uw ON w.id = uw.workout_id
-            JOIN workout_template wt ON w.alias = wt.alias --AND w.created_by = wt.user_id
+            JOIN workout_template wt ON w.name = wt.name --AND w.created_by = wt.user_id
             JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
             JOIN workouts_exercises w_e ON w.id = w_e.workout_id
             JOIN exercises e ON w_e.exercise_id = e.id
@@ -385,7 +385,7 @@ const selectLastWorkoutFromUser = (templateId, userId) => {
 
         SELECT
             w.id AS workout_id,
-            w.alias AS workout_alias,
+            w.name AS workout_name,
             w.description AS workout_description,
             uw.start_date,
             e.id AS exercise_id,
@@ -397,7 +397,7 @@ const selectLastWorkoutFromUser = (templateId, userId) => {
             w_e.exercise_time_in_seconds AS exercise_time_in_seconds
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.alias = wt.alias
+        JOIN workout_template wt ON w.name = wt.name
         JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
         JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
         JOIN exercises e ON w_e.exercise_id = e.id
@@ -433,7 +433,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
             	uw.start_date AS dates
             FROM workouts w
             JOIN users_workouts uw ON w.id = uw.workout_id
-            JOIN workout_template wt ON w.alias = wt.alias --AND w.created_by = wt.user_id
+            JOIN workout_template wt ON w.name = wt.name --AND w.created_by = wt.user_id
             JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
             JOIN workouts_exercises w_e ON w.id = w_e.workout_id
             JOIN exercises e ON w_e.exercise_id = e.id
@@ -445,7 +445,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
 
         SELECT
             w.id AS workout_id,
-            w.alias AS workout_alias,
+            w.name AS workout_name,
             w.description AS workout_description,
             uw.start_date,
             e.id AS exercise_id,
@@ -457,7 +457,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
             w_e.exercise_time_in_seconds AS exercise_time_in_seconds
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.alias = wt.alias
+        JOIN workout_template wt ON w.name = wt.name
         JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
         JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
         JOIN exercises e ON w_e.exercise_id = e.id
@@ -552,7 +552,7 @@ const deleteWorkout = async (id) => {
 
         // Delete workout itself
         const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-            "RETURNING id, alias, description;";
+            "RETURNING id, name, description;";
         const workoutsParams = [id];
         await client.query(workoutsQuery, workoutsParams);
 

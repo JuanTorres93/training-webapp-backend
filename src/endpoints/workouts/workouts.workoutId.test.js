@@ -15,7 +15,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
     let exercisesIds = {};
 
     const createWorkoutRequest = {
-        alias: "workout_with_exercises",
+        name: "workout_with_exercises",
         description: "This is the description for a workout with exercises",
     };
 
@@ -223,11 +223,11 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('workout object has id, alias, exercises and description properties', () => {
+            it('workout object has id, name, exercises and description properties', () => {
                 const workoutObject = response.body;
 
                 expect(workoutObject).toHaveProperty('id');
-                expect(workoutObject).toHaveProperty('alias');
+                expect(workoutObject).toHaveProperty('name');
                 expect(workoutObject).toHaveProperty('description');
                 expect(workoutObject).toHaveProperty('exercises');
             });
@@ -298,7 +298,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
         let workoutId;
 
         const putBodyRequest = {
-            alias: "updated alias",
+            name: "updated name",
             description: "updated description",
         };
 
@@ -338,7 +338,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                 const updatedworkout = response.body;
 
                 expect(updatedworkout.id).toStrictEqual(workoutId);
-                expect(updatedworkout.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedworkout.name).toStrictEqual(putBodyRequest.name);
                 expect(updatedworkout.description).toStrictEqual(putBodyRequest.description);
                 expect(updatedworkout).toHaveProperty('exercises');
 
@@ -406,7 +406,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                     const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.put(BASE_ENDPOINT + '/' + uuid).send({
                         ...putBodyRequest,
-                        alias: 'updated alias with put modified',
+                        name: 'updated name with put modified',
                         description: 'updated_description_with_put_modified',
                     });
                     expect(response.statusCode).toStrictEqual(404);
@@ -522,7 +522,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                 const deletedworkout = response.body;
 
                 expect(deletedworkout.id).toStrictEqual(workoutId);
-                expect(deletedworkout.alias).toStrictEqual(pushWorkout.alias);
+                expect(deletedworkout.name).toStrictEqual(pushWorkout.name);
                 expect(deletedworkout.description).toStrictEqual(pushWorkout.description);
                 expect(deletedworkout).toHaveProperty('exercises');
             });

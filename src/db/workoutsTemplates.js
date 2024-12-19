@@ -6,7 +6,7 @@ const TABLE_NAME = 'workout_template';
 
 let workoutsTemplatesWithExercisesQuery = "SELECT "
 workoutsTemplatesWithExercisesQuery += " 	wkt.id, "
-workoutsTemplatesWithExercisesQuery += " 	wkt.alias, "
+workoutsTemplatesWithExercisesQuery += " 	wkt.name, "
 workoutsTemplatesWithExercisesQuery += " 	wkt.description, "
 workoutsTemplatesWithExercisesQuery += " 	ex.id AS exercise_id, "
 workoutsTemplatesWithExercisesQuery += " 	ex.name AS exercise_name, "
@@ -18,7 +18,7 @@ workoutsTemplatesWithExercisesQuery += " JOIN exercises AS ex ON wkte.exercise_i
 workoutsTemplatesWithExercisesQuery += " WHERE TRUE "
 workoutsTemplatesWithExercisesQuery += " ORDER BY wkt.id, wkte.exercise_order; "
 
-const queryNoExercises = "SELECT id, alias, description FROM " + TABLE_NAME + " WHERE id = $1;"
+const queryNoExercises = "SELECT id, name, description FROM " + TABLE_NAME + " WHERE id = $1;"
 
 
 const _compactWorkoutTemplateInfo = (workoutTemplateInfoDb) => {
@@ -27,7 +27,7 @@ const _compactWorkoutTemplateInfo = (workoutTemplateInfoDb) => {
 
     const workoutTemplateSpec = {
         id: firstRow.id,
-        alias: firstRow.alias,
+        name: firstRow.name,
         description: firstRow.description,
         exercises: [],
     };
@@ -128,15 +128,15 @@ const selectWorkoutTemplateById = async (id) => {
     });
 };
 
-const createWorkoutTemplate = ({ userId, alias, description }) => {
+const createWorkoutTemplate = ({ userId, name, description }) => {
     // Build query
-    let requiredFields = ['user_id', 'alias'];
-    let requiredValues = [userId, alias];
+    let requiredFields = ['user_id', 'name'];
+    let requiredValues = [userId, name];
 
     let optionalFields = ['description'];
     let optionalValues = [description];
 
-    let returningFields = ['id', 'user_id', 'alias', 'description'];
+    let returningFields = ['id', 'user_id', 'name', 'description'];
 
     const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME,
         requiredFields, requiredValues,
@@ -367,7 +367,7 @@ const deleteWorkoutTemplate = async (id) => {
 
         // Delete workout itself
         const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-            "RETURNING id, alias, description;";
+            "RETURNING id, name, description;";
         const workoutsParams = [id];
         await client.query(workoutsQuery, workoutsParams);
 
@@ -605,10 +605,10 @@ const selectIdDateAndNameFromLastPerformedTemplatesByUser = async (userId, numbe
         SELECT
         	wt.id AS template_id,
         	uw.start_date AT TIME ZONE 'UTC' AS workout_date,
-        	wt.alias AS workout_name
+        	wt.name AS workout_name
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.alias = wt.alias --AND w.created_by = wt.user_id
+        JOIN workout_template wt ON w.name = wt.name --AND w.created_by = wt.user_id
         WHERE uw.user_id = $1 OR uw.user_id = $3
         ORDER BY start_date DESC
         LIMIT $2;

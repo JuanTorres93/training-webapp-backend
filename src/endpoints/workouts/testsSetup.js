@@ -9,7 +9,7 @@ const app = createApp();
 const BASE_ENDPOINT = '/workouts';
 const { OTHER_USER_ALIAS } = require('../exercises/testsSetup.js');
 const dbExercises = require('../../db/exercises.js');
-const { newUserRequestNoOauth } = require('../testCommon.js');
+const { newUserRequestNoOauth, newWorkoutRequest } = require('../testCommon.js');
 
 function logErrors(err, req, res, next) {
     console.error(err.stack)
@@ -22,8 +22,7 @@ app.use(logErrors);
 const request = supertest.agent(app);
 
 const successfulPostRequest = {
-    alias: "first_test_workout",
-    description: "This is the description for a test workout",
+    ...newWorkoutRequest
 }
 
 const newUserReq = {
@@ -31,7 +30,7 @@ const newUserReq = {
 };
 
 const createWorkoutRequest = {
-    alias: "workout_with_exercises",
+    name: "workout_with_exercises",
     description: "This is the description for a workout with exercises",
 };
 
@@ -74,17 +73,17 @@ const addWorkoutsAndExercises = async (exercisesIds) => {
 
     // Create some workouts with their exercises
     const pushResponse = await request.post(BASE_ENDPOINT).send({
-        alias: "Push",
+        name: "Push",
         description: "Test push exercise",
     });
 
     const pullResponse = await request.post(BASE_ENDPOINT).send({
-        alias: "Pull",
+        name: "Pull",
         description: "Test pull exercise",
     });
 
     const legResponse = await request.post(BASE_ENDPOINT).send({
-        alias: "Leg",
+        name: "Leg",
         description: "Test leg exercise",
     });
 
