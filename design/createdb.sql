@@ -49,7 +49,7 @@ CREATE TABLE users_workouts (
 
 CREATE TABLE exercises (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  alias VARCHAR(40) NOT NULL,
+  name VARCHAR(40) NOT NULL,
   description VARCHAR(500)
 );
 

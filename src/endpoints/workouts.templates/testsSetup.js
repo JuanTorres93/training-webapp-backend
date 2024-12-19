@@ -5,7 +5,7 @@ require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../../app.js');
 const createCommonUser = require('../../createCommonUser.js').createCommonUser;
-const { newUserRequestNoOauth } = require('../testCommon.js');
+const { newUserRequestNoOauth, newExerciseRequest } = require('../testCommon.js');
 
 const app = createApp();
 const BASE_ENDPOINT = '/workouts/templates';
@@ -69,8 +69,7 @@ const setUp = async () => {
 
     // Add exercise to db
     const exerciseResponse = await request.post('/exercises').send({
-        alias: "Pull up",
-        description: "Fucks your shoulder",
+        ...newExerciseRequest,
     });
     const newExercise = exerciseResponse.body;
 

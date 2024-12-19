@@ -75,6 +75,7 @@ router.post('/',
             const createdExercise = await dbExercises.createExercise(
                 userId, req.body
             );
+
             return res.status(201).json(createdExercise);
         } catch (error) {
             return res.status(400).json({
@@ -96,10 +97,10 @@ router.put('/:exerciseId',
     mw.exerciseBelongsToLoggedInUser,
     async (req, res, next) => {
         const { exerciseId } = req.params;
-        const { alias, description } = req.body;
+        const { name, description } = req.body;
 
         const newExerciseInfo = {
-            alias,
+            name,
             description,
         };
 

@@ -36,7 +36,7 @@ const setUp = async () => {
 
     // Add exercise to db
     const exerciseResponse = await request.post('/exercises').send({
-        alias: "Pull up",
+        name: "Pull up",
         description: "Fucks your shoulder",
     });
     const newExercise = exerciseResponse.body;

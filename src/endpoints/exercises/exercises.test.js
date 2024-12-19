@@ -33,7 +33,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
             it("returns exercise object", () => {
                 expect(response.body).toHaveProperty('id');
-                expect(response.body).toHaveProperty('alias');
+                expect(response.body).toHaveProperty('name');
                 expect(response.body).toHaveProperty('description');
             });
 
@@ -74,7 +74,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
             describe('400 error code when', () => {
                 it('mandatory parameter is missing', async () => {
-                    // alias is missing
+                    // name is missing
                     let response = await request.post(BASE_ENDPOINT).send({
                         description: "Smith",
                     })
@@ -108,13 +108,13 @@ describe(`${BASE_ENDPOINT}`, () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('exercise object has id, alias, and description properties', async () => {
+            it('exercise object has id, name, and description properties', async () => {
                 const response = await request.get(BASE_ENDPOINT);
 
                 const exerciseObject = response.body[0];
 
                 expect(exerciseObject).toHaveProperty('id');
-                expect(exerciseObject).toHaveProperty('alias');
+                expect(exerciseObject).toHaveProperty('name');
                 expect(exerciseObject).toHaveProperty('description');
             });
         });

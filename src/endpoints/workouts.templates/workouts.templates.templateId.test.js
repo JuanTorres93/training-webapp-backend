@@ -53,7 +53,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 const exercise = workoutTemplateObject.exercises[0];
                 expect(exercise).toHaveProperty('id');
-                expect(exercise).toHaveProperty('alias');
+                expect(exercise).toHaveProperty('name');
                 expect(exercise).toHaveProperty('order');
                 expect(exercise).toHaveProperty('sets');
             });
@@ -334,7 +334,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 const exercise = workoutTemplate.exercises[0];
                 expect(exercise).toHaveProperty('id');
-                expect(exercise).toHaveProperty('alias');
+                expect(exercise).toHaveProperty('name');
                 expect(exercise).toHaveProperty('order');
                 expect(exercise).toHaveProperty('sets');
             });
@@ -550,7 +550,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 const exercise = workoutTemplate.exercises[0];
                 expect(exercise).toHaveProperty('id');
-                expect(exercise).toHaveProperty('alias');
+                expect(exercise).toHaveProperty('name');
                 expect(exercise).toHaveProperty('order');
                 expect(exercise).toHaveProperty('sets');
             });

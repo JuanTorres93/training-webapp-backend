@@ -64,7 +64,7 @@ describe(`${BASE_ENDPOINT}` + '/all/{userId}', () => {
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');

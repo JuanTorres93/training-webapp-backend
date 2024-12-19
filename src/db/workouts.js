@@ -8,7 +8,7 @@ const workoutsWithExercisesQuery = "SELECT  " +
     "	wk.alias AS workout_alias, 	 " +
     "	wk.description AS workout_description, " +
     "	e.id AS exercise_id, " +
-    "	e.alias AS exercise_alias, " +
+    "	e.name AS exercise_name, " +
     "	w_e.exercise_set AS exercise_set, " +
     "	w_e.exercise_reps AS exercise_reps, " +
     "	w_e.exercise_weight AS exercise_weight, " +
@@ -389,7 +389,7 @@ const selectLastWorkoutFromUser = (templateId, userId) => {
             w.description AS workout_description,
             uw.start_date,
             e.id AS exercise_id,
-            e.alias AS exercise_alias,
+            e.name AS exercise_name,
             wt_e.exercise_order,
             w_e.exercise_set AS exercise_set,
             w_e.exercise_reps AS exercise_reps,
@@ -449,7 +449,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
             w.description AS workout_description,
             uw.start_date,
             e.id AS exercise_id,
-            e.alias AS exercise_alias,
+            e.name AS exercise_name,
             wt_e.exercise_order,
             w_e.exercise_set AS exercise_set,
             w_e.exercise_reps AS exercise_reps,

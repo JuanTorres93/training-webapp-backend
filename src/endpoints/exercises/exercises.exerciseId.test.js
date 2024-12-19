@@ -28,11 +28,11 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('exercise object has id, alias, and description properties', () => {
+            it('exercise object has id, name, and description properties', () => {
                 const exerciseObject = response.body;
 
                 expect(exerciseObject).toHaveProperty('id');
-                expect(exerciseObject).toHaveProperty('alias');
+                expect(exerciseObject).toHaveProperty('name');
                 expect(exerciseObject).toHaveProperty('description');
             });
         });
@@ -47,7 +47,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -86,7 +86,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
     describe('put request', () => {
         const putBodyRequest = {
-            alias: "updated alias",
+            name: "updated name",
             description: "updated description",
         };
 
@@ -115,7 +115,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
                 const updatedExercise = response.body;
 
                 expect(updatedExercise.id).toStrictEqual(newExercise.id);
-                expect(updatedExercise.alias).toStrictEqual(putBodyRequest.alias);
+                expect(updatedExercise.name).toStrictEqual(putBodyRequest.name);
                 expect(updatedExercise.description).toStrictEqual(putBodyRequest.description);
 
             });
@@ -134,7 +134,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -186,7 +186,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
                     const uuid = '00000000-0000-0000-0000-000000000000';
                     const response = await request.put(BASE_ENDPOINT + '/' + uuid).send({
                         ...putBodyRequest,
-                        alias: 'updated alias with put modified',
+                        name: 'updated name with put modified',
                         description: 'updated_description_with_put_modified',
                     });
                     expect(response.statusCode).toStrictEqual(404);
@@ -207,7 +207,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -295,7 +295,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
                 const deletedexercise = response.body;
 
                 expect(deletedexercise.id).toStrictEqual(newExercise.id);
-                expect(deletedexercise.alias).toStrictEqual(successfulPostRequest.alias);
+                expect(deletedexercise.name).toStrictEqual(successfulPostRequest.name);
                 expect(deletedexercise.description).toStrictEqual(successfulPostRequest.description);
             });
 

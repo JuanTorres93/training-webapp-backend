@@ -3,7 +3,7 @@ const qh = require('./queryHelper.js');
 
 const TABLE_NAME = 'exercises';
 
-const createExercise = async (userId, { alias, description }) => {
+const createExercise = async (userId, { name, description }) => {
     const client = await getPoolClient();
     let results;
     try {
@@ -11,13 +11,13 @@ const createExercise = async (userId, { alias, description }) => {
 
         // Insert delete in exercises table
         // Build query
-        let requiredFields = ['alias'];
-        let requiredValues = [alias];
+        let requiredFields = ['name'];
+        let requiredValues = [name];
 
         let optionalFields = ['description'];
         let optionalValues = [description];
 
-        let returningFields = ['id', 'alias', 'description'];
+        let returningFields = ['id', 'name', 'description'];
 
         const { q: insertExerciseQuery,
             params: insertExerciseParams } = qh.createInsertIntoTableStatement(
@@ -50,7 +50,7 @@ const createExercise = async (userId, { alias, description }) => {
 }
 
 const selectAllExercises = () => {
-    const q = "SELECT id, alias, description FROM " + TABLE_NAME + ";";
+    const q = "SELECT id, name, description FROM " + TABLE_NAME + ";";
     const params = [];
 
     return new Promise((resolve, reject) => {
@@ -66,7 +66,7 @@ const selectAllExercises = () => {
 const selectCommonExercises = () => {
     const q = "SELECT " +
         "    ex.id,  " +
-        "    ex.alias as name,  " +
+        "    ex.name as name,  " +
         "    ex.description " +
         "FROM " + TABLE_NAME + " AS ex " +
         "JOIN users_exercises AS us_ex " +
@@ -90,7 +90,7 @@ const selectCommonExercises = () => {
 const selectAllExercisesFromUser = (userId) => {
     const q = "SELECT " +
         "    ex.id,  " +
-        "    ex.alias as name,  " +
+        "    ex.name as name,  " +
         "    ex.description " +
         "FROM " + TABLE_NAME + " AS ex " +
         "JOIN users_exercises AS us_ex " +
@@ -112,7 +112,7 @@ const selectAllExercisesFromUser = (userId) => {
 };
 
 const selectExerciseById = (id) => {
-    const q = "SELECT id, alias, description FROM " +
+    const q = "SELECT id, name, description FROM " +
         TABLE_NAME + " WHERE id = $1;";
     const params = [id];
 
@@ -126,7 +126,7 @@ const selectExerciseById = (id) => {
 };
 
 const updateExercise = async (id, exerciseObject) => {
-    const returningFields = ['id', 'alias', 'description'];
+    const returningFields = ['id', 'name', 'description'];
 
     const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
         exerciseObject,
@@ -176,7 +176,7 @@ const deleteExercise = async (id) => {
 
         // Delete exercise itself
         const exercisesQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-            "RETURNING id, alias, description;";
+            "RETURNING id, name, description;";
         const exercisesParams = [id];
         results = await client.query(exercisesQuery, exercisesParams);
 
@@ -227,7 +227,7 @@ const checkExerciseByIdExists = async (id) => {
 }
 
 const selectIdForExerciseName = (name) => {
-    const q = "SELECT id FROM " + TABLE_NAME + " WHERE alias = $1;";
+    const q = "SELECT id FROM " + TABLE_NAME + " WHERE name = $1;";
     const params = [name];
 
     return new Promise((resolve, reject) => {

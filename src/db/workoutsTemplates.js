@@ -9,7 +9,7 @@ workoutsTemplatesWithExercisesQuery += " 	wkt.id, "
 workoutsTemplatesWithExercisesQuery += " 	wkt.alias, "
 workoutsTemplatesWithExercisesQuery += " 	wkt.description, "
 workoutsTemplatesWithExercisesQuery += " 	ex.id AS exercise_id, "
-workoutsTemplatesWithExercisesQuery += " 	ex.alias AS exercise_alias, "
+workoutsTemplatesWithExercisesQuery += " 	ex.name AS exercise_name, "
 workoutsTemplatesWithExercisesQuery += " 	wkte.exercise_order AS order, "
 workoutsTemplatesWithExercisesQuery += " 	wkte.exercise_sets AS sets "
 workoutsTemplatesWithExercisesQuery += " FROM workout_template AS wkt "
@@ -35,7 +35,7 @@ const _compactWorkoutTemplateInfo = (workoutTemplateInfoDb) => {
     workoutTemplateInfoDb.forEach(row => {
         workoutTemplateSpec.exercises.push({
             id: row.exercise_id,
-            alias: row.exercise_alias,
+            name: row.exercise_name,
             sets: row.sets,
             order: row.order,
         });

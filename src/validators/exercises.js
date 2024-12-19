@@ -3,13 +3,13 @@ const { check } = require('express-validator');
 const mw = require('../utils/middleware');
 const msgs = require('./errorMessages');
 
-const alias = 'alias'
+const name = 'name'
 const description = 'description'
 
 const validateCreateExerciseParams = [
-    check(alias)
-        .exists().withMessage(msgs.parameterMissingMsg(alias))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+    check(name)
+        .exists().withMessage(msgs.parameterMissingMsg(name))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(name))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
@@ -19,15 +19,15 @@ const validateCreateExerciseParams = [
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 
 const validateUpdateExerciseParams = [
-    check(alias)
+    check(name)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(name))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
@@ -37,7 +37,7 @@ const validateUpdateExerciseParams = [
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 

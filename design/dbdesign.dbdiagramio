@@ -50,7 +50,7 @@ Table users_workouts {
 
 Table exercises {
   id UUID [PK, increment]
-  alias VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
+  name VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
   description VARCHAR(500)
 }
 

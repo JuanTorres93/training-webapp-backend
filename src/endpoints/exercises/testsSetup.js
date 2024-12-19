@@ -4,15 +4,14 @@
 require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../../app.js');
-const { newUserRequestNoOauth } = require('../testCommon.js');
+const { newUserRequestNoOauth, newExerciseRequest } = require('../testCommon.js');
 
 const app = createApp();
 const BASE_ENDPOINT = '/exercises';
 OTHER_USER_ALIAS = 'other user';
 
 const successfulPostRequest = {
-  alias: "first_test_exercise",
-  description: "This is the description for a test exercise",
+  ...newExerciseRequest,
 }
 
 function logErrors(err, req, res, next) {

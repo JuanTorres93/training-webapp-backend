@@ -55,7 +55,7 @@ const initExercisesTableInDb = async () => {
     // Create exercises
     for (const exercise of exercises) {
         const req = {
-            alias: exercise[0],
+            name: exercise[0],
             description: exercise[1],
         };
         await request.post('/exercises').send(req);

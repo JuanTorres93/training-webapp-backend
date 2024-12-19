@@ -10,6 +10,12 @@ const newUserRequestNoOauth = {
     // oauth_registration: null,
 }
 
+const newExerciseRequest = {
+    name: "first_test_exercise",
+    description: "This is the description for a test exercise",
+}
+
 module.exports = {
     newUserRequestNoOauth,
+    newExerciseRequest,
 };
