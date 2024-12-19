@@ -3,16 +3,21 @@ const { check } = require('express-validator');
 const mw = require('../utils/middleware');
 const msgs = require('./errorMessages');
 
-const alias = 'alias'
+const { validateUUIDParameter } = require('../validators/generalPurpose');
+
+const username = 'username'
 const email = 'email'
+const subscriptionId = 'subscription_id'
 const password = 'password'
-const lastName = 'last_name'
-const secondLastName = 'second_last_name'
+const isPremium = 'is_premium'
+const isEarlyAdopter = 'is_early_adopter'
+const createdAt = 'created_at'
+const oauthRegistration = 'oauth_registration'
 
 const validateRegisterUserParams = [
-    check(alias)
-        .exists().withMessage(msgs.parameterMissingMsg(alias))
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+    check(username)
+        .exists().withMessage(msgs.parameterMissingMsg(username))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(username))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
@@ -30,27 +35,49 @@ const validateRegisterUserParams = [
         .isStrongPassword().withMessage('Password is not strong enough. It must have at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character.')
         .trim()
         .escape(),
-    check(lastName)
+    check(isPremium)
+        .exists().withMessage(msgs.parameterMissingMsg(isPremium))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(isPremium))
+        .isBoolean().withMessage(msgs.parameterMustBeTypeMsg('boolean'))
+        .trim()
+        .escape()
+        .toBoolean(),
+    check(isEarlyAdopter)
+        .exists().withMessage(msgs.parameterMissingMsg(isEarlyAdopter))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(isEarlyAdopter))
+        .isBoolean().withMessage(msgs.parameterMustBeTypeMsg('boolean'))
+        .trim()
+        .escape()
+        .toBoolean(),
+    check(createdAt)
+        .exists().withMessage(msgs.parameterMissingMsg(createdAt))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(createdAt))
+        // TODO check
+        .isISO8601().withMessage(msgs.parameterMustBeTypeMsg('ISO8601 date'))
+        .trim()
+        .escape(),
+    check(subscriptionId)
+        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
+        .optional()
+        .isUUID().withMessage(msgs.parameterMustBeTypeMsg('UUID'))
+        .trim()
+        .escape(),
+    check(oauthRegistration)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    check(secondLastName)
-        // TODO IMPORTANT process optional in another way. I think this can be a security flaw
-        .optional()
-        .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
-        .trim()
-        .escape(),
-    
+
     mw.validateResult(400)
 ];
 
+// TODO update on refactor
 const validateUpdateUserParams = [
-    check(alias)
+    check(username)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(alias))
+        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(username))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
@@ -70,19 +97,19 @@ const validateUpdateUserParams = [
         .isStrongPassword()
         .trim()
         .escape(),
-    check(lastName)
+    check(isPremium)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    check(secondLastName)
+    check(isEarlyAdopter)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),
-    
+
     mw.validateResult(400)
 ];
 

@@ -21,6 +21,7 @@ describe(BASE_ENDPOINT, () => {
                     username: USER_ALIAS,
                     password: USER_PASSWORD,
                 };
+
                 response = await request.post(BASE_ENDPOINT).send(req);
             });
 
@@ -32,12 +33,16 @@ describe(BASE_ENDPOINT, () => {
                 const userInfo = response.body.user;
 
                 expect(userInfo).toHaveProperty('id');
-                expect(userInfo).toHaveProperty('alias');
+                expect(userInfo).toHaveProperty('username');
                 expect(userInfo).toHaveProperty('email');
+                expect(userInfo).toHaveProperty('subscription_id');
                 expect(userInfo).toHaveProperty('last_name');
-                expect(userInfo).toHaveProperty('second_last_name');
                 expect(userInfo).toHaveProperty('img');
-
+                expect(userInfo).toHaveProperty('second_last_name');
+                expect(userInfo).toHaveProperty('is_premium');
+                expect(userInfo).toHaveProperty('is_early_adopter');
+                expect(userInfo).toHaveProperty('created_at');
+                // Do NOT return user password
                 expect(userInfo).not.toHaveProperty('password');
             });
         });

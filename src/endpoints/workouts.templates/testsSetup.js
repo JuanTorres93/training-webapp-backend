@@ -5,6 +5,7 @@ require('dotenv').config();
 const supertest = require('supertest');
 const createApp = require('../../app.js');
 const createCommonUser = require('../../createCommonUser.js').createCommonUser;
+const { newUserRequestNoOauth } = require('../testCommon.js');
 
 const app = createApp();
 const BASE_ENDPOINT = '/workouts/templates';
@@ -31,12 +32,7 @@ const createNewTemplateRequest = (userId, alias, description) => {
 };
 
 const newUserReq = {
-    alias: "first_test_user",
-    email: "first_user@domain.com",
-    last_name: "Manacle",
-    password: "$ecur3_P@ssword",
-    second_last_name: "Sanches",
-    registeredViaOAuth: false,
+    ...newUserRequestNoOauth
 };
 
 const setUp = async () => {
@@ -52,7 +48,7 @@ const setUp = async () => {
     // Add other user to db
     const otherUserResponse = await request.post('/users').send({
         ...newUserReq,
-        alias: OTHER_USER_ALIAS,
+        username: OTHER_USER_ALIAS,
         email: 'other@user.com',
     });
     const otherUser = otherUserResponse.body;
@@ -62,7 +58,7 @@ const setUp = async () => {
 
     // login user
     await request.post('/login').send({
-        username: newUserReq.alias,
+        username: newUserReq.username,
         password: newUserReq.password,
     });
 

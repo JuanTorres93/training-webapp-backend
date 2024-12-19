@@ -25,7 +25,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
             });
@@ -78,7 +78,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -145,7 +145,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -190,7 +190,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -299,7 +299,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
             });
@@ -370,7 +370,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -454,7 +454,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -514,7 +514,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
             it("status code of 200", async () => {
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -531,7 +531,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -561,7 +561,7 @@ describe(BASE_ENDPOINT + '/{templateId}', () => {
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 

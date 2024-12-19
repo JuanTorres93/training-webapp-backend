@@ -184,7 +184,7 @@ const checkKeysInBodyRequest = mandatoryBodyParametersArray => {
 
 const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
     // IMPORTANT: This middleware must be called after validating user parameter
-    const { alias, email } = req.body;
+    const { username, email } = req.body;
 
     const emailInUse = await dbUsers.checkEmailInUse(email) === true
 
@@ -194,7 +194,7 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
         });
     }
 
-    if (await dbUsers.checkAliasInUse(alias) === true) {
+    if (await dbUsers.checkAliasInUse(username) === true) {
         return res.status(409).json({
             msg: 'Alias already in use',
         });

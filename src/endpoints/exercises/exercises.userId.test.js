@@ -21,7 +21,7 @@ describe(`${BASE_ENDPOINT}` + '/all/{userId}', () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 

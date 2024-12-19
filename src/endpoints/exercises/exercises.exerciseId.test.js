@@ -100,7 +100,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
                 // Login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -274,7 +274,7 @@ describe(`${BASE_ENDPOINT}` + '/{exerciseId}', () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 

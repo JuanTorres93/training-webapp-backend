@@ -19,7 +19,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -85,7 +85,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
             describe('401 error code when', () => {
                 it('user is not logged in', async () => {
-                    const response = await request.post(BASE_ENDPOINT).send(newUserReq);
+                    const response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
                     expect(response.statusCode).toStrictEqual(401);
                 });
             });

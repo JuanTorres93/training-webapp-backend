@@ -4,10 +4,13 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     const appIsBeingTested = process.env.NODE_ENV === 'test';
 
     const common_user = {
-        alias: process.env.DB_COMMON_USER_NAME,
-        password: process.env.DB_COMMON_USER_PASS,
+        username: process.env.DB_COMMON_USER_NAME,
         email: process.env.DB_COMMON_USER_EMAIL,
-        registeredViaOAuth: false,
+        password: process.env.DB_COMMON_USER_PASS,
+        is_premium: false,
+        is_early_adopter: false,
+        created_at: '2021-09-01T00:00:00.000Z',
+        // oauth_registrarion: null,
     };
 
     try {

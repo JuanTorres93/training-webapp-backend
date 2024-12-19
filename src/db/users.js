@@ -1,8 +1,9 @@
 const { query } = require('./index');
 const qh = require('./queryHelper.js');
+const { selectFreeTrialSubscription } = require('./subscriptions.js');
 
 const TABLE_NAME = 'users';
-const SELECT_USER_FIELDS = 'id, alias, email, last_name, img, second_last_name';
+const SELECT_USER_FIELDS = 'id, username, email, subscription_id, last_name, img, second_last_name, is_premium, is_early_adopter, created_at';
 
 const checkStringInFieldInUse = async (field, value) => {
     const q = "SELECT " + field +
@@ -42,10 +43,10 @@ const checkEmailInUse = async (email) => {
     }
 };
 
-const checkAliasInUse = async (alias) => {
+const checkAliasInUse = async (username) => {
     try {
         // checkStringInFieldInUse only resolves to true
-        return await checkStringInFieldInUse('alias', alias);
+        return await checkStringInFieldInUse('username', username);
     } catch (error) {
         if (error.error !== null) throw error;
 
@@ -53,23 +54,35 @@ const checkAliasInUse = async (alias) => {
     }
 };
 
-const registerNewUser = ({
-    alias,
+const registerNewUser = async ({
+    username,
     email,
     password,
-    last_name,
-    second_last_name,
-    registeredViaOAuth,
+    is_premium,
+    is_early_adopter,
+    created_at,
+    subscription_id,
+    oauth_registration,
 }) => {
 
     // Build query
-    let requiredFields = ['alias', 'email', 'password', 'registeredviaoauth'];
-    let requiredValues = [alias, email, password, registeredViaOAuth];
+    let requiredFields = ['username', 'email', 'password', 'is_premium', 'is_early_adopter', 'created_at'];
+    let requiredValues = [username, email, password, is_premium, is_early_adopter, created_at];
 
-    let optionalFields = ['last_name', 'second_last_name'];
-    let optionalValues = [last_name, second_last_name];
+    let optionalFields = ['subscription_id', 'oauth_registration'];
 
-    let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name']
+    let subsId;
+    if (!subscription_id) {
+        subsId = await selectFreeTrialSubscription();
+        subsId = subsId.id;
+    } else {
+        subsId = subscription_id;
+    }
+
+    const oauth = oauth_registration ? oauth_registration : null;
+    let optionalValues = [subsId, oauth];
+
+    let returningFields = ['id', 'username', 'email', 'subscription_id', 'last_name', 'img', 'second_last_name', 'is_premium', 'is_early_adopter', 'created_at'];
 
     const { q, params } = qh.createInsertIntoTableStatement(TABLE_NAME,
         requiredFields, requiredValues,
@@ -128,22 +141,22 @@ const selectUserByEmail = async (email) => {
 };
 
 const selectUserRegisteredByOAuth = async (email) => {
-    const q = "SELECT registeredviaoauth FROM " +
+    const q = "SELECT oauth_registration FROM " +
         TABLE_NAME + " WHERE email = $1;";
     const params = [email];
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
-            const registeredViaOAuth = results.rows[0].registeredviaoauth;
-            resolve(registeredViaOAuth)
+            const oauthRegistration = results.rows[0].oauth_registration;
+            resolve(oauthRegistration)
         })
     });
 };
 
 
 const updateUser = async (id, userObject) => {
-    let returningFields = ['id', 'alias', 'email', 'last_name', 'img', 'second_last_name'];
+    let returningFields = ['id', 'username', 'email', 'last_name', 'img', 'second_last_name'];
 
     const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
         userObject,
@@ -161,7 +174,7 @@ const updateUser = async (id, userObject) => {
 
 const deleteUser = async (id) => {
     let q = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-        "RETURNING id, alias, email, last_name, img, second_last_name;";
+        "RETURNING id, username, email, last_name, img, second_last_name;";
     const params = [id]
 
     return new Promise((resolve, reject) => {

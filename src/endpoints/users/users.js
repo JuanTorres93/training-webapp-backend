@@ -68,7 +68,11 @@ router.get('/:userId/allTest',
 // ===================================
 // ========== POST requests ==========
 // ===================================
-router.post('/', validateRegisterUserParams,
+
+// Register new user
+// DOC: Register user
+router.post('/',
+    validateRegisterUserParams,
     mw.checkUserEmailAndAliasAlreadyExist,
     mw.hashPassword,
     async (req, res, next) => {

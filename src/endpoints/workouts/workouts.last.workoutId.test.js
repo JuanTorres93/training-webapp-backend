@@ -26,7 +26,7 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
 
         // login user
         await request.post('/login').send({
-            username: newUserReq.alias,
+            username: newUserReq.username,
             password: newUserReq.password,
         });
 
@@ -61,7 +61,7 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
 
             // login user
             await request.post('/login').send({
-                username: newUserReq.alias,
+                username: newUserReq.username,
                 password: newUserReq.password,
             });
 
@@ -112,7 +112,7 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
             beforeAll(async () => {
                 // login user
                 const logResponse = await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -144,7 +144,7 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');

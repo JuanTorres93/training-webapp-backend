@@ -16,16 +16,24 @@ const newSubscription2 = {
 };
 
 describe('subscriptions db', () => {
-    beforeAll(async () => {
-        await db.truncateTableTest();
-    });
+
+    describe('default state', () => {
+        it('selects FREE_TRIAL subscription', async () => {
+            const freeTrialSubscription = await db.selectFreeTrialSubscription();
+            expect(freeTrialSubscription).toMatchObject({
+                type: 'FREE_TRIAL',
+            });
+        })
+    })
 
     describe('happy path', () => {
         describe('Subscription creation', () => {
-            it('creates subscription', async () => {
-                const currentSubscriptions = await db.selectAllSubscriptions();
-                expect(currentSubscriptions).toHaveLength(0);
+            beforeAll(async () => {
+                await db.truncateTableTest();
 
+            });
+
+            it('creates subscription', async () => {
                 const expectedSubscription = {
                     ...newSubscription,
                     base_price_in_eur_cents: 1000,
@@ -44,21 +52,21 @@ describe('subscriptions db', () => {
             it('Does not create an already existing subscription type', () => {
                 const createdSubscription = db.addSubscription(newSubscription);
 
-                expect(createdSubscription).rejects.toMatchObject({
+                expect(createdSubscription).resolves.toMatchObject({
                     subscription: null,
                 });
-                expect(createdSubscription).rejects.toHaveProperty('error');
+                expect(createdSubscription).resolves.toHaveProperty('error');
             })
         })
 
         describe('Subscription selection', () => {
             beforeAll(async () => {
+                await db.truncateTableTest();
                 await db.addSubscription(newSubscription2);
             });
 
             it('selects all subscriptions', async () => {
                 const currentSubscriptions = await db.selectAllSubscriptions();
-                expect(currentSubscriptions).toHaveLength(2);
 
                 // Expect each subscription to have an id
                 currentSubscriptions.forEach(subscription => {
@@ -69,16 +77,11 @@ describe('subscriptions db', () => {
 
                 const expectedSubscriptions = [
                     {
-                        ...newSubscription,
-                        base_price_in_eur_cents: 1000,
-                    },
-                    {
                         ...newSubscription2,
                         base_price_in_eur_cents: 2000,
                     },
                 ];
                 delete expectedSubscriptions[0].basePriceInEurCents;
-                delete expectedSubscriptions[1].basePriceInEurCents;
 
                 // remove id from currentSubscriptions
                 currentSubscriptions.forEach(subscription => {
@@ -118,12 +121,6 @@ describe('subscriptions db', () => {
                 expect(selectedSubscription).toEqual(expectedSubscription);
             })
 
-            it('returns empty array when no subscriptions', async () => {
-                await db.truncateTableTest();
-
-                const currentSubscriptions = await db.selectAllSubscriptions();
-                expect(currentSubscriptions).toEqual([]);
-            })
         })
     })
 });

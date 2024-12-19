@@ -16,7 +16,7 @@ describe(BASE_ENDPOINT, () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
             });
@@ -61,7 +61,7 @@ describe(BASE_ENDPOINT, () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -90,7 +90,7 @@ describe(BASE_ENDPOINT, () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
             });
@@ -123,7 +123,7 @@ describe(BASE_ENDPOINT, () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');

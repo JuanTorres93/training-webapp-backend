@@ -8,8 +8,10 @@ const createApp = require('../../app.js');
 const app = createApp();
 const BASE_ENDPOINT = '/login';
 
-USER_ALIAS = 'test user';
-USER_PASSWORD = 'T3st_u$eR_pAss';
+const { newUserRequestNoOauth } = require('../testCommon.js');
+
+USER_ALIAS = newUserRequestNoOauth.username;
+USER_PASSWORD = newUserRequestNoOauth.password;
 
 function logErrors(err, req, res, next) {
   console.error(err.stack)
@@ -25,10 +27,7 @@ const setUp = async () => {
   await request.get('/workouts/templates/truncate');
 
   const newUserResponse = await request.post('/users').send({
-    alias: USER_ALIAS,
-    email: 'test@user.com',
-    password: USER_PASSWORD,
-    registeredViaOAuth: false,
+    ...newUserRequestNoOauth,
   });
   const newUser = newUserResponse.body;
 

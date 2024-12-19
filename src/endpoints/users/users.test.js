@@ -19,7 +19,7 @@ describe(`${BASE_ENDPOINT}`, () => {
             await setUp();
             response = await request.post(BASE_ENDPOINT).send({
                 ...successfulPostRequest,
-                alias: "second test user",
+                username: "second test user",
                 email: "second_user@domain.com",
             });
         });
@@ -28,11 +28,15 @@ describe(`${BASE_ENDPOINT}`, () => {
             it("returns user object", () => {
                 const user = response.body;
                 expect(user).toHaveProperty('id');
-                expect(user).toHaveProperty('alias');
+                expect(user).toHaveProperty('username');
                 expect(user).toHaveProperty('email');
+                expect(user).toHaveProperty('subscription_id');
                 expect(user).toHaveProperty('last_name');
-                expect(user).toHaveProperty('second_last_name');
                 expect(user).toHaveProperty('img');
+                expect(user).toHaveProperty('second_last_name');
+                expect(user).toHaveProperty('is_premium');
+                expect(user).toHaveProperty('is_early_adopter');
+                expect(user).toHaveProperty('created_at');
                 // Do NOT return user password
                 expect(user).not.toHaveProperty('password');
             });
@@ -58,7 +62,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
         describe('unhappy paths', () => {
             it('400 response when mandatory parameter is missing', async () => {
-                // alias is missing
+                // username is missing
                 let response = await request.post(BASE_ENDPOINT).send({
                     email: "John.Doe@domain.com",
                     last_name: "Doe",
@@ -70,7 +74,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
                 // email is missing
                 response = await request.post(BASE_ENDPOINT).send({
-                    alias: "John",
+                    username: "John",
                     last_name: "Doe",
                     password: "$ecur3_P@ssword",
                     second_last_name: "Smith",
@@ -80,7 +84,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
                 // password is missing
                 response = await request.post(BASE_ENDPOINT).send({
-                    alias: "John",
+                    username: "John",
                     email: "John.Doe@domain.com",
                     last_name: "Doe",
                     second_last_name: "Smith",
@@ -93,7 +97,7 @@ describe(`${BASE_ENDPOINT}`, () => {
                 const req = {
                     ...successfulPostRequest,
                     // email same as successfulRequest
-                    alias: "another_alias",
+                    username: "another_alias",
                     last_name: "another_last_name",
                     password: "@n0th3r_Pa$swOrd",
                     second_last_name: "another second last name",
@@ -104,10 +108,10 @@ describe(`${BASE_ENDPOINT}`, () => {
                 expect(response.statusCode).toStrictEqual(409);
             });
 
-            it('409 response when alias already exists in db', async () => {
+            it('409 response when username already exists in db', async () => {
                 let req = {
                     ...successfulPostRequest,
-                    // alias same as successfulRequest
+                    // username same as successfulRequest
                     email: "another_mail@domain.com",
                     last_name: "another_last_name",
                     password: "@n0th3r_PasswOrd",
@@ -140,11 +144,11 @@ describe(`${BASE_ENDPOINT}`, () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
+            it('user object has id, username, email, last_name, img and second_last_name properties', () => {
                 const userObject = response.body[0];
 
                 expect(userObject).toHaveProperty('id');
-                expect(userObject).toHaveProperty('alias');
+                expect(userObject).toHaveProperty('username');
                 expect(userObject).toHaveProperty('email');
                 expect(userObject).toHaveProperty('last_name');
                 expect(userObject).toHaveProperty('img');

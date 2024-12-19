@@ -26,7 +26,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
         // login user
         await request.post('/login').send({
-            username: newUserReq.alias,
+            username: newUserReq.username,
             password: newUserReq.password,
         });
 
@@ -65,7 +65,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -94,7 +94,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -207,7 +207,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -237,7 +237,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -322,7 +322,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -354,7 +354,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -440,7 +440,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -502,7 +502,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             beforeAll(async () => {
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 

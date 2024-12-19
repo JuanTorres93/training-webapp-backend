@@ -18,14 +18,14 @@ const setUp = async () => {
     // Add other user to db
     const otherUserResponse = await request.post('/users').send({
         ...newUserReq,
-        alias: OTHER_USER_ALIAS,
+        username: OTHER_USER_ALIAS,
         email: 'other@user.com',
     });
     const otherUser = otherUserResponse.body;
 
     // login user
     await request.post('/login').send({
-        username: newUserReq.alias,
+        username: newUserReq.username,
         password: newUserReq.password,
     });
 
@@ -83,7 +83,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -104,7 +104,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -130,7 +130,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -170,7 +170,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -313,7 +313,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
             beforeAll(async () => {
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');
@@ -447,7 +447,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -464,7 +464,7 @@ describe(BASE_ENDPOINT + '/{templateId}/exercises/{exerciseId}/{exerciseOrder}',
 
                 // login user. HERE CAUSE setUp ends loggin out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 

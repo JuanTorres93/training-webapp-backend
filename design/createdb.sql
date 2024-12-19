@@ -10,15 +10,19 @@ CREATE TABLE subscriptions (
 
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  alias VARCHAR(40) NOT NULL UNIQUE,
+  username VARCHAR(40) NOT NULL UNIQUE,
   email VARCHAR(70) NOT NULL UNIQUE,
+  subscription_id UUID NOT NULL REFERENCES subscriptions(id),
   last_name VARCHAR(40),
   img TEXT,
   second_last_name VARCHAR(40),
   password VARCHAR(60) NOT NULL,
-  registeredviaoauth BOOLEAN NOT NULL,
+  oauth_registration VARCHAR(4),
   is_premium BOOLEAN NOT NULL DEFAULT FALSE,
-  is_early_adopter BOOLEAN NOT NULL DEFAULT FALSE
+  is_early_adopter BOOLEAN NOT NULL DEFAULT FALSE,
+  -- TODO revise the length of the stripe_customer_id OR BETTER, ENCRYPT IT
+  stripe_customer_id VARCHAR(40),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE workouts (

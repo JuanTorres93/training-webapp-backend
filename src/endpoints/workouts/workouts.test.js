@@ -19,7 +19,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
 
@@ -54,7 +54,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
                 // Ensure user is logged out
                 await request.post('/login').send({
-                    username: newUserReq.alias,
+                    username: newUserReq.username,
                     password: newUserReq.password,
                 });
                 await request.get('/logout');

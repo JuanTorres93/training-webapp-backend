@@ -27,7 +27,7 @@ const localStrategy = new LocalStrategy(
         // a weird one in the shape of: { row: '(76,testUser,test@uuuser.com,,,)' }
         // In addition, password is needed to be retrieved from db in order to compare it
         // with the one submitted by the user.
-        const q = "SELECT * FROM users WHERE alias = $1;";
+        const q = "SELECT * FROM users WHERE username = $1;";
         const params = [username];
 
         query(q, params, async (error, results) => {
@@ -36,7 +36,6 @@ const localStrategy = new LocalStrategy(
             const userObject = results.rows[0];
 
             if (!userObject) return done(null, false);
-
 
             if (userObject) {
                 const email = userObject.email;
@@ -59,11 +58,15 @@ const localStrategy = new LocalStrategy(
             // RETURNED BY deserializUser function
             const user = {
                 id: userObject.id,
-                alias: userObject.alias,
+                username: userObject.username,
                 email: userObject.email,
+                subscription_id: userObject.subscription_id,
                 last_name: userObject.last_name,
-                second_last_name: userObject.second_last_name,
                 img: userObject.img,
+                second_last_name: userObject.second_last_name,
+                is_premium: userObject.is_premium,
+                is_early_adopter: userObject.is_early_adopter,
+                created_at: userObject.created_at,
             };
 
             return done(null, user);
@@ -75,6 +78,8 @@ const googleStrategy = new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: '/login/google/callback',
     scope: ['profile', 'email'],
+    // TODO remove?
+    prompt: "consent", // This will force the consent screen to appear every time
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails[0].value;
@@ -99,12 +104,12 @@ const googleStrategy = new GoogleStrategy({
 
         // If user does not exist, create it
         if (!user) {
-            const alias = profile.displayName || 'Unknown Google User';
+            const username = profile.displayName || 'Unknown Google User';
             const plainPassword = profile.id + process.env.GOOGLE_CLIENT_SECRET;
             const password = await hashing.plainTextHash(plainPassword)
 
             const newUser = await dbUser.registerNewUser({
-                alias,
+                username,
                 email,
                 password,
                 registeredViaOAuth: true,
@@ -140,7 +145,7 @@ const deserializeUser = (serializedData, done) => {
 
         const user = {
             id: userObject.id,
-            alias: userObject.alias,
+            username: userObject.username,
             email: userObject.email,
             last_name: userObject.last_name,
             second_last_name: userObject.second_last_name,

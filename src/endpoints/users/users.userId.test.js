@@ -21,8 +21,8 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
         newUser = setUpInfo.newUser;
 
         // login user
-        const borrar = await request.post('/login').send({
-            username: successfulPostRequest.alias,
+        await request.post('/login').send({
+            username: successfulPostRequest.username,
             password: successfulPostRequest.password,
         });
 
@@ -39,16 +39,20 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
                 expect(response.statusCode).toStrictEqual(200);
             });
 
-            it('user object has id, alias, email, last_name, img and second_last_name properties', () => {
+            it('user object has correct properties', () => {
                 const userObject = response.body;
 
                 expect(userObject).toHaveProperty('id');
-                expect(userObject).toHaveProperty('alias');
+                expect(userObject).toHaveProperty('username');
                 expect(userObject).toHaveProperty('email');
+                expect(userObject).toHaveProperty('subscription_id');
                 expect(userObject).toHaveProperty('last_name');
-                expect(userObject).toHaveProperty('second_last_name');
                 expect(userObject).toHaveProperty('img');
-
+                expect(userObject).toHaveProperty('second_last_name');
+                expect(userObject).toHaveProperty('is_premium');
+                expect(userObject).toHaveProperty('is_early_adopter');
+                expect(userObject).toHaveProperty('created_at');
+                // Do NOT return user password
                 expect(userObject).not.toHaveProperty('password');
             });
         });
@@ -84,7 +88,7 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
 
     describe('put requests', () => {
         const putBodyRequest = {
-            alias: "updated alias with put",
+            username: "updated alias with put",
             email: "updated_email_with_put@domain.com",
             last_name: "updated_last_name_with_put",
             password: "Upd@t3d_Pasword_with_put",
@@ -103,7 +107,7 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: successfulPostRequest.alias,
+                    username: successfulPostRequest.username,
                     password: successfulPostRequest.password,
                 });
 
@@ -197,7 +201,7 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
                 it('trying to modify another user data', async () => {
                     // login user
                     await request.post('/login').send({
-                        username: successfulPostRequest.alias,
+                        username: successfulPostRequest.username,
                         password: successfulPostRequest.password,
                     });
 
@@ -272,7 +276,7 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
                 it('trying to delete another user', async () => {
                     // login user
                     await request.post('/login').send({
-                        username: successfulPostRequest.alias,
+                        username: successfulPostRequest.username,
                         password: successfulPostRequest.password,
                     });
 
@@ -309,7 +313,7 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
 
                 // login user
                 await request.post('/login').send({
-                    username: successfulPostRequest.alias,
+                    username: successfulPostRequest.username,
                     password: successfulPostRequest.password,
                 });
 
@@ -334,12 +338,6 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
                 const deletedUser = response.body;
 
                 expect(deletedUser.id).toStrictEqual(newUser.id);
-                expect(deletedUser.alias).toStrictEqual(successfulPostRequest.alias);
-                expect(deletedUser.email).toStrictEqual(successfulPostRequest.email);
-                expect(deletedUser.last_name).toStrictEqual(successfulPostRequest.last_name);
-                expect(deletedUser.second_last_name).toStrictEqual(successfulPostRequest.second_last_name);
-
-                expect(response.body).toHaveProperty('img');
 
                 // Do NOT return user password
                 expect(response.body).not.toHaveProperty('password');

@@ -9,6 +9,7 @@ const app = createApp();
 const BASE_ENDPOINT = '/workouts';
 const { OTHER_USER_ALIAS } = require('../exercises/testsSetup.js');
 const dbExercises = require('../../db/exercises.js');
+const { newUserRequestNoOauth } = require('../testCommon.js');
 
 function logErrors(err, req, res, next) {
     console.error(err.stack)
@@ -26,12 +27,7 @@ const successfulPostRequest = {
 }
 
 const newUserReq = {
-    alias: "first_test_user",
-    email: "first_user@domain.com",
-    last_name: "Manacle",
-    password: "$ecur3_P@ssword",
-    second_last_name: "Sanches",
-    registeredViaOAuth: false,
+    ...newUserRequestNoOauth,
 };
 
 const createWorkoutRequest = {
@@ -52,7 +48,7 @@ const exercises = [
 const initExercisesTableInDb = async () => {
     // login user
     await request.post('/login').send({
-        username: newUserReq.alias,
+        username: newUserReq.username,
         password: newUserReq.password,
     });
 
@@ -72,7 +68,7 @@ const initExercisesTableInDb = async () => {
 const addWorkoutsAndExercises = async (exercisesIds) => {
     // login user
     await request.post('/login').send({
-        username: newUserReq.alias,
+        username: newUserReq.username,
         password: newUserReq.password,
     });
 
@@ -290,7 +286,7 @@ const setUp = async () => {
     // Add other user to db
     const otherUserResponse = await request.post('/users').send({
         ...newUserReq,
-        alias: OTHER_USER_ALIAS,
+        username: OTHER_USER_ALIAS,
         email: 'other@user.com',
     });
     const otherUser = otherUserResponse.body;
@@ -298,7 +294,7 @@ const setUp = async () => {
 
     // login user
     await request.post('/login').send({
-        username: newUserReq.alias,
+        username: newUserReq.username,
         password: newUserReq.password,
     });
 

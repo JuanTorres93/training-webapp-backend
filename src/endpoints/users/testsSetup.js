@@ -8,6 +8,8 @@ const createApp = require('../../app.js');
 const app = createApp();
 const BASE_ENDPOINT = '/users';
 
+const { newUserRequestNoOauth } = require('../testCommon.js');
+
 function logErrors(err, req, res, next) {
   console.error(err.stack)
   next(err)
@@ -19,12 +21,7 @@ app.use(logErrors);
 const request = supertest.agent(app);
 
 const successfulPostRequest = {
-  alias: "first_test_user",
-  email: "first_user@domain.com",
-  last_name: "Manacle",
-  password: "$ecur3_P@ssword",
-  second_last_name: "Sanches",
-  registeredViaOAuth: false,
+  ...newUserRequestNoOauth
 }
 
 const setUp = async () => {
@@ -38,7 +35,7 @@ const setUp = async () => {
   // Add another user to db
   const otherUserResponse = await request.post(BASE_ENDPOINT).send({
     ...successfulPostRequest,
-    alias: 'other',
+    username: 'other',
     email: 'other@domain.com',
   });
   const otherUser = otherUserResponse.body;
