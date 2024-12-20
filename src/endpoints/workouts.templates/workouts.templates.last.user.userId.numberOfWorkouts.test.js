@@ -28,6 +28,13 @@ describe(BASE_ENDPOINT + '/last/user/{userId}/{numberOfWorkouts}', () => {
                     username: newUserReq.username,
                     password: newUserReq.password,
                 });
+
+                // Add workout
+                const newWorkoutReq = {
+                    template_id: newTemplate.id,
+                    description: 'test workout',
+                };
+                await request.post('/workouts').send(newWorkoutReq);
             });
 
             afterAll(async () => {
