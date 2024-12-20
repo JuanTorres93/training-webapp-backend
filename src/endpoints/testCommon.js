@@ -15,6 +15,7 @@ const newExerciseRequest = {
     description: "This is the description for a test exercise",
 }
 
+// TODO borrar
 const newWorkoutRequest = {
     name: "first_test_workout",
     description: "This is the description for a test workout",

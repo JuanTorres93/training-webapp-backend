@@ -69,7 +69,12 @@ router.get('/last/:templateId/user/:userId',
     mw.loggedUserIdEqualsUserIdInRequest,
     async (req, res, next) => {
         const { templateId, userId } = req.params;
-        const workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId);
+        let workout;
+        try {
+            workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId);
+        } catch (error) {
+            console.log(error);
+        }
 
         res.status(200).json(workout);
     });
@@ -180,10 +185,9 @@ router.put('/:workoutId',
     mw.workoutBelongsToLoggedInUser,
     async (req, res, next) => {
         const { workoutId } = req.params;
-        const { name, description } = req.body;
+        const { description } = req.body;
 
         const updateWorkoutInfo = {
-            name,
             description,
         };
 

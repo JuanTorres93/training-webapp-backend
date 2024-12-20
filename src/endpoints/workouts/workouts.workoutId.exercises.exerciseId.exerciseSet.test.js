@@ -11,13 +11,15 @@ const {
 
 describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}', () => {
     describe('delete requests', () => {
+        let user;
         let workout;
         let initialExercise;
         let exercisesIds = {};
 
         beforeAll(async () => {
             // Test's set up
-            await setUp();
+            const setupInfo = await setUp();
+            user = setupInfo.user;
             await initExercisesTableInDb();
 
             try {
@@ -26,7 +28,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}
                 console.log(error);
             }
 
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
             const workoutId = pushResponse.body.id;
 
             // login user

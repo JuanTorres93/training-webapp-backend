@@ -25,17 +25,16 @@ CREATE TABLE users (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE workouts (
-  id UUID PRIMARY KEY  DEFAULT uuid_generate_v4(),
-  name VARCHAR(40) NOT NULL,
-  description VARCHAR(500),
-  created_by UUID NOT NULL REFERENCES users(id)
-);
-
 CREATE TABLE workout_template (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id),
   name VARCHAR(40) NOT NULL,
+  description VARCHAR(500)
+);
+
+CREATE TABLE workouts (
+  id UUID PRIMARY KEY  DEFAULT uuid_generate_v4(),
+  template_id UUID NOT NULL REFERENCES workout_template(id),
   description VARCHAR(500)
 );
 

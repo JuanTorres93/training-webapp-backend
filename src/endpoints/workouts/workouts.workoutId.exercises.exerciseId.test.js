@@ -16,7 +16,8 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
 
     beforeAll(async () => {
         // Test's set up
-        await setUp();
+        const setupInfo = await setUp();
+        const { user } = setupInfo;
         await initExercisesTableInDb();
 
         try {
@@ -25,7 +26,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
             console.log(error);
         }
 
-        const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+        const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
         const workoutId = pushResponse.body.id;
 
         // login user
@@ -44,9 +45,12 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
     });
 
     describe('put requests', () => {
+        let user;
+
         describe('happy path', () => {
             beforeEach(async () => {
-                await setUp();
+                const setupInfo = await setUp();
+                user = setupInfo.user;
                 await initExercisesTableInDb();
 
                 try {
@@ -55,7 +59,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                     console.log(error);
                 }
 
-                const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+                const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
                 const workoutId = pushResponse.body.id;
 
                 // login user. HERE BECAUSE PREVIOUS CALLS LOGOUT THE USER
@@ -279,13 +283,15 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
     });
 
     describe('delete requests', () => {
+        let user;
         let workout;
         let initialExercise;
         let exercisesIds = {};
 
         beforeAll(async () => {
             // Test's set up
-            await setUp();
+            const setupInfo = await setUp();
+            user = setupInfo.user;
             await initExercisesTableInDb();
 
             try {
@@ -294,7 +300,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}', () => {
                 console.log(error);
             }
 
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
             const workoutId = pushResponse.body.id;
 
             // login user

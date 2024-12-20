@@ -2,7 +2,6 @@ const {
     request,
     BASE_ENDPOINT,
     newUserReq,
-    successfulPostRequest,
     initExercisesTableInDb,
     addWorkoutsAndExercises,
     getExercisesIds,
@@ -10,12 +9,15 @@ const {
 } = require('./testsSetup');
 
 describe(`${BASE_ENDPOINT}`, () => {
+    let template;
+    let newWorkoutReq;
     describe('post requests', () => {
         describe('happy path', () => {
             let response;
 
             beforeAll(async () => {
-                await setUp();
+                const setupInfo = await setUp();
+                const { user } = setupInfo;
 
                 // login user
                 await request.post('/login').send({
@@ -23,7 +25,21 @@ describe(`${BASE_ENDPOINT}`, () => {
                     password: newUserReq.password,
                 });
 
-                response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+                const newTemplateReq = {
+                    userId: user.id,
+                    name: "Template 1",
+                    description: "Template 1 description",
+                };
+
+                const templateResponse = await request.post('/workouts/templates').send(newTemplateReq);
+                template = templateResponse.body;
+
+                newWorkoutReq = {
+                    template_id: template.id,
+                    description: "Workout 1 description",
+                };
+
+                response = await request.post(BASE_ENDPOINT).send(newWorkoutReq);
             });
 
             afterAll(async () => {
@@ -33,6 +49,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
             it("returns workout object", () => {
                 expect(response.body).toHaveProperty('id');
+                expect(response.body).toHaveProperty('template_id');
                 expect(response.body).toHaveProperty('name');
                 expect(response.body).toHaveProperty('description');
                 expect(response.body).toHaveProperty('exercises');
@@ -71,7 +88,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
             describe('401 response when', () => {
                 it('user is not logged in', async () => {
-                    const response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
+                    const response = await request.post(BASE_ENDPOINT).send(newWorkoutReq);
                     expect(response.statusCode).toStrictEqual(401);
                 });
             });
@@ -79,15 +96,18 @@ describe(`${BASE_ENDPOINT}`, () => {
     });
 
     describe('get requests', () => {
+        let user;
         let response;
         let exercisesIds;
 
         beforeAll(async () => {
-            await setUp();
+            const setUpInfo = await setUp();
+            user = setUpInfo.user;
+
             await initExercisesTableInDb();
             exercisesIds = await getExercisesIds();
 
-            await addWorkoutsAndExercises(exercisesIds);
+            await addWorkoutsAndExercises(user.id, exercisesIds);
         });
 
         beforeEach(async () => {
@@ -107,6 +127,7 @@ describe(`${BASE_ENDPOINT}`, () => {
                 const workoutObject = response.body[0];
 
                 expect(workoutObject).toHaveProperty('id');
+                expect(workoutObject).toHaveProperty('template_id');
                 expect(workoutObject).toHaveProperty('name');
                 expect(workoutObject).toHaveProperty('description');
                 expect(workoutObject).toHaveProperty('exercises');

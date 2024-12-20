@@ -11,17 +11,16 @@ const {
 } = require('./testsSetup');
 
 describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
+    let template;
+    let newWorkoutReq;
     let id;
     let exercisesIds = {};
 
-    const createWorkoutRequest = {
-        name: "workout_with_exercises",
-        description: "This is the description for a workout with exercises",
-    };
-
     beforeAll(async () => {
         // Test's set up
-        await setUp();
+        const setupInfo = await setUp();
+        const { user } = setupInfo;
+
         await initExercisesTableInDb();
 
         // login user
@@ -30,8 +29,23 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
             password: newUserReq.password,
         });
 
+        const newTemplateReq = {
+            userId: user.id,
+            name: "Template 1",
+            description: "Template 1 description",
+        };
+
+        const templateResponse = await request.post('/workouts/templates').send(newTemplateReq);
+        template = templateResponse.body;
+
+        newWorkoutReq = {
+            template_id: template.id,
+            name: "workout_with_exercises",
+            description: "This is the description for a workout with exercises",
+        };
+
         // Create new workout
-        const response = await request.post(BASE_ENDPOINT).send(createWorkoutRequest);
+        const response = await request.post(BASE_ENDPOINT).send(newWorkoutReq);
 
         id = response.body.id;
 
@@ -185,19 +199,20 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
     describe('get requests', () => {
         let workoutId;
+        let user;
 
         beforeAll(async () => {
-            await setUp();
+            const setupInfo = await setUp();
+            user = setupInfo.user;
             await initExercisesTableInDb();
 
             try {
                 exercisesIds = await getExercisesIds();
             } catch (error) {
-                console.log("EEERROOOOOOOR")
                 console.log(error);
             }
 
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
             workoutId = pushResponse.body.id;
         });
 
@@ -296,14 +311,16 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
 
     describe('put request', () => {
         let workoutId;
+        let user;
 
         const putBodyRequest = {
-            name: "updated name",
             description: "updated description",
         };
 
         beforeAll(async () => {
-            await setUp();
+            const setupInfo = await setUp();
+            user = setupInfo.user;
+
             await initExercisesTableInDb();
 
             try {
@@ -312,7 +329,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                 console.log(error);
             }
 
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
             workoutId = pushResponse.body.id;
         });
 
@@ -338,7 +355,6 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                 const updatedworkout = response.body;
 
                 expect(updatedworkout.id).toStrictEqual(workoutId);
-                expect(updatedworkout.name).toStrictEqual(putBodyRequest.name);
                 expect(updatedworkout.description).toStrictEqual(putBodyRequest.description);
                 expect(updatedworkout).toHaveProperty('exercises');
 
@@ -418,11 +434,13 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
     describe('delete requests', () => {
         // In this suite unhappy path is tested first in order to preserve the
         // entry in the database
+        let user;
         let workoutId;
         let pushWorkout;
 
         beforeAll(async () => {
-            await setUp();
+            const setupInfo = await setUp();
+            user = setupInfo.user;
             await initExercisesTableInDb();
 
             try {
@@ -431,7 +449,7 @@ describe(`${BASE_ENDPOINT}` + '/{workoutId}', () => {
                 console.log(error);
             }
 
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
             pushWorkout = pushResponse.body;
             workoutId = pushResponse.body.id;
         });

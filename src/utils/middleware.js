@@ -52,9 +52,15 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
 
     const workoutId = (req.params.workoutId) ? req.params.workoutId : req.body.workoutId;
 
-    const workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
-        workoutId, loggedUserId
-    );
+    let workoutBelongsToUser;
+
+    try {
+        workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
+            workoutId, loggedUserId
+        );
+    } catch (error) {
+        console.log(error);
+    }
 
     if (workoutBelongsToUser) {
         next();

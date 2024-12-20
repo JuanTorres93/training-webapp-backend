@@ -21,6 +21,7 @@ app.use(logErrors);
 // I use agent for storing user info when login in
 const request = supertest.agent(app);
 
+// TODO delete after refactor=?
 const successfulPostRequest = {
     ...newWorkoutRequest
 }
@@ -64,27 +65,53 @@ const initExercisesTableInDb = async () => {
     await request.get('/logout');
 }
 
-const addWorkoutsAndExercises = async (exercisesIds) => {
+const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     // login user
     await request.post('/login').send({
         username: newUserReq.username,
         password: newUserReq.password,
     });
 
+    // Create templates for the workouts
+    const pushTemplateRequest = {
+        userId,
+        name: "Push",
+        description: "Push workout",
+    };
+    const pushTemplateResponse = await request.post('/workouts/templates').send(pushTemplateRequest);
+    const pushTemplate = pushTemplateResponse.body;
+    const pushTemplateId = pushTemplateResponse.body.id;
+
+    const pullTemplateRequest = {
+        userId,
+        name: "Pull",
+        description: "Pull workout",
+    };
+    const pullTemplateResponse = await request.post('/workouts/templates').send(pullTemplateRequest);
+    const pullTemplateId = pullTemplateResponse.body.id;
+
+    const legTemplateRequest = {
+        userId,
+        name: "Leg",
+        description: "Leg workout",
+    };
+    const legTemplateResponse = await request.post('/workouts/templates').send(legTemplateRequest);
+    const legTemplateId = legTemplateResponse.body.id;
+
     // Create some workouts with their exercises
     const pushResponse = await request.post(BASE_ENDPOINT).send({
-        name: "Push",
-        description: "Test push exercise",
+        template_id: pushTemplateId,
+        description: "Test push workout",
     });
 
     const pullResponse = await request.post(BASE_ENDPOINT).send({
-        name: "Pull",
-        description: "Test pull exercise",
+        template_id: pullTemplateId,
+        description: "Test pull workout",
     });
 
     const legResponse = await request.post(BASE_ENDPOINT).send({
-        name: "Leg",
-        description: "Test leg exercise",
+        template_id: legTemplateId,
+        description: "Test leg workout",
     });
 
     // Add exercises to workouts
@@ -246,6 +273,7 @@ const addWorkoutsAndExercises = async (exercisesIds) => {
 
     return {
         pushResponse,
+        pushTemplate,
         pullResponse,
         legResponse,
     };

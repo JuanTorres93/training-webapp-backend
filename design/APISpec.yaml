@@ -487,9 +487,9 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /workouts/all/{templateAlias}:
+  /workouts/all/{templateName}:
     parameters:
-      - name: templateAlias
+      - name: templateName
         in: path
         required: true
         description: Workout id
@@ -499,7 +499,7 @@ paths:
       tags:
         - Workouts
       description: Returns every workout id for a given template
-      operationId: getWorkoutAliasesFromTemplateName
+      operationId: getWorkoutNameFromTemplateName
       responses:
         "200":
           description: Array of workout ids
@@ -1217,7 +1217,7 @@ components:
     ReqBodyUpdateUser:
       type: object
       properties:
-        alias:
+        name:
           type: string
           description: User name
         email:
@@ -1237,7 +1237,7 @@ components:
           description: User profile image
 
       example:
-        alias: "John"
+        name: "John"
         email: "John.Doe@domain.com"
         last_name: "Doe"
         password: "secure_password"
@@ -1252,7 +1252,7 @@ components:
         id:
           type: integer
           description: Exercise id
-        alias:
+        name:
           type: string
           description: Exercise name
         description:
@@ -1260,7 +1260,7 @@ components:
           description: Exercise email
       example:
         id: 3
-        alias: "Bicep curl"
+        name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
 
@@ -1281,37 +1281,37 @@ components:
           description: Number of sets of the exercise to perform
       example:
         id: 3
-        alias: "Bicep curl"
+        name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
 
     ReqBodyCreateExercise:
       type: object
       required:
-        - alias
+        - name
       properties:
-        alias:
+        name:
           type: string
           description: Exercise name
         description:
           type: string
           description: Exercise email
       example:
-        alias: "Bicep curl"
+        name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
 
     ReqBodyUpdateExercise:
       type: object
       properties:
-        alias:
+        name:
           type: string
           description: Exercise name
         description:
           type: string
           description: Exercise email
       example:
-        alias: "Bicep curl"
+        name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
 
@@ -1320,7 +1320,7 @@ components:
       properties:
         id:
           type: integer
-        alias:
+        name:
           type: string
           description: Exercise name
         set:
@@ -1447,8 +1447,12 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        alias:
+          type: string
+          description: Id of the workout (UUID)
+        template_id:
+          type: string
+          description: Id of the template (UUID)
+        name:
           type: string
           description: Exercise name
         description:
@@ -1474,46 +1478,50 @@ components:
     ReqBodyCreateWorkout:
       type: object
       required:
-        - alias
+        - template_id
       properties:
-        alias:
+        template_id:
           type: string
-          description: Workout name
+          description: Id of the template (UUID)
         description:
           type: string
           description: Workout description
       example:
-        alias: "Pull"
+        template_id: "9876234-1234-1234-1234-123456789012"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
 
     ResponseCreateWorkout:
       type: object
-      required:
-        - alias
       properties:
-        alias:
+        id:
+          type: integer
+          description: Workout id
+        template_id:
           type: string
-          description: Workout name
+          description: Id of the template (UUID)
+        name:
+          type: string
+          description: Template name
         description:
           type: string
           description: Workout description
       example:
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
 
     ReqBodyUpdateWorkout:
       type: object
       properties:
-        alias:
+        name:
           type: string
           description: Workout name
         description:
           type: string
           description: Workout description
       example:
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
 
@@ -1521,33 +1529,33 @@ components:
       type: object
       required:
         - userId
-        - alias
+        - name
       properties:
         userId:
           type: integer
           description: Id of the user that owns the template
-        alias:
+        name:
           type: string
           description: Workout name
         description:
           type: string
           description: Workout description
       example:
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
 
     ReqBodyUpdateWorkoutTemplate:
       type: object
       properties:
-        alias:
+        name:
           type: string
           description: Workout name
         description:
           type: string
           description: Workout description
       example:
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
 
@@ -1555,19 +1563,19 @@ components:
       type: object
       required:
         - userId
-        - alias
+        - name
       properties:
         userId:
           type: integer
           description: Id of the user that owns the template
-        alias:
+        name:
           type: string
           description: Workout name
         description:
           type: string
           description: Workout description
       example:
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
       description: Workout object
 
@@ -1576,7 +1584,7 @@ components:
       properties:
         id:
           type: integer
-        alias:
+        name:
           type: string
           description: Exercise name
         description:
@@ -1665,7 +1673,7 @@ components:
     WorkoutExercise:
       value:
         id: 4
-        alias: Pull up
+        name: Pull up
         set: 3
         reps: 9
         weight: 7.5
@@ -1673,42 +1681,43 @@ components:
 
     Workout:
       value:
-        id: 2
-        alias: Pull
+        id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
+        template_id: "9876234-1234-1234-1234-123456789012"
+        name: Pull
         description: "Pull training routine"
         exercises:
           - id: 4
-            alias: Pull up
+            name: Pull up
             set: 1
             reps: 9
             weight: 7.5
             time_in_seconds: Null
           - id: 4
-            alias: Pull up
+            name: Pull up
             set: 2
             reps: 9
             weight: 7.5
             time_in_seconds: Null
           - id: 4
-            alias: Pull up
+            name: Pull up
             set: 3
             reps: 8
             weight: 7.5
             time_in_seconds: Null
           - id: 5
-            alias: Barbell row
+            name: Barbell row
             set: 1
             reps: 8
             weight: 75
             time_in_seconds: Null
           - id: 5
-            alias: Barbell row
+            name: Barbell row
             set: 2
             reps: 8
             weight: 75
             time_in_seconds: Null
           - id: 5
-            alias: Barbell row
+            name: Barbell row
             set: 3
             reps: 7
             weight: 75
@@ -1717,19 +1726,19 @@ components:
     WorkoutTemplate:
       value:
         id: 2
-        alias: Pull
+        name: Pull
         description: "Pull training routine"
         exercises:
           - id: 4
-            alias: Pull up
+            name: Pull up
             order: 1
             sets: 3
           - id: 5
-            alias: Barbell rows
+            name: Barbell rows
             order: 2
             sets: 3
           - id: 5
-            alias: Biceps curl
+            name: Biceps curl
             order: 3
             sets: 3
 
@@ -1743,61 +1752,62 @@ components:
     AllWorkoutTemplates:
       value:
         - id: 1
-          alias: Push
+          name: Push
           description: "Push training routine"
           exercises:
             - id: 1
-              alias: Bench press
+              name: Bench press
               order: 1
               sets: 3
             - id: 2
-              alias: Military press
+              name: Military press
               order: 2
               sets: 3
             - id: 3
-              alias: Dips
+              name: Dips
               order: 3
               sets: 3
         - id: 2
-          alias: Pull
+          name: Pull
           description: "Pull training routine"
           exercises:
             - id: 4
-              alias: Pull up
+              name: Pull up
               order: 1
               sets: 3
             - id: 5
-              alias: Barbell rows
+              name: Barbell rows
               order: 2
               sets: 3
             - id: 5
-              alias: Biceps curl
+              name: Biceps curl
               order: 3
               sets: 3
 
     CreateWorkout:
       value:
         id: 6
-        alias: "Pull"
+        template_id: "9876234-1234-1234-1234-123456789012"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
         exercises: []
 
     CreateWorkoutTemplate:
       value:
         userId: 2
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 
     UpdateWorkoutTemplate:
       value:
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 
     NewWorkoutTemplate:
       value:
         id: 1
         userId: 2
-        alias: "Pull"
+        name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 
     ExerciseFromWorkout:

@@ -30,9 +30,8 @@ Table users {
 
 Table workouts {
   id UUID [PK, increment]
-  name VARCHAR(40) [not null, Note: 'Use alias instead of name due to postgres limitations']
+  template_id UUID [ref: > workout_template.id, not null]
   description VARCHAR(500)
-  created_by UUID [ref: > users.id, not null]
 }
 
 Table workout_template {

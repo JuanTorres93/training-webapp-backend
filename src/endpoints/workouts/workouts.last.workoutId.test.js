@@ -3,7 +3,6 @@ const {
     OTHER_USER_ALIAS,
     request,
     newUserReq,
-    createWorkoutRequest,
     initExercisesTableInDb,
     addWorkoutsAndExercises,
     getExercisesIds,
@@ -11,10 +10,8 @@ const {
 } = require('./testsSetup');
 
 describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
-    let id;
     let exercisesIds = {};
     let user, otherUser;
-    let template;
 
     beforeAll(async () => {
         // Test's set up
@@ -30,11 +27,6 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
             password: newUserReq.password,
         });
 
-        // Create new workout
-        const response = await request.post(BASE_ENDPOINT).send(createWorkoutRequest);
-
-        id = response.body.id;
-
         try {
             exercisesIds = await getExercisesIds();
         } catch (error) {
@@ -47,17 +39,18 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
 
 
     describe('get requests', () => {
+        let template;
         let workoutId;
 
         beforeAll(async () => {
             try {
                 exercisesIds = await getExercisesIds();
             } catch (error) {
-                console.log("EEERROOOOOOOR")
                 console.log(error);
             }
 
-            const { pushResponse } = await addWorkoutsAndExercises(exercisesIds);
+            const { pushResponse, pushTemplate } = await addWorkoutsAndExercises(user.id, exercisesIds);
+            template = pushTemplate;
 
             // login user
             await request.post('/login').send({
@@ -79,12 +72,12 @@ describe(`${BASE_ENDPOINT}` + '/last/{templateId}/user/{userId}', () => {
             });
 
             // Create new template
-            const templateResponse = await request.post('/workouts/templates').send({
-                userId: user.id,
-                name: workout.name,
-                description: workout.description,
-            });
-            template = templateResponse.body;
+            // const templateResponse = await request.post('/workouts/templates').send({
+            //     userId: user.id,
+            //     name: workout.name,
+            //     description: workout.description,
+            // });
+            // template = templateResponse.body;
 
             // Add exercises to template
             const promises = []
