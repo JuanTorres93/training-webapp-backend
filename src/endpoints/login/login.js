@@ -1,6 +1,8 @@
 // TODO add login to swagger
 const express = require('express');
 const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
+const { encryptForFrontend } = require('../../hashing.js');
 
 const passport = require('../../passport-config.js');
 
@@ -45,17 +47,23 @@ const _loginUnsuccessfull = (err, req, res, next) => {
     });
 }
 
-// Used for retrieving user info after login (with OAuth)
+// Used for retrieving user info after login WITH OAuth
 loginRouter.get('/success', (req, res, next) => {
     if (req.user) {
         const user = {
-            ...req.user,
+            // ...req.user,
+            userId: req.user.id,
             expirationDate: _computeExpirationDate(),
         };
+        const encryptedUser = {};
 
-        const userAsURLParams = new URLSearchParams(user).toString();
+        for (let key in user) {
+            encryptedUser[key] = encryptForFrontend(user[key]);
+        }
 
-        res.redirect(`${process.env.CLIENT_URL}/?${userAsURLParams}`);
+        const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '5m' });
+
+        res.redirect(`${process.env.CLIENT_URL}/app/?token=${token}`);
     }
 });
 

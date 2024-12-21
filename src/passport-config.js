@@ -3,6 +3,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
+const oautCodes = require('./oauthCodes');
 const { query } = require('./db/index');
 const hashing = require('./hashing');
 const dbUser = require('./db/users');
@@ -112,7 +113,10 @@ const googleStrategy = new GoogleStrategy({
                 username,
                 email,
                 password,
-                registeredViaOAuth: true,
+                oauth_registration: oautCodes.GOOGLE,
+                is_premium: false,
+                is_early_adopter: false,
+                created_at: new Date().toISOString(),
             });
 
             return done(null, newUser);
