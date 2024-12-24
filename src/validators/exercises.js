@@ -27,7 +27,7 @@ const validateUpdateExerciseParams = [
     check(name)
         // TODO IMPORTANT process optional in another way. I think this can be a security flaw
         .optional()
-        .not().isEmpty().withMessage(msgs.parameterEmptyMsg(name))
+        // .not().isEmpty().withMessage(msgs.parameterEmptyMsg(name))
         .isString().withMessage(msgs.parameterMustBeTypeMsg('string'))
         .trim()
         .escape(),

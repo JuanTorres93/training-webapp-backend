@@ -128,8 +128,17 @@ const selectExerciseById = (id) => {
 const updateExercise = async (id, exerciseObject) => {
     const returningFields = ['id', 'name', 'description'];
 
+    let updateInfo = {
+        description: exerciseObject.description
+    };
+
+    if (exerciseObject.name) {
+        updateInfo.name = exerciseObject.name;
+    }
+
+
     const { q, params } = qh.createUpdateTableStatement(TABLE_NAME, id,
-        exerciseObject,
+        updateInfo,
         returningFields)
 
     return new Promise((resolve, reject) => {
