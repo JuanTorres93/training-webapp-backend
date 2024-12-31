@@ -45,6 +45,7 @@ router.get('/:workoutId',
     });
 
 // Get last workouts of a template by user
+// TODO comprobar si este endpoint se usa. EN los tests no está. MIRAR EN LA APLICACIÓN DE REACT
 router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
     validateUUIDParameter('templateId'),
     validateUUIDParameter('userId'),
@@ -96,16 +97,18 @@ router.get('/addFinishDate/:workoutId',
 
 
 // Get all workouts from a template
-router.get('/all/:templateAlias',
-    validateStringParameter('templateAlias'),
+router.get('/all/:templateId',
+    validateUUIDParameter('templateId'),
     mw.authenticatedUser,
     async (req, res, next) => {
         // TODO 403 and 404 responses? Maybe are not necesary
 
-        const { templateAlias } = req.params;
+
+        // TODO test EP
+        const { templateId } = req.params;
         const user = req.session.passport.user;
 
-        const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateAlias(templateAlias, user.id);
+        const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateId(templateId, user.id);
 
         res.status(200).json(workoutsIds);
     });

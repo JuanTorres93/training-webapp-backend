@@ -274,19 +274,18 @@ const workoutBelongsToUser = (workoutId, userId) => {
     });
 };
 
-const getAllWorkoutsIdsFromTemplateAlias = (templateAlias, userId) => {
+const getAllWorkoutsIdsFromTemplateId = (templateId, userId) => {
     const q = ` 
     SELECT w.id AS workout_id
     FROM workouts w
-    JOIN workout_template wt 
-        ON w.name = wt.name
-        AND w.created_by = wt.user_id
+    JOIN workout_template wt ON w.template_id = wt.id
+    JOIN users u ON wt.user_id = u.id
     WHERE
-    	wt.name = $1 and 
-    	wt.user_id = $2;
+    	wt.id = $1 and 
+    	u.id = $2;
     `;
 
-    const params = [templateAlias, userId];
+    const params = [templateId, userId];
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
@@ -768,7 +767,7 @@ module.exports = {
     selectworkoutById,
     selectLastWorkoutFromUser,
     selectLastNWorkoutsFromUser,
-    getAllWorkoutsIdsFromTemplateAlias,
+    getAllWorkoutsIdsFromTemplateId,
 
     // DELETE
     deleteWorkout,

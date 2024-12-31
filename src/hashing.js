@@ -1,7 +1,5 @@
-const CryptoJS = require('crypto-js');
 const bcrypt = require('bcrypt');
 
-// USED EXCLUSIVELY FOR THE BACKEND
 const plainTextHash = async (plainText, saltRounds = 10) => {
   // A salt round can be described as the amount of time needed to 
   // calculate a single bcrypt hash. The higher the salt rounds, 
@@ -28,13 +26,7 @@ const comparePlainTextToHash = async (plainText, hash) => {
   return false;
 };
 
-// IMPORTANT: USED IN CONJUNCTION WITH FRONTEND. SECRET KEY MUST BE THE SAME
-function encryptForFrontend(data) {
-  return CryptoJS.AES.encrypt(data, process.env.SECRET_FOR_FRONTEND).toString();
-}
-
 module.exports = {
   plainTextHash,
   comparePlainTextToHash,
-  encryptForFrontend,
 };

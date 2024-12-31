@@ -3,6 +3,8 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
+// TODO Page must be deployed for LinkedIn login to be implemented (package already installed)
+
 const oautCodes = require('./oauthCodes');
 const { query } = require('./db/index');
 const hashing = require('./hashing');
@@ -79,8 +81,6 @@ const googleStrategy = new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: '/login/google/callback',
     scope: ['profile', 'email'],
-    // TODO remove?
-    prompt: "consent", // This will force the consent screen to appear every time
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails[0].value;

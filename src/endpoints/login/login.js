@@ -2,7 +2,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const { encryptForFrontend } = require('../../hashing.js');
 
 const passport = require('../../passport-config.js');
 
@@ -55,11 +54,6 @@ loginRouter.get('/success', (req, res, next) => {
             userId: req.user.id,
             expirationDate: _computeExpirationDate(),
         };
-        const encryptedUser = {};
-
-        for (let key in user) {
-            encryptedUser[key] = encryptForFrontend(user[key]);
-        }
 
         const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '5m' });
 
