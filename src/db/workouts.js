@@ -445,6 +445,11 @@ const selectLastWorkoutFromUser = (templateId, userId) => {
 
             const workoutInfo = results.rows;
 
+            if (workoutInfo.length === 0) {
+                // there is no previous workout
+                return resolve({});
+            }
+
             // If workout does not exists
             if (workoutInfo.length === 0) {
                 return resolve(undefined);

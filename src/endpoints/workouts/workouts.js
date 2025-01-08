@@ -103,7 +103,6 @@ router.get('/all/:templateId',
     async (req, res, next) => {
         // TODO 403 and 404 responses? Maybe are not necesary
 
-
         // TODO test EP
         const { templateId } = req.params;
         const user = req.session.passport.user;
