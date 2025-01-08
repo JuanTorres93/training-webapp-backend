@@ -470,7 +470,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
             	uw.start_date AS dates
             FROM workouts w
             JOIN users_workouts uw ON w.id = uw.workout_id
-            JOIN workout_template wt ON w.name = wt.name --AND w.created_by = wt.user_id
+            JOIN workout_template wt ON w.template_id = wt.id
             JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
             JOIN workouts_exercises w_e ON w.id = w_e.workout_id
             JOIN exercises e ON w_e.exercise_id = e.id
@@ -482,7 +482,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
 
         SELECT
             w.id AS workout_id,
-            w.name AS workout_name,
+            wt.name AS workout_name,
             w.description AS workout_description,
             uw.start_date,
             e.id AS exercise_id,
@@ -494,7 +494,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
             w_e.exercise_time_in_seconds AS exercise_time_in_seconds
         FROM workouts w
         JOIN users_workouts uw ON w.id = uw.workout_id
-        JOIN workout_template wt ON w.name = wt.name
+        JOIN workout_template wt ON w.template_id = wt.id
         JOIN workout_template_exercises wt_e ON wt.id = wt_e.workout_template_id
         JOIN workouts_exercises w_e ON w.id = w_e.workout_id AND wt_e.exercise_id = w_e.exercise_id
         JOIN exercises e ON w_e.exercise_id = e.id
@@ -509,7 +509,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
             if (error) reject(error);
 
             if (results.rows.length === 0) {
-                resolve([]);
+                return resolve([]);
             }
 
             const workoutsInfo = results.rows;
