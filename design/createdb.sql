@@ -25,6 +25,13 @@ CREATE TABLE users (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE weights (
+  date DATE NOT NULL, -- Just day, month and year
+  user_id UUID NOT NULL REFERENCES users(id), 
+  value REAL,
+  PRIMARY KEY (date, user_id) 
+);
+
 CREATE TABLE workout_template (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id),

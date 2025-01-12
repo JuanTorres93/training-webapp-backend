@@ -28,6 +28,16 @@ Table users {
   created_at TIMESTAMP [NOT NULL]
 }
 
+Table weights {
+  date DATE [not null, note: "Just day, month and year"]
+  user_id UUID [ref: > users.id, not null]
+  value REAL
+
+  indexes {
+    (date, user_id) [pk]
+  }
+}
+
 Table workouts {
   id UUID [PK, increment]
   template_id UUID [ref: > workout_template.id, not null]

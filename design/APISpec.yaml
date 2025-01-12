@@ -1119,6 +1119,69 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /weights/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User id
+        schema:
+          type: string
+    get:
+      tags:
+        - Weights
+      description: Returns all registered weights for user
+      operationId: getAllWeightsForUser
+      responses:
+        "200":
+          description: All the weights
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResponseWeight"
+
+        "400":
+          $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+    post:
+      tags:
+        - Weights
+      operationId: registerWeight
+      description: Create new weight entry for user in the current day
+      responses:
+        "201":
+          description: Successfully registered user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseWeight"
+
+        "400":
+          $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "409":
+          $ref: "#/components/responses/409"
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReqBodyCreateNewWeight"
+
 components:
   schemas:
     ResponseUser:
@@ -1599,6 +1662,42 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/WorkoutTemplate"
+
+    ResponseWeight:
+      type: object
+      properties:
+        date:
+          type: string
+          description: Date of the weight entry
+        userId:
+          type: string
+          description: User id
+        value:
+          type: number
+          description: Weight value
+      example:
+        date: "2021-06-01"
+        userId: "09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
+        value: 76.4
+      description: User object
+
+    ReqBodyCreateNewWeight:
+      type: object
+      required:
+        - date
+        - weight
+      properties:
+        date:
+          type: string
+          description: Date of the weight entry
+        weight:
+          type: number
+          description: Weight value
+      example:
+        date: "2021-06-01"
+        weight: 76.4
+
+      description: Info needed to create weight object
 
   responses:
     400:
