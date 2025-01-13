@@ -1685,17 +1685,17 @@ components:
       type: object
       required:
         - date
-        - weight
+        - value
       properties:
         date:
           type: string
           description: Date of the weight entry
-        weight:
+        value:
           type: number
           description: Weight value
       example:
         date: "2021-06-01"
-        weight: 76.4
+        value: 76.4
 
       description: Info needed to create weight object
 
