@@ -7,7 +7,8 @@ const SELECT_WEIGHT_FIELDS = 'date, user_id, value';
 
 const selectAllWeightsForUser = (userId) => {
     const q = "SELECT " + SELECT_WEIGHT_FIELDS + " FROM " + TABLE_NAME +
-        " WHERE user_id = $1;";
+        " WHERE user_id = $1" +
+        " ORDER BY date ASC;";
     const params = [userId];
 
     return new Promise((resolve, reject) => {

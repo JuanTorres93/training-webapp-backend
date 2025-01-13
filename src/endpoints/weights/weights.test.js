@@ -174,6 +174,27 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
                     expect(weight).toHaveProperty('value');
                 });
             });
+
+            it('orders weights by date more recent last', async () => {
+                await request.post(BASE_ENDPOINT + `/${newUser.id}`).send({
+                    ...successfulPostRequest,
+                    date: '2021-02-01',
+                });
+                await request.post(BASE_ENDPOINT + `/${newUser.id}`).send({
+                    ...successfulPostRequest,
+                    date: '2021-01-01',
+                });
+                await request.post(BASE_ENDPOINT + `/${newUser.id}`).send({
+                    ...successfulPostRequest,
+                    date: '2020-01-01',
+                });
+
+                const responseMultipleDates = await request.get(BASE_ENDPOINT + `/${newUser.id}`);
+
+                const dates = responseMultipleDates.body.map(weight => weight.date);
+                const sortedDates = [...dates].sort((a, b) => new Date(a) - new Date(b));
+                expect(dates).toStrictEqual(sortedDates);
+            });
         });
 
         describe("unhappy path", () => {
