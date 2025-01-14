@@ -44,6 +44,32 @@ const addNewWeight = async (userId, weightObject) => {
     });
 }
 
+const updateWeight = async (userId, weightObject) => {
+    // weightObject should have date, and value
+
+    const { date, value } = weightObject;
+    const formatteDate = new Date(date).toISOString().split('T')[0];
+
+    const q = `
+        UPDATE ${TABLE_NAME}
+        SET value = $1
+        WHERE user_id = $2 AND TO_CHAR(date, 'YYYY-MM-DD') = $3
+        RETURNING ${SELECT_WEIGHT_FIELDS};
+    `;
+
+    const params = [value, userId, formatteDate];
+
+    return new Promise((resolve, reject) => {
+        query(q, params, (error, results) => {
+            if (error) return reject(error);
+
+            const newWeight = results.rows[0];
+            resolve(newWeight)
+        })
+    }
+    );
+}
+
 const weightExists = async (userId, date) => {
     // format date to yyyy-mm-dd
     const formatteDate = new Date(date).toISOString().split('T')[0];
@@ -84,7 +110,6 @@ const truncateTableTest = () => {
                 reject(error)
             };
 
-
             resolve('Table ' + TABLE_NAME + ' truncated in test db.')
         }, true)
     });
@@ -93,6 +118,7 @@ const truncateTableTest = () => {
 
 module.exports = {
     addNewWeight,
+    updateWeight,
     weightExists,
     selectAllWeightsForUser,
     truncateTableTest,

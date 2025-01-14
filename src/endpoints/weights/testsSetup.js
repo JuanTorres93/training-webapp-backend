@@ -25,6 +25,11 @@ const successfulPostRequest = {
   value: 100,
 }
 
+const successfulPutRequest = {
+  ...successfulPostRequest,
+  value: 200,
+}
+
 const otherUserName = 'other';
 
 const setUp = async () => {
@@ -54,6 +59,7 @@ module.exports = {
   request,
   BASE_ENDPOINT,
   successfulPostRequest,
+  successfulPutRequest,
   newUserRequestNoOauth,
   otherUserName,
   setUp,

@@ -67,4 +67,36 @@ router.post('/:userId',
     });
 
 
+// ===================================
+// ========== PUT requests ==========
+// ===================================
+
+router.put('/:userId',
+    validateRegisterWeightParams,
+    validateUUIDParameter('userId'),
+    mw.checkUserExistsById,
+    mw.authenticatedUser,
+    mw.loggedUserIdEqualsUserIdInRequest,
+    async (req, res, next) => {
+        const { userId } = req.params;
+
+        const weightExists = await dbWeights.weightExists(userId, req.body.date);
+
+        if (!weightExists) {
+            return res.status(404).json({
+                msg: "Weight does not exist for that date"
+            });
+        }
+
+        try {
+            const updatedWeight = await dbWeights.updateWeight(userId, req.body);
+            return res.status(200).json(updatedWeight);
+        } catch (error) {
+            return res.status(400).json({
+                msg: "Error when registering weight in db"
+            });
+        }
+    });
+
+
 module.exports = router;
