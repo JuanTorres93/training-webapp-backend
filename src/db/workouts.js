@@ -320,6 +320,11 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
         workoutSpec.startDate = firstRow.start_date;
     }
 
+    // Add template_id only if it exists
+    if (firstRow.template_id !== undefined) {
+        workoutSpec.template_id = firstRow.template_id;
+    }
+
 
     workoutInfoDb.forEach(row => {
         const exerciseSet = {
@@ -484,6 +489,7 @@ const selectLastNWorkoutsFromUser = (templateId, userId, numberOfWorkouts) => {
         SELECT
             w.id AS workout_id,
             wt.name AS workout_name,
+            wt.id AS template_id,
             w.description AS workout_description,
             uw.start_date,
             e.id AS exercise_id,
