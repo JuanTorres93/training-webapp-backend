@@ -254,10 +254,11 @@ const checkExerciseInWorkoutExists = async (workoutId, exerciseId) => {
 
 
 const workoutBelongsToUser = (workoutId, userId) => {
-    const q = "SELECT * FROM " + TABLE_NAME + " AS wk " +
-        " LEFT JOIN workout_template AS wkt ON wk.template_id = wkt.id " +
-        " LEFT JOIN users AS us ON wkt.user_id = us.id " +
-        " WHERE wk.id = $1 AND us.id = $2;"
+    const q = `
+        SELECT * FROM ${TABLE_NAME} AS wk
+        JOIN users_workouts AS uw ON wk.id = uw.workout_id
+        WHERE wk.id = $1 AND uw.user_id = $2;
+    `;
 
     const params = [workoutId, userId];
 
