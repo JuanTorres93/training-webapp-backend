@@ -365,11 +365,41 @@ const deleteWorkoutTemplate = async (id) => {
         const templateExercisesParams = [id];
         await client.query(templateExercisesQuery, templateExercisesParams);
 
-        // Delete workout itself
-        const workoutsQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
-            "RETURNING id, name, description;";
+        // Delete references in users_workouts
+        const usersWorkoutsQuery = `
+            DELETE FROM users_workouts
+            WHERE workout_id IN (
+                SELECT w.id
+                FROM workouts w
+                WHERE w.template_id = $1
+            );
+        `;
+        const usersWorkoutsParams = [id];
+        await client.query(usersWorkoutsQuery, usersWorkoutsParams);
+
+        // Delete references in workouts_exercises
+        const workoutsExercisesQuery = `
+            DELETE FROM workouts_exercises
+            WHERE workout_id IN (
+                SELECT w.id
+                FROM workouts w
+                WHERE w.template_id = $1
+            );
+        `;
+        const workoutsExercisesParams = [id];
+        await client.query(workoutsExercisesQuery, workoutsExercisesParams);
+
+
+        // Delete references in workouts
+        const workoutsQuery = "DELETE FROM workouts WHERE template_id = $1;";
         const workoutsParams = [id];
         await client.query(workoutsQuery, workoutsParams);
+
+        // Delete template itself
+        const templatesQuery = "DELETE FROM " + TABLE_NAME + " WHERE id = $1 " +
+            "RETURNING id, name, description;";
+        const templatesParams = [id];
+        await client.query(templatesQuery, templatesParams);
 
         await client.query('COMMIT;');
     } catch (e) {
