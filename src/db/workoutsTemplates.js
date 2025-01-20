@@ -4,6 +4,7 @@ const userDb = require('./users.js');
 
 const TABLE_NAME = 'workout_template';
 
+
 let workoutsTemplatesWithExercisesQuery = "SELECT "
 workoutsTemplatesWithExercisesQuery += " 	wkt.id, "
 workoutsTemplatesWithExercisesQuery += " 	wkt.name, "
@@ -13,8 +14,8 @@ workoutsTemplatesWithExercisesQuery += " 	ex.name AS exercise_name, "
 workoutsTemplatesWithExercisesQuery += " 	wkte.exercise_order AS order, "
 workoutsTemplatesWithExercisesQuery += " 	wkte.exercise_sets AS sets "
 workoutsTemplatesWithExercisesQuery += " FROM workout_template AS wkt "
-workoutsTemplatesWithExercisesQuery += " JOIN workout_template_exercises AS wkte ON wkt.id = wkte.workout_template_id "
-workoutsTemplatesWithExercisesQuery += " JOIN exercises AS ex ON wkte.exercise_id = ex.id "
+workoutsTemplatesWithExercisesQuery += " LEFT JOIN workout_template_exercises AS wkte ON wkt.id = wkte.workout_template_id "
+workoutsTemplatesWithExercisesQuery += " LEFT JOIN exercises AS ex ON wkte.exercise_id = ex.id "
 workoutsTemplatesWithExercisesQuery += " WHERE TRUE "
 workoutsTemplatesWithExercisesQuery += " ORDER BY wkt.id, wkte.exercise_order; "
 
@@ -590,15 +591,27 @@ const selectWorkoutTemplatesByUserId = (userId) => {
 };
 
 const selectCommonWorkoutTemplates = async () => {
-    const commonUserId = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL);
+    const commonUser = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL);
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('commonUser');
+    console.log(commonUser);
 
     const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
-    const params = [commonUserId.id];
+    const params = [commonUser.id];
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('params');
+    console.log(params);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
+
             const everyWorkoutTemplate = results.rows;
+
+            // TODO DELETE THESE DEBUG LOGS
+            console.log('everyWorkoutTemplate');
+            console.log(everyWorkoutTemplate);
 
             const allTemplatesFormatted = [];
 
