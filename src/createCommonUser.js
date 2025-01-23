@@ -62,23 +62,57 @@ const createCommonUser = async (host, testRequestInterface = null) => {
             loginData = loginData.body;
         }
 
-        // console.log('Common user logged in');
-        // console.log('Creating shared exercises');
-
         const common_exercises = [
-            { name: 'Pushups', description: 'Pushups are a great exercise for the chest, shoulders, and triceps.' },
-            { name: 'Military Press', description: 'Military Press is a great exercise for the shoulders.' },
-            { name: 'Lateral Raises', description: 'Lateral Raises are a great exercise for the shoulders.' },
-            { name: 'Tricep Extensions', description: 'Triceps Extensions are a great exercise for the triceps.' },
-            { name: 'Rows', description: 'Rows are a great exercise for the back.' },
-            { name: 'Inverted Rows', description: 'Inverted Rows are a great exercise for the back.' },
-            { name: 'Bicep Curls', description: 'Bicep Curls are a great exercise for the biceps.' },
-            { name: 'Rear Delt Flyes', description: 'Rear Delt Flyes are a great exercise for the rear delts.' },
-            { name: 'Squats', description: 'Squats are a great exercise for the legs.' },
-            { name: 'Deadlifts', description: 'Deadlifts are a great exercise for the back.' },
-            { name: 'Lunges', description: 'Lunges are a great exercise for the legs.' },
-            { name: 'Calf Raises', description: 'Calf Raises are a great exercise for the calves.' },
+            {
+                name: "Pushups%$Flexiones",
+                description: "Pushups are a great exercise for the chest, shoulders, and triceps.%$Las flexiones son un gran ejercicio para el pecho, los hombros y los tríceps."
+            },
+            {
+                name: "Military Press%$Press Militar",
+                description: "Military Press is a great exercise for the shoulders.%$El press militar es un gran ejercicio para los hombros."
+            },
+            {
+                name: "Lateral Raises%$Elevaciones Laterales",
+                description: "Lateral Raises are a great exercise for the shoulders.%$Las elevaciones laterales son un gran ejercicio para los hombros."
+            },
+            {
+                name: "Tricep Extensions%$Extensiones Tríceps",
+                description: "Triceps Extensions are a great exercise for the triceps.%$Las extensiones de tríceps son un gran ejercicio para los tríceps."
+            },
+            {
+                name: "Rows%$Remo",
+                description: "Rows are a great exercise for the back.%$El remo es un gran ejercicio para la espalda."
+            },
+            {
+                name: "Inverted Rows%$Remo Invertido",
+                description: "Inverted Rows are a great exercise for the back.%$El remo invertido es un gran ejercicio para la espalda."
+            },
+            {
+                name: "Bicep Curls%$Curl Bíceps",
+                description: "Bicep Curls are a great exercise for the biceps.%$El curl de bíceps es un gran ejercicio para los bíceps."
+            },
+            {
+                name: "Rear Delt Flyes%$Aperturas Posteriores",
+                description: "Rear Delt Flyes are a great exercise for the rear delts.%$Las aperturas posteriores son un gran ejercicio para los deltoides posteriores."
+            },
+            {
+                name: "Squats%$Sentadillas",
+                description: "Squats are a great exercise for the legs.%$Las sentadillas son un gran ejercicio para las piernas."
+            },
+            {
+                name: "Deadlifts%$Peso Muerto",
+                description: "Deadlifts are a great exercise for the back.%$El peso muerto es un gran ejercicio para la espalda."
+            },
+            {
+                name: "Lunges%$Zancadas",
+                description: "Lunges are a great exercise for the legs.%$Las zancadas son un gran ejercicio para las piernas."
+            },
+            {
+                name: "Calf Raises%$Elevaciones Gemelos",
+                description: "Calf Raises are a great exercise for the calves.%$Las elevaciones de gemelos son un gran ejercicio para los gemelos."
+            },
         ];
+
 
         const common_exercises_promises = common_exercises.map(async (exercise) => {
             if (!appIsBeingTested) {
