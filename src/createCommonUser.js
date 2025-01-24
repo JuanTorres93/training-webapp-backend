@@ -137,9 +137,9 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         // console.log('Creating shared workouts templates');
 
         const common_workouts_templates = [
-            { userId: createUserData.id, name: 'Push Day', description: 'Push Day is a workout that focuses on the chest, shoulders, and triceps.' },
-            { userId: createUserData.id, name: 'Pull Day', description: 'Pull Day is a workout that focuses on the back and biceps.' },
-            { userId: createUserData.id, name: 'Leg Day', description: 'Leg Day is a workout that focuses on the legs.' },
+            { userId: createUserData.id, name: 'Push Day%$Empujes', description: 'Push Day is a workout that focuses on the chest, shoulders, and triceps.%$Empujes es un entrenamiento que se centra en el pecho, los hombros y los tríceps.' },
+            { userId: createUserData.id, name: 'Pull Day%$Tracciones', description: 'Pull Day is a workout that focuses on the back and biceps.%$Tracciones es un entrenamiento que se centra en la espalda y los bíceps.' },
+            { userId: createUserData.id, name: 'Leg Day%$Pierna', description: 'Leg Day is a workout that focuses on the legs.%$Pierna es un entrenamiento que se centra en las piernas.' },
         ];
 
         const common_workouts_templates_promises = common_workouts_templates.map(async (workout) => {
