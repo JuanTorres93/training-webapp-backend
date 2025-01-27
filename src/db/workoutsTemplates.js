@@ -592,26 +592,15 @@ const selectWorkoutTemplatesByUserId = (userId) => {
 
 const selectCommonWorkoutTemplates = async () => {
     const commonUser = await userDb.selectUserByEmail(process.env.DB_COMMON_USER_EMAIL);
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('commonUser');
-    console.log(commonUser);
 
     const q = workoutsTemplatesWithExercisesQuery.replace('WHERE TRUE', `WHERE wkt.user_id = $1`);
     const params = [commonUser.id];
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('params');
-    console.log(params);
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
             if (error) reject(error);
 
             const everyWorkoutTemplate = results.rows;
-
-            // TODO DELETE THESE DEBUG LOGS
-            console.log('everyWorkoutTemplate');
-            console.log(everyWorkoutTemplate);
 
             const allTemplatesFormatted = [];
 
