@@ -7,6 +7,6 @@ const PORT = process.env.SERVER_PORT;
 app.listen(PORT, async () => {
     console.log('Server is listening');
 
-    // TODO DELETED WHEN REFACTORING DEMANDS IT
+    // TODO DELETE WHEN REFACTORING DEMANDS IT
     await createCommonUser(`http://localhost:${process.env.SERVER_PORT}`);
 });

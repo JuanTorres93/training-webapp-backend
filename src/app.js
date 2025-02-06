@@ -45,6 +45,14 @@ const createApp = () => {
         credentials: true, // Required for cookies, authorization headers with HTTPS
         optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
     };
+
+    if (process.env.NODE_ENV === 'test') {
+        // This allows the connection with jsdom in jest
+        // Otherwise, there is a CORS error despite the fact 
+        // that the origin is well set
+        corsOptions.origin = '*';
+    }
+
     app.use(cors(corsOptions));
 
     // Rate limiter. IMPORTANT TO BE AFTER CORS configuration

@@ -133,7 +133,7 @@ const selectUserByEmail = async (email) => {
 
     return new Promise((resolve, reject) => {
         query(q, params, (error, results) => {
-            if (error) reject(error);
+            if (error) return reject(error);
             const user = results.rows[0];
             resolve(user)
         })
