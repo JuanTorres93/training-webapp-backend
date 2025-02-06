@@ -15,6 +15,7 @@ const createCommonUser = async (host, testRequestInterface = null) => {
 
     try {
         const user = await usersDB.selectUserByEmail(common_user.email);
+
         if (user) {
             return;
         }

@@ -17,6 +17,11 @@ const notContainerizedPoolInfo = {
     ssl: true,
 };
 
+if (process.env.DB_HOST === 'db-test-for-frontend') {
+    // For testing purposes. It prevents the error: The server does not support SSL connections
+    delete notContainerizedPoolInfo.ssl;
+}
+
 let pool;
 
 if (process.env.NODE_ENV === 'test') {
