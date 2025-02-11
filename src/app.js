@@ -56,6 +56,7 @@ const createApp = () => {
     app.use(cors(corsOptions));
 
     // Rate limiter. IMPORTANT TO BE AFTER CORS configuration
+    // Add rate limiter only if the app is not being tested
     if (!appIsBeingTested) {
         const limiter = rateLimit({
             windowMs: 15 * 60 * 1000, // 15 minutes
@@ -67,7 +68,10 @@ const createApp = () => {
             message: "Too many requests, please try again later."
         });
 
-        app.use(limiter);
+        // Add limiter if NO testing the frontend
+        if (process.env.DB_HOST !== 'db-test-for-frontend') {
+            app.use(limiter);
+        }
     }
 
 
