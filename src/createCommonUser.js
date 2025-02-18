@@ -169,14 +169,23 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         workoutsTemplates.map(async (workoutTemplate) => {
             let exercisesToAdd = [];
 
-            if (workoutTemplate.name === 'Push Day') {
+            const templateName = workoutTemplate.name;
+            if (templateName.includes('Push Day')) {
                 // Filter exercises array by name contained in the array that I want to add
-                exercisesToAdd = exercises.filter(exercise => ['Pushups', 'Military Press', 'Lateral Raises', 'Tricep Extensions'].includes(exercise.name));
-            } else if (workoutTemplate.name === 'Pull Day') {
-                exercisesToAdd = exercises.filter(exercise => ['Inverted Rows', 'Rows', 'Bicep Curls', 'Rear Delt Flyes'].includes(exercise.name));
-            } else if (workoutTemplate.name === 'Leg Day') {
-
-                exercisesToAdd = exercises.filter(exercise => ['Squats', 'Deadlifts', 'Calf Raises'].includes(exercise.name));
+                exercisesToAdd = exercises.filter(exercise => {
+                    const englishName = exercise.name.split('%$')[0];
+                    return ['Pushups', 'Military Press', 'Lateral Raises', 'Tricep Extensions'].includes(englishName)
+                });
+            } else if (templateName.includes('Pull Day')) {
+                exercisesToAdd = exercises.filter(exercise => {
+                    const englishName = exercise.name.split('%$')[0];
+                    return ['Inverted Rows', 'Rows', 'Bicep Curls', 'Rear Delt Flyes'].includes(englishName)
+                });
+            } else if (templateName.includes('Leg Day')) {
+                exercisesToAdd = exercises.filter(exercise => {
+                    const englishName = exercise.name.split('%$')[0];
+                    return ['Squats', 'Deadlifts', 'Calf Raises'].includes(englishName)
+                });
             }
 
             exercisesToAddPromises = exercisesToAdd.map(async (exercise, index) => {
