@@ -1,5 +1,6 @@
 const express = require('express');
 
+const templatesController = require('../../controllers/workoutTemplateController.js');
 const workoutsTemplatesValidators = require('../../validators/workoutsTemplates.js');
 const dbWorkoutsTemplates = require('../../db/workoutsTemplates.js');
 const { validateIntegerParameter, validateUUIDParameter } = require('../../validators/generalPurpose.js');
@@ -13,28 +14,18 @@ const router = express.Router();
 // ==================================
 
 // Get all workouts templates
+// TODO modify spec to need authenticated user
 router.get('/',
     mw.authenticatedUser,
-    async (req, res, next) => {
-        // TODO modify spec and endpoint to need authenticated user
-        const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates();
-
-        res.status(200).send(templates);
-    });
+    templatesController.getAllTemplates
+);
 
 // Truncate test table
-router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbWorkoutsTemplates.truncateTableTest();
-
-    res.status(200).send(truncatedTable);
-});
+router.get('/truncate', templatesController.truncateTestTable);
 
 router.get('/common',
     mw.authenticatedUser,
-    async (req, res) => {
-        const commonTemplates = await dbWorkoutsTemplates.selectCommonWorkoutTemplates();
-        res.status(200).json(commonTemplates);
-    }
+    templatesController.getCommonTemplates
 );
 
 // Get workout template by id
@@ -44,24 +35,15 @@ router.get('/:templateId',
     mw.authenticatedUser,
     // mw.workoutTemplateBelongsToLoggedInUser,
     mw.workoutTemplateBelongsToLoggedInORCommonUser,
-    async (req, res, next) => {
-        const { templateId } = req.params;
-
-        const workoutTemplate = await dbWorkoutsTemplates.selectWorkoutTemplateById(templateId);
-
-        res.status(200).json(workoutTemplate);
-    });
+    templatesController.getTemplateById
+);
 
 router.get('/all/:userId',
     validateUUIDParameter('userId'),
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
-    async (req, res) => {
-        const { userId } = req.params;
-        const templates = await dbWorkoutsTemplates.selectWorkoutTemplatesByUserId(userId);
-        res.status(200).json(templates);
-    }
+    templatesController.getAllTemplatesFromUser
 );
 
 // Last templates performed and finished by a user
@@ -71,12 +53,7 @@ router.get('/last/user/:userId/:numberOfWorkouts',
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
-    async (req, res) => {
-        const { userId, numberOfWorkouts } = req.params;
-
-        const templates = await dbWorkoutsTemplates.selectIdDateAndNameFromLastPerformedTemplatesByUser(userId, numberOfWorkouts);
-        res.status(200).json(templates);
-    }
+    templatesController.getLastTemplatesPerformedAndFinishedByUser
 );
 
 // ===================================
@@ -84,24 +61,13 @@ router.get('/last/user/:userId/:numberOfWorkouts',
 // ===================================
 
 // Create new workout template
+// TODO implement 403 response
 router.post('/',
     workoutsTemplatesValidators.validateCreateWorkoutTemplateParams,
     mw.checkUserExistsById,
     mw.authenticatedUser,
-    async (req, res, next) => {
-        // TODO implement 403 response
-
-        try {
-            const createdWorkoutTemplate = await dbWorkoutsTemplates.createWorkoutTemplate(
-                req.body
-            );
-            return res.status(201).json(createdWorkoutTemplate);
-        } catch (error) {
-            return res.status(400).json({
-                msg: "Error when creating workout"
-            });
-        }
-    });
+    templatesController.createTemplate
+);
 
 // Add exercise to workout template
 router.post('/:templateId',
@@ -111,24 +77,8 @@ router.post('/:templateId',
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { templateId } = req.params;
-
-        const exercise = {
-            ...req.body,
-            workoutTemplateId: templateId,
-        };
-
-        try {
-            const addedExercise = await dbWorkoutsTemplates.addExerciseToWorkoutTemplate(exercise);
-
-            return res.status(201).json(addedExercise);
-        } catch (error) {
-            return res.status(400).json({
-                msg: "Error when adding exercise to workout template"
-            });
-        }
-    });
+    templatesController.addExerciseToTemplate
+);
 
 
 // ==================================
@@ -142,21 +92,7 @@ router.put('/:templateId',
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { templateId } = req.params;
-        const { name, description } = req.body;
-
-        const updateWorkoutTemplateInfo = {
-            name,
-            description,
-        };
-
-        const updatedWorkoutTemplate = await dbWorkoutsTemplates.updateWorkoutTemplate(
-            templateId, updateWorkoutTemplateInfo
-        );
-
-        res.status(200).json(updatedWorkoutTemplate);
-    }
+    templatesController.updateTemplate
 );
 
 // update exercise in workout template
@@ -170,22 +106,7 @@ router.put('/:templateId/exercises/:exerciseId/:exerciseOrder',
     mw.checkExerciseOrderExistsInWorkoutTemplate,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { templateId, exerciseId, exerciseOrder } = req.params;
-        const { newExerciseOrder, exerciseSets } = req.body;
-
-        const updateExerciseInfo = {
-            exerciseId,
-            newExerciseOrder,
-            exerciseSets,
-        };
-
-        const updatedExercise = await dbWorkoutsTemplates.updateExerciseFromWorkoutTemplate(
-            templateId, exerciseOrder, updateExerciseInfo
-        );
-
-        res.status(200).json(updatedExercise);
-    }
+    templatesController.updateExerciseInTemplate
 );
 
 
@@ -199,15 +120,7 @@ router.delete('/:templateId',
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { templateId } = req.params;
-
-        const deletedWorkoutTemplate = await dbWorkoutsTemplates.deleteWorkoutTemplate(
-            templateId
-        );
-
-        res.status(200).json(deletedWorkoutTemplate);
-    }
+    templatesController.deleteTemplate
 );
 
 // delete exercise from workout template
@@ -220,15 +133,7 @@ router.delete('/:templateId/exercises/:exerciseId/:exerciseOrder',
     mw.checkExerciseOrderExistsInWorkoutTemplate,
     mw.authenticatedUser,
     mw.workoutTemplateBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { templateId, exerciseId, exerciseOrder } = req.params;
-
-        const deletedExercise = await dbWorkoutsTemplates.deleteExerciseFromWorkoutTemplate(
-            templateId, exerciseId, exerciseOrder
-        );
-
-        res.status(200).json(deletedExercise[0]);
-    }
+    templatesController.deleteExerciseFromTemplate
 );
 
 module.exports = router;
