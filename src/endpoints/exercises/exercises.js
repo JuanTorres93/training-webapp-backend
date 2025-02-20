@@ -1,8 +1,9 @@
 const express = require('express');
 
+const exerciseController = require('../../controllers/exerciseController.js')
+
 const exerciseValidators = require('../../validators/exercises.js');
 const { validateUUIDParameter } = require('../../validators/generalPurpose.js');
-const dbExercises = require('../../db/exercises.js');
 const mw = require('../../utils/middleware.js');
 
 const router = express.Router();
@@ -12,41 +13,26 @@ const router = express.Router();
 // ==================================
 
 // Get all exercises
-router.get('/', async (req, res, next) => {
-    const exercises = await dbExercises.selectAllExercises();
-
-    res.status(200).send(exercises);
-});
+router.get('/',
+    exerciseController.getAllExercises
+);
 
 // Truncate test table
-router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbExercises.truncateTableTest();
-
-    res.status(200).send(truncatedTable);
-});
+router.get('/truncate', exerciseController.truncateTestTable);
 
 // Get all common exercises
 router.get('/common',
     mw.authenticatedUser,
-    async (req, res, next) => {
-
-        const commonExercises = await dbExercises.selectCommonExercises();
-
-        res.status(200).json(commonExercises);
-    });
+    exerciseController.getAllCommonExercses
+);
 
 // Get exercise by id
+// TODO implement 403 response case
 router.get('/:exerciseId',
     validateUUIDParameter('exerciseId'),
     mw.checkExerciseExistsById,
-    async (req, res, next) => {
-        // TODO implement 403 response case
-        const { exerciseId } = req.params;
-
-        const exercise = await dbExercises.selectExerciseById(exerciseId);
-
-        res.status(200).json(exercise);
-    });
+    exerciseController.getExerciseById
+);
 
 // Get all exercises from user
 router.get('/all/:userId',
@@ -54,13 +40,8 @@ router.get('/all/:userId',
     mw.checkUserExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
-    async (req, res, next) => {
-        const { userId } = req.params;
-
-        const exercises = await dbExercises.selectAllExercisesFromUser(userId);
-
-        res.status(200).json(exercises);
-    });
+    exerciseController.getAllExercisesFromUser
+);
 
 // ===================================
 // ========== POST requests ==========
@@ -68,21 +49,8 @@ router.get('/all/:userId',
 router.post('/',
     exerciseValidators.validateCreateExerciseParams,
     mw.authenticatedUser,
-    async (req, res, next) => {
-        const userId = req.user.id;
-
-        try {
-            const createdExercise = await dbExercises.createExercise(
-                userId, req.body
-            );
-
-            return res.status(201).json(createdExercise);
-        } catch (error) {
-            return res.status(400).json({
-                msg: "Error when creating exercise in db"
-            });
-        }
-    });
+    exerciseController.createExercise
+);
 
 // ==================================
 // ========== PUT requests ==========
@@ -95,19 +63,7 @@ router.put('/:exerciseId',
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.exerciseBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { exerciseId } = req.params;
-        const { name, description } = req.body;
-
-        const newExerciseInfo = {
-            name,
-            description,
-        };
-
-        const updatedExercise = await dbExercises.updateExercise(exerciseId, newExerciseInfo);
-
-        res.status(200).json(updatedExercise);
-    }
+    exerciseController.updateExercise
 );
 
 // =====================================
@@ -120,13 +76,7 @@ router.delete('/:exerciseId',
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.exerciseBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { exerciseId } = req.params;
-
-        const deletedexercise = await dbExercises.deleteExercise(exerciseId);
-
-        res.status(200).json(deletedexercise);
-    }
+    exerciseController.deleteExercise
 );
 
 
