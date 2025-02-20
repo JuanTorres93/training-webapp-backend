@@ -1,5 +1,6 @@
 const express = require('express');
 
+const workoutController = require('../../controllers/workoutController.js');
 const workoutsValidators = require('../../validators/workouts.js');
 const {
     validateIntegerParameter,
@@ -16,19 +17,11 @@ const router = express.Router();
 // ==================================
 
 // Get all workouts
-router.get('/', async (req, res, next) => {
-    // TODO modify spec and endpoint to need authenticated user
-    const workouts = await dbWorkouts.selectAllWorkouts();
-
-    res.status(200).send(workouts);
-});
+// TODO modify spec and endpoint to need authenticated user
+router.get('/', workoutController.getAllWorkouts);
 
 // Truncate test table
-router.get('/truncate', async (req, res, next) => {
-    const truncatedTable = await dbWorkouts.truncateTableTest();
-
-    res.status(200).send(truncatedTable);
-});
+router.get('/truncate', workoutController.truncateTestTable);
 
 // Get workout by id
 router.get('/:workoutId',
@@ -36,16 +29,11 @@ router.get('/:workoutId',
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId } = req.params;
-
-        const workout = await dbWorkouts.selectworkoutById(workoutId);
-
-        res.status(200).json(workout);
-    });
+    workoutController.getWorkoutById
+);
 
 // Get last workouts of a template by user
-// TODO comprobar si este endpoint se usa. EN los tests no está. MIRAR EN LA APLICACIÓN DE REACT
+// TODO HACER TESTS. SE USA EN REACT, PERO NO ESTÁ TESTEADO
 router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
     validateUUIDParameter('templateId'),
     validateUUIDParameter('userId'),
@@ -53,32 +41,19 @@ router.get('/last/:templateId/user/:userId/:numberOfWorkouts',
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
-    async (req, res, next) => {
-        const { templateId, userId, numberOfWorkouts } = req.params;
-
-        const workout = await dbWorkouts.selectLastNWorkoutsFromUser(templateId, userId, numberOfWorkouts);
-
-        res.status(200).json(workout);
-    });
+    workoutController.getLastWorkoutsFromATemplateByUserId
+);
 
 // Get last workout of a template by user
+// TODO HACER TESTS. SE USA EN REACT, PERO NO ESTÁ TESTEADO
 router.get('/last/:templateId/user/:userId',
     validateUUIDParameter('templateId'),
     validateUUIDParameter('userId'),
     mw.checkWorkoutTemplateExistsById,
     mw.authenticatedUser,
     mw.loggedUserIdEqualsUserIdInRequest,
-    async (req, res, next) => {
-        const { templateId, userId } = req.params;
-        let workout;
-        try {
-            workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId);
-        } catch (error) {
-            console.log(error);
-        }
-
-        res.status(200).json(workout);
-    });
+    workoutController.getLastSingleWorkoutFromTemplateByUserId
+);
 
 
 // Update end date of workout
@@ -87,30 +62,18 @@ router.get('/addFinishDate/:workoutId',
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId } = req.params;
-
-        const workout = await dbWorkouts.addFinishDateToWorkout(workoutId);
-
-        res.status(200).json(workout);
-    });
+    workoutController.updateEndDateOfWorkout
+);
 
 
 // Get all workouts from a template
+// TODO 403 and 404 responses? Maybe are not necesary
+// TODO test EP
 router.get('/all/:templateId',
     validateUUIDParameter('templateId'),
     mw.authenticatedUser,
-    async (req, res, next) => {
-        // TODO 403 and 404 responses? Maybe are not necesary
-
-        // TODO test EP
-        const { templateId } = req.params;
-        const user = req.session.passport.user;
-
-        const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateId(templateId, user.id);
-
-        res.status(200).json(workoutsIds);
-    });
+    workoutController.getAllWorkoutsFromTemplate
+);
 
 // ===================================
 // ========== POST requests ==========
@@ -120,20 +83,8 @@ router.get('/all/:templateId',
 router.post('/',
     workoutsValidators.validateCreateWorkoutParams,
     mw.authenticatedUser,
-    async (req, res, next) => {
-        const userId = req.user.id;
-
-        try {
-            const createdWorkout = await dbWorkouts.createWorkouts(
-                userId, req.body
-            );
-            return res.status(201).json(createdWorkout);
-        } catch (error) {
-            return res.status(400).json({
-                msg: "Error when creating workout"
-            });
-        }
-    });
+    workoutController.createWorkout
+);
 
 // Add exercise to workout
 router.post('/:workoutId',
@@ -143,36 +94,8 @@ router.post('/:workoutId',
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId } = req.params;
-
-        const exerciseData = {
-            ...req.body,
-            timeInSeconds: req.body.time_in_seconds,
-            exerciseId: req.body.exerciseId,
-            exerciseSet: req.body.exerciseSet,
-            workoutId,
-        };
-
-        // TODO CHECK primary key is not duplicated
-        try {
-            const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData);
-
-            const capitalizedAddedExercise = {
-                exerciseId: addedExercise.exerciseid,
-                exerciseSet: addedExercise.exerciseset,
-                reps: addedExercise.reps,
-                weight: addedExercise.weight,
-                time_in_seconds: addedExercise.time_in_seconds,
-            };
-
-            return res.status(201).json(capitalizedAddedExercise);
-        } catch (error) {
-            return res.status(400).json({
-                msg: "Error when adding exercise to workout"
-            });
-        }
-    });
+    workoutController.addExerciseToWorkout
+);
 
 // ==================================
 // ========== PUT requests ==========
@@ -185,18 +108,7 @@ router.put('/:workoutId',
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId } = req.params;
-        const { description } = req.body;
-
-        const updateWorkoutInfo = {
-            description,
-        };
-
-        const updatedWorkout = await dbWorkouts.updateWorkout(workoutId, updateWorkoutInfo);
-
-        res.status(200).json(updatedWorkout);
-    }
+    workoutController.updateWorkout
 );
 
 // update exercise in workout
@@ -208,30 +120,7 @@ router.put('/:workoutId/exercises/:exerciseId',
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId, exerciseId } = req.params;
-        const { exerciseSet, reps, weight, time_in_seconds } = req.body;
-
-        const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(workoutId, exerciseId);
-
-        if (!exerciseInWorkoutExists) {
-            return res.status(404).json({
-                msg: `Exercise with id ${exerciseId} does not exist in workout with id ${workoutId}`,
-            });
-        }
-
-        const updateExerciseInfo = {
-            exerciseId,
-            exerciseSet,
-            reps,
-            weight,
-            time_in_seconds,
-        };
-
-        const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(workoutId, updateExerciseInfo);
-
-        res.status(200).json(updatedExercise);
-    }
+    workoutController.updateExerciseInWorkout
 );
 
 // =====================================
@@ -244,13 +133,7 @@ router.delete('/:workoutId',
     mw.checkWorkoutExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId } = req.params;
-
-        const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId);
-
-        res.status(200).json(deletedWorkout);
-    }
+    workoutController.deleteWorkout
 );
 
 // delete exercise from workout
@@ -261,13 +144,7 @@ router.delete('/:workoutId/exercises/:exerciseId',
     mw.checkExerciseExistsById,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId, exerciseId } = req.params;
-
-        const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(workoutId, exerciseId);
-
-        res.status(200).json(deletedExercise);
-    }
+    workoutController.deleteExerciseFromWorkout
 );
 
 // delete exercise set from workout
@@ -280,13 +157,7 @@ router.delete('/:workoutId/exercises/:exerciseId/:exerciseSet',
     mw.checkExerciseSetExistsInWorkout,
     mw.authenticatedUser,
     mw.workoutBelongsToLoggedInUser,
-    async (req, res, next) => {
-        const { workoutId, exerciseId, exerciseSet } = req.params;
-
-        const deletedExercise = await dbWorkouts.deleteSetFromExercise(workoutId, exerciseId, exerciseSet);
-
-        res.status(200).json(deletedExercise);
-    }
+    workoutController.deleteExerciseSetFromWorkout
 );
 
 
