@@ -9,8 +9,7 @@ const router = express.Router();
 
 // TODO IMPORTANT protect this route
 router.get(
-  "/checkout-session/:subscriptionId",
-  validateUUIDParameter("subscriptionId"),
+  "/checkout-session",
   mw.authenticatedUser,
   mw.checkUserExistsById,
   paymentController.getCheckoutSession
