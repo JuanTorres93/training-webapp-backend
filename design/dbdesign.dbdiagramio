@@ -24,7 +24,6 @@ Table users {
   oauth_registration VARCHAR(4) [Note: 'NULL if local strategy. Otherwise code for platform: google, instagram, facebook, etc']
   is_premium bool [NOT NULL]
   is_early_adopter bool [NOT NULL]
-  stripe_customer_id VARCHAR // ID de cliente en Stripe
   created_at TIMESTAMP [NOT NULL]
 }
 
@@ -102,4 +101,12 @@ Table workouts_exercises {
   indexes {
     (workout_id, exercise_id, exercise_set) [pk]
   }
+}
+
+Table payments {
+  id UUID [PK]
+  user_id UUID [ref: > users.id, not null]
+  subscription_id UUID [ref: > subscriptions.id, not null]
+  amount_in_eur REAL [NOT NULL]
+  created_at TIMESTAMP [NOT NULL]
 }

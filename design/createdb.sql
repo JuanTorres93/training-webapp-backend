@@ -20,8 +20,6 @@ CREATE TABLE users (
   oauth_registration VARCHAR(4),
   is_premium BOOLEAN NOT NULL DEFAULT FALSE,
   is_early_adopter BOOLEAN NOT NULL DEFAULT FALSE,
-  -- TODO revise the length of the stripe_customer_id OR BETTER, ENCRYPT IT
-  stripe_customer_id VARCHAR(40),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -82,4 +80,12 @@ CREATE TABLE workouts_exercises (
   exercise_time_in_seconds INTEGER,
   notes VARCHAR(400),
   PRIMARY KEY (workout_id, exercise_id, exercise_set)
+);
+
+CREATE TABLE payments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id),
+  subscription_id UUID NOT NULL REFERENCES subscriptions(id),
+  amount_in_eur REAL NOT NULL,
+  created_at TIMESTAMP NOT NULL
 );
