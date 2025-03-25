@@ -1212,6 +1212,34 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ReqBodyCreateNewWeight"
+
+  /payments/checkout-session/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        description: Subscription id
+        schema:
+          type: string
+    get:
+      tags:
+        - Payments
+      description: Returns all registered weights for user
+      operationId: getAllWeightsForUser
+      responses:
+        "200":
+          description: Stripe checkout session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseGetCheckoutSession"
+
+        "400":
+          $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
+
 components:
   schemas:
     ResponseUser:
@@ -1695,6 +1723,7 @@ components:
 
     ResponseWeight:
       type: object
+      description: Weight object
       properties:
         date:
           type: string
@@ -1709,7 +1738,19 @@ components:
         date: "2021-06-01"
         userId: "09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
         value: 76.4
-      description: User object
+
+    ResponseGetCheckoutSession:
+      type: object
+      properties:
+        status:
+          type: string
+          description: status string
+        session:
+          type: object
+          description: Stripe session object
+      example:
+        status: "success"
+        session: "Stripe session object"
 
     ReqBodyCreateNewWeight:
       type: object
