@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
           model: "subscriptions", // Name of the referenced table
           key: "id",
         },
+        // TODO Add default value para FREE_TRIAL
       },
       last_name: {
         type: DataTypes.STRING(40),
@@ -59,8 +60,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "users", // Explicitly specify the table name
-      timestamps: false, // Disable Sequelize's automatic timestamps
     }
   ));
+
+  // IMPORTANT This function is async. Research about possible problems here
+  User.sync({
+    //alter: true, // DOC: Use 'true' to update the table structure if it changes
+  });
+
   return User;
 };

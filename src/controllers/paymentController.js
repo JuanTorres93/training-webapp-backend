@@ -28,9 +28,9 @@ exports.getCheckoutSession = async (req, res, next) => {
       //success_url: `${req.protocol}://${req.get('host')}/?tour=${
       //  req.params.tourId
       //}&user=${req.user.id}&price=${tour.price}`,
-      success_url: `${process.env.CLIENT_URL}/?payment=success`,
+      success_url: `${process.env.CLIENT_URL}/app`,
       // REQUIRED URL that the user goes if he decides to cancel the payment
-      cancel_url: `${process.env.CLIENT_URL}/?payment=failed`,
+      cancel_url: `${process.env.CLIENT_URL}/app/subscriptions`,
       // This is called in a protected route, so we have access to the user object
       customer_email: req.user.email,
       // Allows to pass some data to the session. Once the payment is successful,

@@ -23,7 +23,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "subscriptions", // Explicitly specify the table name
-      timestamps: false, // Disable Sequelize's automatic timestamps
     }
   );
 
