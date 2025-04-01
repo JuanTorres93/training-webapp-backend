@@ -3,7 +3,7 @@ const qh = require("./queryHelper.js");
 
 const TABLE_NAME = "subscriptions";
 const SELECT_SUSCRIPTION_FIELDS =
-  "id, type, description, base_price_in_eur_cents";
+  "id, type, description, name, base_price_in_eur_cents";
 
 // TODO DRY, it is the same as in users.js
 const checkStringInFieldInUse = async (field, value) => {
@@ -145,6 +145,26 @@ const selectSuscriptionByType = async (type) => {
   });
 };
 
+const selectSubscriptionForUser = async (userId) => {
+  const q =
+    "SELECT " +
+    SELECT_SUSCRIPTION_FIELDS.replace("id", "s.id") +
+    " FROM " +
+    TABLE_NAME +
+    " as s " +
+    " left join users u on s.id = u.subscription_id " +
+    " WHERE u.id = $1;";
+  const params = [userId];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) reject(error);
+      const suscription = results.rows[0];
+      resolve(suscription);
+    });
+  });
+};
+
 const selectFreeTrialSubscription = async () => {
   const q =
     "SELECT " +
@@ -203,6 +223,7 @@ module.exports = {
   addSubscription,
   selectAllSubscriptions,
   selectSuscriptionById,
+  selectSubscriptionForUser,
   selectSuscriptionByType,
   selectFreeTrialSubscription,
   truncateTableTest,

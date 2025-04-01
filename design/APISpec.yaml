@@ -1213,6 +1213,55 @@ paths:
             schema:
               $ref: "#/components/schemas/ReqBodyCreateNewWeight"
 
+  /subscriptions:
+    get:
+      tags:
+        - Subscriptions
+      description: Returns all subscriptions
+      operationId: getAllSubscriptions
+      responses:
+        "200":
+          description: List of all subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResponseSubscription"
+
+        "401":
+          $ref: "#/components/responses/401"
+
+  /subscriptions/user/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User id
+        schema:
+          type: string
+    get:
+      tags:
+        - Subscriptions
+      description: Returns current user subscription
+      operationId: getCurrentSubscription
+      responses:
+        "200":
+          description: Current user subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseSubscription"
+
+        "400":
+          $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
   /payments/checkout-session/{subscriptionId}:
     parameters:
       - name: subscriptionId
@@ -1225,7 +1274,7 @@ paths:
       tags:
         - Payments
       description: Returns all registered weights for user
-      operationId: getAllWeightsForUser
+      operationId: getCheckoutSession
       responses:
         "200":
           description: Stripe checkout session
@@ -1751,6 +1800,31 @@ components:
       example:
         status: "success"
         session: "Stripe session object"
+
+    ResponseSubscription:
+      type: object
+      properties:
+        id:
+          type: string
+          description: status string
+        type:
+          type: string
+          description: Subscription type
+        description:
+          type: string
+          description: Subscription description
+        base_price_in_eur_cents:
+          type: integer
+          description: Base price in cents of EUR
+        name:
+          type: string
+          description: Subscription name
+      example:
+        id: "7847b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
+        type: "FREE"
+        description: "Free subscription%$Suscripción gratuita"
+        base_price_in_eur_cents: 0
+        name: "Free%$Gratis"
 
     ReqBodyCreateNewWeight:
       type: object

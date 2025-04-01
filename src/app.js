@@ -32,6 +32,7 @@ const createApp = () => {
   const weightsRouter = require("./endpoints/weights/weights.js");
   const loginRouter = require("./endpoints/login/login.js");
   const logoutRouter = require("./endpoints/logout.js");
+  const subscriptionsRouter = require("./endpoints/subscriptions/subscriptions.js");
   const paymentsRouter = require("./endpoints/payments/payments.js");
 
   // Enable request logs
@@ -157,6 +158,8 @@ const createApp = () => {
   app.use("/login", loginRouter);
   // Mount logout endpoint
   app.use("/logout", logoutRouter);
+  // Mount subscriptions endpoint
+  app.use("/subscriptions", subscriptionsRouter);
   // Mount payments endpoint
   app.use("/payments", paymentsRouter);
 

@@ -7,9 +7,11 @@ Project training_webapp {
 
 Table subscriptions {
   id UUID [PK]
-  type VARCHAR(20) [NOT NULL, UNIQUE]
-  description TEXT [NOT NULL]
+  type VARCHAR(20) [NOT NULL, UNIQUE, Note: 'Internal label for identification']
+  description TEXT [NOT NULL, Note: 'Description to shown in frontend']
   base_price_in_eur_cents INTEGER [NOT NULL]
+  name VARCHAR(60) [NOT NULL, Note: 'Name in English and Spanish that will appear in the frontend']
+  description_internal TEXT [Note: 'Description for internal use: to know what the subscription is for']
 }
 
 Table users {
