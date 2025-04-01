@@ -24,8 +24,8 @@ const createApp = () => {
   const app = express();
   app.post(
     "/webhook-checkout",
-    // Parse the body
-    express.raw({ type: "application/json" }),
+    // Parse raw for stripe webhook
+    bodyParser.raw({ type: "application/json" }),
     paymentController.webhookCheckout
   );
   // Parse HTTP request body to JSON
