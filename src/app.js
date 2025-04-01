@@ -24,12 +24,13 @@ const createApp = () => {
   const app = express();
   app.post(
     "/webhook-checkout",
-    // Parse raw for stripe webhook
-    bodyParser.raw({ type: "application/json" }),
+    // Parse the body
+    express.raw({ type: "application/json" }),
     paymentController.webhookCheckout
   );
+
   // Parse HTTP request body to JSON
-  app.use(bodyParser.json());
+  app.use(express.json());
 
   // Routers imports
   const usersRouter = require("./endpoints/users/users.js");
