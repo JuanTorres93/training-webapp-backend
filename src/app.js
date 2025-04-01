@@ -12,6 +12,7 @@ const passport = require("./passport-config.js");
 const rateLimit = require("express-rate-limit");
 
 // My modules imports
+const paymentController = require("./controllers/paymentController.js");
 const { getPool, getPoolClient } = require("./db/index.js");
 const config = require("./config.js");
 
@@ -21,6 +22,12 @@ const createApp = () => {
   // Create server and enable body parser in order not to import it
   // in every router
   const app = express();
+  app.post(
+    "/webhook-checkout",
+    // Parse the body
+    express.raw({ type: "application/json" }),
+    paymentController.webhookCheckout
+  );
   // Parse HTTP request body to JSON
   app.use(bodyParser.json());
 

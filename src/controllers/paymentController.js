@@ -105,3 +105,36 @@ exports.getCheckoutSession = async (req, res, next) => {
     });
   }
 };
+
+exports.webhookCheckout = (req, res, next) => {
+  // When stripe calls a webhook, it will add a header
+  // containing a signature for our webhook
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("RUNS WEBHOOK");
+
+  const signature = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    // DOC: body needs to be in raw format
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (error) {
+    // Send error to Stripe
+    return res.status(400).send(`Webhook error: ${error.message}`);
+  }
+
+  // The type is specified in the Stripe webapp,
+  // when creating the webhook
+  if (event.type === "checkout.session.completed") {
+    // Create booking in database
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("CREATE DB REGISTRY");
+
+    // createBookingCheckout(event.data.object);
+  }
+  res.status(200).json({ received: true });
+};
