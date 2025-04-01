@@ -22,6 +22,11 @@ const createApp = () => {
   // Create server and enable body parser in order not to import it
   // in every router
   const app = express();
+
+  // DOC: This is used to trust proxies. It is for render.
+  // TODO Check if this is needed when deploying to other platforms or using docker
+  app.enable("trust proxy");
+
   app.post(
     "/webhook-checkout",
     // Parse the body
@@ -107,7 +112,11 @@ const createApp = () => {
   const cookie = {
     maxAge: config.MAX_COOKIE_AGE_MILLISECONDS, // milliseconds until cookie expires
     // Secure only in production
-    secure: process.env.NODE_ENV === "production", // It's only sent to the server via HTTPS
+    // DOC: req.headers is for render
+    // TODO Check if this is needed when deploying to other platforms or using docker
+    secure:
+      process.env.NODE_ENV === "production" ||
+      req.headers["x-forwarded-proto"] === "https", // It's only sent to the server via HTTPS
     // Same site only in production
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Allow cross-site cookie through different browsers
     httpOnly: true, // Specifies whether or not the cookies should be accessible via
