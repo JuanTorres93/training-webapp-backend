@@ -114,9 +114,7 @@ const createApp = () => {
     // Secure only in production
     // DOC: req.headers is for render
     // TODO Check if this is needed when deploying to other platforms or using docker
-    secure:
-      process.env.NODE_ENV === "production" ||
-      req.headers["x-forwarded-proto"] === "https", // It's only sent to the server via HTTPS
+    secure: process.env.NODE_ENV === "production", // It's only sent to the server via HTTPS
     // Same site only in production
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Allow cross-site cookie through different browsers
     httpOnly: true, // Specifies whether or not the cookies should be accessible via
