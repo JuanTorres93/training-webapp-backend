@@ -122,7 +122,14 @@ exports.webhookCheckout = (req, res, next) => {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("event");
+    console.log(event);
   } catch (error) {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("error");
+    console.log(error);
     // Send error to Stripe
     return res.status(400).send(`Webhook error: ${error.message}`);
   }
