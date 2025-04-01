@@ -2,6 +2,7 @@ const dbUsers = require("../db/users");
 const dbExercises = require("../db/exercises");
 const dbWorkouts = require("../db/workouts");
 const dbWorkoutsTemplates = require("../db/workoutsTemplates");
+const dbSubscriptions = require("../db/subscriptions");
 const utils = require("./utils");
 const { validationResult } = require("express-validator");
 const hash = require("../hashing");
@@ -285,6 +286,22 @@ const checkWorkoutExistsById = async (req, res, next) => {
   next();
 };
 
+const checkSubscriptionExistsById = async (req, res, next) => {
+  // IMPORTANT: This middleware must be called after validating subscriptionId parameter
+  const subscriptionId = req.params.subscriptionId
+    ? req.params.subscriptionId
+    : req.body.subscriptionId;
+  const subscription = await dbSubscriptions.selectSuscriptionById(
+    subscriptionId
+  );
+  if (!subscription) {
+    return res.status(404).json({
+      msg: "Subscription not found",
+    });
+  }
+  next();
+};
+
 const checkExerciseSetExistsInWorkout = async (req, res, next) => {
   // IMPORTANT: This middleware must be called after validating workoutId parameter
   const workoutId = req.params.workoutId
@@ -387,6 +404,7 @@ module.exports = {
   checkUserExistsById,
   checkExerciseExistsById,
   checkWorkoutExistsById,
+  checkSubscriptionExistsById,
   checkExerciseSetExistsInWorkout,
   checkExerciseOrderExistsInWorkoutTemplate,
   checkWorkoutTemplateExistsById,

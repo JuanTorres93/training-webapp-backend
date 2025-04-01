@@ -4,15 +4,32 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const subscriptionsDb = require("../db/subscriptions.js");
+const { langSeparator } = require("../config.js");
 
 // TODO Handle error. I used to use catchAsync, but don't have that error handling in this project
 exports.getCheckoutSession = async (req, res, next) => {
   try {
     // 1) Get the subscription type
-    const subscription = await subscriptionsDb.selectSuscriptionByType("PAID");
+    const subscription = await subscriptionsDb.selectSuscriptionById(
+      req.params.subscriptionId
+    );
+
     if (!subscription) {
       //   return next(new AppError("No tour found with that ID", 404));
       // TODO handle
+    }
+
+    const lang = req.params.lang || "en";
+    let subscriptionName = "";
+    let subscriptionDescription = "";
+    if (!lang || lang.trim() !== "es") {
+      subscriptionName = subscription.name.split(langSeparator)[0];
+      subscriptionDescription =
+        subscription.description.split(langSeparator)[0];
+    } else {
+      subscriptionName = subscription.name.split(langSeparator)[1];
+      subscriptionDescription =
+        subscription.description.split(langSeparator)[1];
     }
 
     // 2) Create checkout session
@@ -37,7 +54,8 @@ exports.getCheckoutSession = async (req, res, next) => {
       // we will have access to the session again, so when can use the info for
       // database operations. This is the last step in the diagram shown by JONAS and
       // it will only work in deployed applications.
-      client_reference_id: req.params.tourId,
+      client_reference_id: subscription.id,
+      locale: lang || "en",
       // Details about the product itself
       line_items: [
         // IMPORTANT: The keys of the objects comes from stripe, so we can't
@@ -56,9 +74,9 @@ exports.getCheckoutSession = async (req, res, next) => {
             },
             product_data: {
               // Name of the product
-              name: `${subscription.type} subscription`,
+              name: `${subscriptionName}`,
               // Description of the product
-              description: subscription.description,
+              description: subscriptionDescription,
               // images must be light weight and hosted. (Deployed application)
               images: [
                 `${req.protocol}://${req.get("host")}/img/tours/${
