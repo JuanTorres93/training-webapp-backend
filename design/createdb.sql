@@ -5,7 +5,9 @@ CREATE TABLE subscriptions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   type VARCHAR(20) NOT NULL UNIQUE,
   description TEXT NOT NULL,
-  base_price_in_eur_cents INTEGER NOT NULL
+  base_price_in_eur_cents INTEGER NOT NULL,
+  name VARCHAR(60) NOT NULL,
+  description_internal TEXT NOT NULL
 );
 
 CREATE TABLE users (
@@ -87,5 +89,6 @@ CREATE TABLE payments (
   user_id UUID NOT NULL REFERENCES users(id),
   subscription_id UUID NOT NULL REFERENCES subscriptions(id),
   amount_in_eur REAL NOT NULL,
+  name VARCHAR(40) NOT NULL,
   created_at TIMESTAMP NOT NULL
 );
