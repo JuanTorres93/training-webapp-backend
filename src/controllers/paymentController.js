@@ -137,7 +137,7 @@ exports.webhookCheckout = (req, res, next) => {
   // The type is specified in the Stripe webapp,
   // when creating the webhook
   // if (event.type === "checkout.session.completed") {
-  if (event.type === "invoice.paid") {
+  if (event.type === "subscription_schedule.updated") {
     // Create booking in database
     // TODO DELETE THESE DEBUG LOGS
     console.log("CREATE DB REGISTRY");
