@@ -186,18 +186,17 @@ exports.webhookCheckout = async (req, res, next) => {
   if (event.type === "invoice.payment_succeeded") {
     // This if runs when the payment is successful. Either on subscription creation
     // or on subscription renewal
-    const subscription = event.data.object;
+    const payment = event.data.object;
 
     // Aquí accedemos a los metadatos
-    const userId = subscription.subscription_details.metadata.userId;
-    const subscriptionId =
-      subscription.subscription_details.metadata.subscriptionId;
+    const userId = payment.subscription_details.metadata.userId;
+    const subscriptionId = payment.subscription_details.metadata.subscriptionId;
 
-    const stripeSubscriptionId = subscription.suscription;
+    const stripeSubscriptionId = payment.suscription;
     const nextPaymentDate = await getSubscriptionNextPaymentDate(
       stripeSubscriptionId
     );
-    const amountInEur = subscription.plan.amount / 100;
+    const amountInEur = payment.amount_paid / 100;
 
     try {
       await createPayment(userId, subscriptionId, amountInEur, nextPaymentDate);
