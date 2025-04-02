@@ -142,11 +142,18 @@ exports.webhookCheckout = (req, res, next) => {
   // The type is specified in the Stripe webapp,
   // when creating the webhook
   // if (event.type === "checkout.session.completed") {
-  if (event.type === "subscription_schedule.updated") {
+  if (event.type === "customer.subscription.created") {
     // Create booking in database
     // TODO DELETE THESE DEBUG LOGS
     console.log("CREATE DB REGISTRY");
+    const subscription = event.data.object;
 
+    // Aquí accedemos a los metadatos
+    const userId = subscription.metadata?.userId;
+    const subscriptionId = subscription.metadata?.subscriptionId;
+
+    console.log("User ID:", userId);
+    console.log("Subscription ID:", subscriptionId);
     // createBookingCheckout(event.data.object);
   }
   res.status(200).json({ received: true });
