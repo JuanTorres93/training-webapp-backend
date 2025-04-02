@@ -110,5 +110,6 @@ Table payments {
   user_id UUID [ref: > users.id, not null]
   subscription_id UUID [ref: > subscriptions.id, not null]
   amount_in_eur REAL [NOT NULL]
+  next_payment_date DATE [Note: 'Just for user info. Actual payment is managed by stripe']
   created_at TIMESTAMP [NOT NULL]
 }

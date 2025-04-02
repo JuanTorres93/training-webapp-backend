@@ -4,6 +4,7 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const subscriptionsDb = require("../db/subscriptions.js");
+const paymentsDb = require("../db/payments.js");
 const { langSeparator } = require("../config.js");
 
 // TODO Handle error. I used to use catchAsync, but don't have that error handling in this project
@@ -102,7 +103,6 @@ exports.getCheckoutSession = async (req, res, next) => {
       session,
     });
   } catch (error) {
-    // TODO DELETE THESE DEBUG LOGS
     console.log("error");
     console.log(error);
 
@@ -113,12 +113,23 @@ exports.getCheckoutSession = async (req, res, next) => {
   }
 };
 
-exports.webhookCheckout = (req, res, next) => {
+const createPayment = async (
+  userId,
+  subscriptionId,
+  amountInEur,
+  nextPaymentDate
+) => {
+  await paymentsDb.createPayment({
+    userId,
+    subscriptionId,
+    amountInEur,
+    nextPaymentDate,
+  });
+};
+
+exports.webhookCheckout = async (req, res, next) => {
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("RUNS WEBHOOK");
-
   const signature = req.headers["stripe-signature"];
   let event;
 
@@ -130,33 +141,43 @@ exports.webhookCheckout = (req, res, next) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (error) {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("MY ERROR");
+    console.log("error");
     console.log(error);
     // Send error to Stripe
     return res.status(400).send(`Webhook error: ${error.message}`);
   }
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("event.type");
-  console.log(event.type);
-
   // The type is specified in the Stripe webapp,
   // when creating the webhook
-  // if (event.type === "checkout.session.completed") {
+
   if (event.type === "customer.subscription.created") {
-    // Create booking in database
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("CREATE DB REGISTRY");
     const subscription = event.data.object;
 
     // Aquí accedemos a los metadatos
     const userId = subscription.metadata?.userId;
     const subscriptionId = subscription.metadata?.subscriptionId;
+    const nextPaymentDate = new Date(
+      subscription.current_period_end * 1000
+    ).toISOString();
+    const amountInEur = subscription.plan.amount / 100;
 
-    console.log("User ID:", userId);
-    console.log("Subscription ID:", subscriptionId);
-    // createBookingCheckout(event.data.object);
+    try {
+      await createPayment(userId, subscriptionId, amountInEur, nextPaymentDate);
+
+      res.status(200).json({
+        status: "success",
+        message: "Payment created successfully",
+      });
+    } catch (error) {
+      console.log("error");
+      console.log(error);
+      return res.status(400).json({
+        status: "fail",
+        message: error.message,
+      });
+    }
   }
+  // TODO process cancel and update subscription events
+
   res.status(200).json({ received: true });
 };

@@ -90,5 +90,6 @@ CREATE TABLE payments (
   subscription_id UUID NOT NULL REFERENCES subscriptions(id),
   amount_in_eur REAL NOT NULL,
   name VARCHAR(40) NOT NULL,
+  next_payment_date DATE,
   created_at TIMESTAMP NOT NULL
 );
