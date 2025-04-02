@@ -163,11 +163,6 @@ exports.webhookCheckout = async (req, res, next) => {
 
     try {
       await createPayment(userId, subscriptionId, amountInEur, nextPaymentDate);
-
-      res.status(200).json({
-        status: "success",
-        message: "Payment created successfully",
-      });
     } catch (error) {
       console.log("error");
       console.log(error);
