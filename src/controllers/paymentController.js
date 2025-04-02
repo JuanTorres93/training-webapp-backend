@@ -54,7 +54,7 @@ exports.getCheckoutSession = async (req, res, next) => {
       // we will have access to the session again, so when can use the info for
       // database operations. This is the last step in the diagram shown by JONAS and
       // it will only work in deployed applications.
-      client_reference_id: subscription.id,
+      // client_reference_id: subscription.id, NOTE: Commented in preference of metadata
       locale: lang || "en",
       // Details about the product itself
       line_items: [
@@ -87,6 +87,11 @@ exports.getCheckoutSession = async (req, res, next) => {
           },
         },
       ],
+      // Info to retrieve when the webhook is called
+      metadata: {
+        userId: req.user.id,
+        subscriptionId: subscription.id,
+      },
     });
 
     // 3) Send it to the client
