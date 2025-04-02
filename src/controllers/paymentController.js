@@ -145,6 +145,10 @@ async function getSubscriptionNextPaymentDate(subscriptionId) {
 
     const subscriptionData = await response.json();
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("subscriptionData");
+    console.log(subscriptionData);
+
     // Extraer la fecha del próximo cobro
     const currentPeriodEnd = subscriptionData.current_period_end;
     console.log("Fecha del próximo cobro (timestamp UNIX):", currentPeriodEnd);
