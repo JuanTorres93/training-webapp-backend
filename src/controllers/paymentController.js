@@ -88,9 +88,11 @@ exports.getCheckoutSession = async (req, res, next) => {
         },
       ],
       // Info to retrieve when the webhook is called
-      metadata: {
-        userId: req.user.id,
-        subscriptionId: subscription.id,
+      subscription_data: {
+        metadata: {
+          userId: req.user.id,
+          subscriptionId: subscription.id,
+        },
       },
     });
 
