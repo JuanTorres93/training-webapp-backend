@@ -1,6 +1,4 @@
-// TODO DELETE THESE DEBUG LOGS
-// console.log("process.env");
-// console.log(process.env);
+const axios = require("axios");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const subscriptionsDb = require("../db/subscriptions.js");
