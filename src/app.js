@@ -31,7 +31,17 @@ const createApp = () => {
   );
 
   // Parse HTTP request body to JSON
-  app.use(express.json());
+  // app.use(express.json());
+
+  // Apply body parser middleware to all requests except for the webhook
+  const jsonParser = bodyParser.json();
+  app.use((req, res, next) => {
+    if (req.originalUrl === "/webhook-checkout") {
+      next();
+    } else {
+      jsonParser(req, res, next);
+    }
+  });
 
   // Routers imports
   const usersRouter = require("./endpoints/users/users.js");
