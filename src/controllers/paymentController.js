@@ -113,8 +113,8 @@ exports.webhookCheckout = (req, res, next) => {
   console.log("RUNS WEBHOOK");
 
   // TODO DELETE THESE DEBUG LOGS
-  console.log("req.body");
-  console.log(req.body);
+  console.log("process.env.STRIPE_WEBHOOK_SECRET");
+  console.log(process.env.STRIPE_WEBHOOK_SECRET);
 
   const signature = req.headers["stripe-signature"];
   let event;
