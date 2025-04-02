@@ -127,7 +127,10 @@ const createPayment = async (
 };
 
 // Función para obtener los detalles de la suscripción
-async function getSubscriptionNextPaymentDate(subscriptionId) {
+const getSubscriptionNextPaymentDate = async (subscriptionId) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("subscriptionId");
+  console.log(subscriptionId);
   try {
     const response = await fetch(
       `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
@@ -138,6 +141,10 @@ async function getSubscriptionNextPaymentDate(subscriptionId) {
         },
       }
     );
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("response");
+    console.log(response);
 
     if (!response.ok) {
       throw new Error(`Error en la solicitud: ${response.statusText}`);
@@ -162,7 +169,7 @@ async function getSubscriptionNextPaymentDate(subscriptionId) {
       error.message
     );
   }
-}
+};
 
 exports.webhookCheckout = async (req, res, next) => {
   // When stripe calls a webhook, it will add a header
