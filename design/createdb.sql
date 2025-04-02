@@ -7,7 +7,7 @@ CREATE TABLE subscriptions (
   description TEXT NOT NULL,
   base_price_in_eur_cents INTEGER NOT NULL,
   name VARCHAR(60) NOT NULL,
-  description_internal TEXT NOT NULL
+  description_internal TEXT
 );
 
 CREATE TABLE users (

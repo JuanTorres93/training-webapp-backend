@@ -51,7 +51,13 @@ const checkTypeInUse = async (type) => {
   }
 };
 
-const addSubscription = async ({ type, description, basePriceInEurCents }) => {
+const addSubscription = async ({
+  type,
+  description,
+  basePriceInEurCents,
+  name,
+  description_internal,
+}) => {
   const typeInUse = await checkTypeInUse(type);
   if (typeInUse) {
     return new Promise((resolve, reject) => {
@@ -63,8 +69,20 @@ const addSubscription = async ({ type, description, basePriceInEurCents }) => {
   }
 
   // Build query
-  let requiredFields = ["type", "description", "base_price_in_eur_cents"];
-  let requiredValues = [type, description, basePriceInEurCents];
+  let requiredFields = [
+    "type",
+    "description",
+    "base_price_in_eur_cents",
+    "name",
+    "description_internal",
+  ];
+  let requiredValues = [
+    type,
+    description,
+    basePriceInEurCents,
+    name,
+    description_internal,
+  ];
 
   let optionalFields = [];
   let optionalValues = [];
@@ -74,6 +92,7 @@ const addSubscription = async ({ type, description, basePriceInEurCents }) => {
     "type",
     "description",
     "base_price_in_eur_cents",
+    "name",
   ];
 
   const { q, params } = qh.createInsertIntoTableStatement(
