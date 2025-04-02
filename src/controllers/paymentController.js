@@ -128,9 +128,6 @@ const createPayment = async (
 
 // Función para obtener los detalles de la suscripción
 const getSubscriptionNextPaymentDate = async (subscriptionId) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("subscriptionId");
-  console.log(subscriptionId);
   try {
     const response = await fetch(
       `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
@@ -142,27 +139,16 @@ const getSubscriptionNextPaymentDate = async (subscriptionId) => {
       }
     );
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("response");
-    console.log(response);
-
     if (!response.ok) {
       throw new Error(`Error en la solicitud: ${response.statusText}`);
     }
 
     const subscriptionData = await response.json();
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("subscriptionData");
-    console.log(subscriptionData);
-
-    // Extraer la fecha del próximo cobro
     const currentPeriodEnd = subscriptionData.current_period_end;
-    console.log("Fecha del próximo cobro (timestamp UNIX):", currentPeriodEnd);
-
-    // Convertir el timestamp a una fecha legible
     const nextPaymentDate = new Date(currentPeriodEnd * 1000).toISOString();
-    console.log("Fecha del próximo cobro (formato legible):", nextPaymentDate);
+
+    return nextPaymentDate;
   } catch (error) {
     console.error(
       "Error al obtener los detalles de la suscripción:",
@@ -188,7 +174,7 @@ exports.webhookCheckout = async (req, res, next) => {
     console.log("error");
     console.log(error);
     // Send error to Stripe
-    return res.status(400).send(`Webhook error: ${error.message}`);
+    return res.status(400).send(`Webhook error`);
   }
 
   // The type is specified in the Stripe webapp,
@@ -216,11 +202,11 @@ exports.webhookCheckout = async (req, res, next) => {
       console.log(error);
       return res.status(400).json({
         status: "fail",
-        message: error.message,
+        message: "Error creating payment",
       });
     }
   }
-  // TODO process cancel and update subscription events
+  // TODO process cancel event
 
   res.status(200).json({ received: true });
 };
