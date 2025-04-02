@@ -129,6 +129,36 @@ const createPayment = async (
   });
 };
 
+// Función para obtener los detalles de la suscripción
+async function getSubscriptionNextPaymentDate(subscriptionId) {
+  try {
+    const response = await axios.get(
+      `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+        },
+      }
+    );
+
+    // Extraer la fecha del próximo pago
+    const currentPeriodEnd = response.data.current_period_end;
+    console.log("Fecha del próximo cobro (timestamp UNIX):", currentPeriodEnd);
+
+    // Convertir el timestamp a una fecha legible
+    const nextPaymentDate = new Date(currentPeriodEnd * 1000).toISOString();
+
+    console.log("Fecha del próximo cobro (formato legible):", nextPaymentDate);
+
+    return nextPaymentDate;
+  } catch (error) {
+    console.error(
+      "Error al obtener los detalles de la suscripción:",
+      error.response?.data || error.message
+    );
+  }
+}
+
 exports.webhookCheckout = async (req, res, next) => {
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
@@ -161,9 +191,11 @@ exports.webhookCheckout = async (req, res, next) => {
     const userId = subscription.subscription_details.metadata.userId;
     const subscriptionId =
       subscription.subscription_details.metadata.subscriptionId;
-    const nextPaymentDate = new Date(
-      subscription.current_period_end * 1000
-    ).toISOString();
+
+    const stripeSubscriptionId = subscription.suscription;
+    const nextPaymentDate = await getSubscriptionNextPaymentDate(
+      stripeSubscriptionId
+    );
     const amountInEur = subscription.plan.amount / 100;
 
     try {
