@@ -203,7 +203,7 @@ exports.webhookCheckout = async (req, res, next) => {
     const userId = payment.subscription_details.metadata.userId;
     const subscriptionId = payment.subscription_details.metadata.subscriptionId;
 
-    const stripeSubscriptionId = payment.suscription;
+    const stripeSubscriptionId = payment.subscription;
     const nextPaymentDate = await getSubscriptionNextPaymentDate(
       stripeSubscriptionId
     );
