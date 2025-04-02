@@ -112,10 +112,6 @@ exports.webhookCheckout = (req, res, next) => {
   // TODO DELETE THESE DEBUG LOGS
   console.log("RUNS WEBHOOK");
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("process.env.STRIPE_WEBHOOK_SECRET");
-  console.log(process.env.STRIPE_WEBHOOK_SECRET);
-
   const signature = req.headers["stripe-signature"];
   let event;
 
@@ -126,10 +122,6 @@ exports.webhookCheckout = (req, res, next) => {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("event");
-    console.log(event);
   } catch (error) {
     // TODO DELETE THESE DEBUG LOGS
     console.log("MY ERROR");
@@ -137,6 +129,10 @@ exports.webhookCheckout = (req, res, next) => {
     // Send error to Stripe
     return res.status(400).send(`Webhook error: ${error.message}`);
   }
+
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("event.type");
+  console.log(event.type);
 
   // The type is specified in the Stripe webapp,
   // when creating the webhook
