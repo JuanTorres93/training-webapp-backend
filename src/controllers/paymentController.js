@@ -1,4 +1,3 @@
-const axios = require("axios");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const subscriptionsDb = require("../db/subscriptions.js");
@@ -130,29 +129,33 @@ const createPayment = async (
 // Función para obtener los detalles de la suscripción
 async function getSubscriptionNextPaymentDate(subscriptionId) {
   try {
-    const response = await axios.get(
+    const response = await fetch(
       `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
       {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
         },
       }
     );
 
-    // Extraer la fecha del próximo pago
-    const currentPeriodEnd = response.data.current_period_end;
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud: ${response.statusText}`);
+    }
+
+    const subscriptionData = await response.json();
+
+    // Extraer la fecha del próximo cobro
+    const currentPeriodEnd = subscriptionData.current_period_end;
     console.log("Fecha del próximo cobro (timestamp UNIX):", currentPeriodEnd);
 
     // Convertir el timestamp a una fecha legible
     const nextPaymentDate = new Date(currentPeriodEnd * 1000).toISOString();
-
     console.log("Fecha del próximo cobro (formato legible):", nextPaymentDate);
-
-    return nextPaymentDate;
   } catch (error) {
     console.error(
       "Error al obtener los detalles de la suscripción:",
-      error.response?.data || error.message
+      error.message
     );
   }
 }
