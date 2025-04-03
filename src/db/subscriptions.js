@@ -236,6 +236,23 @@ const truncateTableTest = () => {
   });
 };
 
+exports.updateUserSubscription = async (userId, subscriptionId) => {
+  const q = `update ${TABLE_NAME}
+             set subscription_id = $1
+             where user_id = $2
+             returning ${SELECT_PAYMENTS_FIELDS};`;
+  const params = [subscriptionId, userId];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) reject(error);
+
+      const updatedPayment = results.rows[0];
+      resolve(updatedPayment);
+    });
+  });
+};
+
 module.exports = {
   checkStringInFieldInUse,
   checkTypeInUse,

@@ -177,15 +177,47 @@ exports.webhookCheckout = async (req, res, next) => {
     return res.status(400).send(`Webhook error`);
   }
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("event.type");
+  console.log(event.type);
+
   // The type is specified in the Stripe webapp,
   // when creating the webhook
+
+  if (event.type === "customer.subscription.created") {
+    // This if runs when the subscription is created
+    const subscription = event.data.object;
+
+    // access metadata specified in the checkout session
+    const userId = subscription.metadata.userId;
+    const subscriptionId = subscription.metadata.subscriptionId;
+
+    // Update the subscription in the database
+    try {
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("updating subscription");
+      await subscriptionsDb.updateUserSubscription(userId, subscriptionId);
+    } catch (error) {
+      console.log("error");
+      console.log(error);
+
+      console.log(
+        `IMPORTANT: User ${userId} has created a subscription ${subscriptionId} but it has not been updated in the database. RUN THE NECESARY SQL QUERY TO UPDATE IT`
+      );
+
+      return res.status(400).json({
+        status: "fail",
+        message: "Error updating subscription in database",
+      });
+    }
+  }
 
   if (event.type === "invoice.payment_succeeded") {
     // This if runs when the payment is successful. Either on subscription creation
     // or on subscription renewal
     const payment = event.data.object;
 
-    // Aquí accedemos a los metadatos
+    // Access metadata specified in the checkout session
     const userId = payment.subscription_details.metadata.userId;
     const subscriptionId = payment.subscription_details.metadata.subscriptionId;
 
@@ -196,6 +228,8 @@ exports.webhookCheckout = async (req, res, next) => {
     const amountInEur = payment.amount_paid / 100;
 
     try {
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("creating payment");
       await createPayment(userId, subscriptionId, amountInEur, nextPaymentDate);
     } catch (error) {
       console.log("error");
