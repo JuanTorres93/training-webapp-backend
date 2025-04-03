@@ -242,15 +242,19 @@ const updateUserSubscription = async (userId, subscriptionId) => {
 
   const q = `update ${TABLE_NAME}
              set subscription_id = $1
-             where user_id = $2;`;
+             where user_id = $2
+             returning ${SELECT_SUSCRIPTION_FIELDS};`;
   const params = [subscriptionId, userId];
 
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
       if (error) reject(error);
 
-      const updatedPayment = results.rows[0];
-      resolve(updatedPayment);
+      const updatedSubscription = results.rows[0];
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("updatedSubscription");
+      console.log(updatedSubscription);
+      resolve(updatedSubscription);
     });
   });
 };
