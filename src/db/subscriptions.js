@@ -242,8 +242,7 @@ const updateUserSubscription = async (userId, subscriptionId) => {
 
   const q = `update ${TABLE_NAME}
              set subscription_id = $1
-             where user_id = $2
-             returning ${SELECT_PAYMENTS_FIELDS};`;
+             where user_id = $2;`;
   const params = [subscriptionId, userId];
 
   return new Promise((resolve, reject) => {
