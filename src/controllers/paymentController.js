@@ -177,10 +177,6 @@ exports.webhookCheckout = async (req, res, next) => {
     return res.status(400).send(`Webhook error`);
   }
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("event.type");
-  console.log(event.type);
-
   // The type is specified in the Stripe webapp,
   // when creating the webhook
 
@@ -194,8 +190,6 @@ exports.webhookCheckout = async (req, res, next) => {
 
     // Update the subscription in the database
     try {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("updating subscription");
       await subscriptionsDb.updateUserSubscription(userId, subscriptionId);
     } catch (error) {
       console.log("error");
@@ -228,8 +222,6 @@ exports.webhookCheckout = async (req, res, next) => {
     const amountInEur = payment.amount_paid / 100;
 
     try {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("creating payment");
       await createPayment(userId, subscriptionId, amountInEur, nextPaymentDate);
     } catch (error) {
       console.log("error");
