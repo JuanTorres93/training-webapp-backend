@@ -237,12 +237,9 @@ const truncateTableTest = () => {
 };
 
 const updateUserSubscription = async (userId, subscriptionId) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("updateUserSubscription called");
-
-  const q = `update ${TABLE_NAME}
+  const q = `update users
              set subscription_id = $1
-             where user_id = $2;`;
+             where id = $2;`;
   const params = [subscriptionId, userId];
 
   return new Promise((resolve, reject) => {
