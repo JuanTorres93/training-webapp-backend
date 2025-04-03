@@ -236,7 +236,10 @@ const truncateTableTest = () => {
   });
 };
 
-exports.updateUserSubscription = async (userId, subscriptionId) => {
+const updateUserSubscription = async (userId, subscriptionId) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("updateUserSubscription called");
+
   const q = `update ${TABLE_NAME}
              set subscription_id = $1
              where user_id = $2
@@ -262,5 +265,6 @@ module.exports = {
   selectSubscriptionForUser,
   selectSuscriptionByType,
   selectFreeTrialSubscription,
+  updateUserSubscription,
   truncateTableTest,
 };
