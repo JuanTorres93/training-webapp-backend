@@ -43,7 +43,7 @@ exports.getCheckoutSession = async (req, res, next) => {
       //success_url: `${req.protocol}://${req.get('host')}/?tour=${
       //  req.params.tourId
       //}&user=${req.user.id}&price=${tour.price}`,
-      success_url: `${process.env.CLIENT_URL}/app`,
+      success_url: `${process.env.CLIENT_URL}/app/?createdSubscription=true`, // NOTE: param used to fetch next payment date in front
       // REQUIRED URL that the user goes if he decides to cancel the payment
       cancel_url: `${process.env.CLIENT_URL}/app/subscriptions`,
       // This is called in a protected route, so we have access to the user object
@@ -209,4 +209,28 @@ exports.webhookCheckout = async (req, res, next) => {
   // TODO process cancel event
 
   res.status(200).json({ received: true });
+};
+
+exports.getLastPaymentForLoggedUser = async (req, res, next) => {
+  const userId = req.session.passport.user.id;
+
+  try {
+    const payment = await paymentsDb.getUserLastPayment(userId);
+
+    if (!payment) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No payment found for this user",
+      });
+    }
+
+    res.status(200).json(payment);
+  } catch (error) {
+    console.log("error");
+    console.log(error);
+    return res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
 };

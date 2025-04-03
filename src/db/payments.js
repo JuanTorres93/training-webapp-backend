@@ -2,6 +2,8 @@ const { query } = require("./index");
 const qh = require("./queryHelper.js");
 
 const TABLE_NAME = "payments";
+const SELECT_PAYMENTS_FIELDS =
+  "id, user_id, subscription_id, amount_in_eur, next_payment_date, created_at";
 
 exports.createPayment = async ({
   userId,
@@ -45,6 +47,25 @@ exports.createPayment = async ({
 
       const createdPayment = results.rows[0];
       resolve(createdPayment);
+    });
+  });
+};
+
+exports.getUserLastPayment = async (userId) => {
+  const q = `select 
+              ${SELECT_PAYMENTS_FIELDS}
+             from ${TABLE_NAME}
+             where user_id = $1
+             order by next_payment_date desc
+             limit 1;`;
+  const params = [userId];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) reject(error);
+
+      const lastPayment = results.rows[0];
+      resolve(lastPayment);
     });
   });
 };

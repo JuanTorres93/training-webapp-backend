@@ -21,4 +21,12 @@ router.get(
   paymentController.getCheckoutSession
 );
 
+router.get(
+  "/my-last-payment",
+  mw.authenticatedUser,
+  mw.checkUserExistsById,
+  // mw.loggedUserIdEqualsUserIdInRequest,
+  paymentController.getLastPaymentForLoggedUser
+);
+
 module.exports = router;
