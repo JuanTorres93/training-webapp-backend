@@ -2,6 +2,7 @@ const { query } = require("./index");
 const qh = require("./queryHelper.js");
 const { selectFreeTrialSubscription } = require("./subscriptions.js");
 const { createPayment } = require("./payments.js");
+const { getPoolClient } = require("./index.js");
 
 const TABLE_NAME = "users";
 const SELECT_USER_FIELDS =
@@ -127,7 +128,7 @@ const registerNewUser = async ({
   );
 
   return new Promise((resolve, reject) => {
-    query(q, params, (error, results) => {
+    query(q, params, async (error, results) => {
       if (error) reject(error);
 
       const createdUser = results.rows[0];
@@ -135,7 +136,7 @@ const registerNewUser = async ({
       const endFreeTrialDate = new Date();
       // Add 1 month to the current date
       endFreeTrialDate.setMonth(endFreeTrialDate.getMonth() + 1);
-      createPayment({
+      await createPayment({
         userId: createdUser.id,
         subscriptionId: subsId,
         amountInEur: 0,
@@ -233,21 +234,30 @@ const updateUser = async (id, userObject) => {
 };
 
 const deleteUser = async (id) => {
-  let q =
-    "DELETE FROM " +
-    TABLE_NAME +
-    " WHERE id = $1 " +
-    "RETURNING id, username, email, last_name, img, second_last_name;";
-  const params = [id];
+  const client = await getPoolClient();
 
-  return new Promise((resolve, reject) => {
-    query(q, params, (error, results) => {
-      if (error) reject(error);
+  let deletedUser;
 
-      const deletedUser = results.rows[0];
-      resolve(deletedUser);
-    });
-  });
+  try {
+    const paramsUserId = [id];
+    const deleteUserPaymentsQuery = "DELETE FROM payments WHERE user_id = $1;";
+    await client.query(deleteUserPaymentsQuery, paramsUserId);
+
+    const qDeleteUser =
+      "DELETE FROM " +
+      TABLE_NAME +
+      " WHERE id = $1 " +
+      "RETURNING id, username, email, last_name, img, second_last_name;";
+    const results = await client.query(qDeleteUser, paramsUserId);
+    deletedUser = results.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK;");
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  return deletedUser;
 };
 
 const truncateTableTest = () => {
