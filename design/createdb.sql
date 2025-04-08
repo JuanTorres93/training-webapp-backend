@@ -89,6 +89,7 @@ CREATE TABLE payments (
   user_id UUID NOT NULL REFERENCES users(id),
   subscription_id UUID NOT NULL REFERENCES subscriptions(id),
   amount_in_eur REAL NOT NULL,
+  stripe_subscription_id TEXT,
   next_payment_date DATE,
   created_at TIMESTAMP NOT NULL
 );

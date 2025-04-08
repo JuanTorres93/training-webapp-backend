@@ -10,6 +10,7 @@ exports.createPayment = async ({
   subscriptionId,
   amountInEur,
   nextPaymentDate,
+  stripeSubscriptionId,
 }) => {
   // Build query
   let requiredFields = [
@@ -18,6 +19,7 @@ exports.createPayment = async ({
     "amount_in_eur",
     "next_payment_date",
     "created_at",
+    "stripe_subscription_id",
   ];
   let requiredValues = [
     userId,
@@ -25,6 +27,7 @@ exports.createPayment = async ({
     amountInEur,
     nextPaymentDate,
     new Date(),
+    stripeSubscriptionId,
   ];
 
   let optionalFields = [];
