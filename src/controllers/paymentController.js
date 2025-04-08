@@ -68,9 +68,7 @@ exports.getCheckoutSession = async (req, res, next) => {
             unit_amount: subscription.base_price_in_eur_cents,
             recurring: {
               // How often the subscription will be charged
-              // interval: "month",
-              // TODO IMPORTANT DELETE BELOW AND UNCOMMENT ABOVE
-              interval: "day",
+              interval: "month",
             },
             product_data: {
               // Name of the product
@@ -116,13 +114,18 @@ const createPayment = async (
   userId,
   subscriptionId,
   amountInEur,
-  nextPaymentDate
+  nextPaymentDate,
+  stripeSubscriptionId
 ) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("stripeSubscriptionId function");
+  console.log(stripeSubscriptionId);
   await paymentsDb.createPayment({
     userId,
     subscriptionId,
     amountInEur,
     nextPaymentDate,
+    stripeSubscriptionId,
   });
 };
 
@@ -221,8 +224,18 @@ exports.webhookCheckout = async (req, res, next) => {
     );
     const amountInEur = payment.amount_paid / 100;
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("stripeSubscriptionId fetched");
+    console.log(stripeSubscriptionId);
+
     try {
-      await createPayment(userId, subscriptionId, amountInEur, nextPaymentDate);
+      await createPayment(
+        userId,
+        subscriptionId,
+        amountInEur,
+        nextPaymentDate,
+        stripeSubscriptionId
+      );
     } catch (error) {
       console.log("error");
       console.log(error);

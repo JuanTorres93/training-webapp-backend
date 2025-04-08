@@ -12,6 +12,10 @@ exports.createPayment = async ({
   nextPaymentDate,
   stripeSubscriptionId,
 }) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("stripeSubscriptionId db");
+  console.log(stripeSubscriptionId);
+
   // Build query
   let requiredFields = [
     "user_id",
@@ -43,6 +47,12 @@ exports.createPayment = async ({
     optionalValues,
     returningFields
   );
+
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("q");
+  console.log(q);
+  console.log("params");
+  console.log(params);
 
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
