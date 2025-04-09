@@ -315,7 +315,7 @@ exports.cancelSubscription = async (req, res, next) => {
     //   cancel_at_period_end: true,
     // });
     // TODO IMPORTANT: REMOVE BELOW AND UNCOMMENT ABOVE
-    await stripe.subscriptions.del(stripeSubscriptionId);
+    await stripe.subscriptions.cancel(stripeSubscriptionId);
 
     res.status(200).json({
       status: "success",
