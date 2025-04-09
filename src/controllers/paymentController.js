@@ -242,6 +242,13 @@ exports.webhookCheckout = async (req, res, next) => {
   if (event.type === "customer.subscription.deleted") {
     // TODO DELETE THESE DEBUG LOGS
     console.log('"customer.subscription.deleted" RECEIVED');
+    const subscription = event.data.object;
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("subscription");
+    console.log(subscription);
+
+    // access metadata specified in the checkout session
+    const userId = subscription.metadata.userId;
     try {
       const expiredSubscriptionId = (
         await subscriptionsDb.selectExpiredSubscription()
