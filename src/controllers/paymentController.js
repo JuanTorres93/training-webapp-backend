@@ -302,10 +302,6 @@ exports.cancelSubscription = async (req, res, next) => {
     userId
   );
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("stripeSubscriptionId");
-  console.log(stripeSubscriptionId);
-
   if (!stripeSubscriptionId) {
     return res.status(404).json({
       status: "fail",
@@ -315,9 +311,11 @@ exports.cancelSubscription = async (req, res, next) => {
 
   // Cancel the subscription in Stripe
   try {
-    await stripe.subscriptions.update(stripeSubscriptionId, {
-      cancel_at_period_end: true, // o false si quieres cancelarla de inmediato
-    });
+    // await stripe.subscriptions.update(stripeSubscriptionId, {
+    //   cancel_at_period_end: true,
+    // });
+    // TODO IMPORTANT: REMOVE BELOW AND UNCOMMENT ABOVE
+    await stripe.subscriptions.del(stripeSubscriptionId);
 
     res.status(200).json({
       status: "success",
