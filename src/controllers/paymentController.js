@@ -117,9 +117,6 @@ const createPayment = async (
   nextPaymentDate,
   stripeSubscriptionId
 ) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("stripeSubscriptionId function");
-  console.log(stripeSubscriptionId);
   await paymentsDb.createPayment({
     userId,
     subscriptionId,
@@ -223,10 +220,6 @@ exports.webhookCheckout = async (req, res, next) => {
       stripeSubscriptionId
     );
     const amountInEur = payment.amount_paid / 100;
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("stripeSubscriptionId fetched");
-    console.log(stripeSubscriptionId);
 
     try {
       await createPayment(
