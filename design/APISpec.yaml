@@ -1285,6 +1285,30 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /payments/cancel-subscription:
+    get:
+      tags:
+        - Payments
+      description: Cancels subscription for logged in user
+      operationId: cancelUserSubscription
+      responses:
+        "200":
+          description: Cancel subscription
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
   /payments/checkout-session/{subscriptionId}:
     parameters:
       - name: subscriptionId

@@ -29,4 +29,11 @@ router.get(
   paymentController.getLastPaymentForLoggedUser
 );
 
+router.get(
+  "/cancel-subscription",
+  mw.authenticatedUser,
+  mw.checkUserExistsById,
+  paymentController.cancelSubscription
+);
+
 module.exports = router;

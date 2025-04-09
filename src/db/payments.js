@@ -5,6 +5,13 @@ const TABLE_NAME = "payments";
 const SELECT_PAYMENTS_FIELDS =
   "id, user_id, subscription_id, amount_in_eur, next_payment_date, created_at";
 
+const queryLastPayment = `select 
+                            ${SELECT_PAYMENTS_FIELDS}
+                          from ${TABLE_NAME}
+                          where user_id = $1
+                          order by next_payment_date desc
+                          limit 1;`;
+
 exports.createPayment = async ({
   userId,
   subscriptionId,
@@ -55,12 +62,7 @@ exports.createPayment = async ({
 };
 
 exports.getUserLastPayment = async (userId) => {
-  const q = `select 
-              ${SELECT_PAYMENTS_FIELDS}
-             from ${TABLE_NAME}
-             where user_id = $1
-             order by next_payment_date desc
-             limit 1;`;
+  const q = queryLastPayment;
   const params = [userId];
 
   return new Promise((resolve, reject) => {
@@ -69,6 +71,25 @@ exports.getUserLastPayment = async (userId) => {
 
       const lastPayment = results.rows[0];
       resolve(lastPayment);
+    });
+  });
+};
+
+exports.getUserStripeSubscriptionId = async (userId) => {
+  const q = queryLastPayment.replace(
+    SELECT_PAYMENTS_FIELDS,
+    "stripe_subscription_id"
+  );
+  const params = [userId];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) reject(error);
+
+      const stripeSubscriptionId = results.rows[0].stripe_subscription_id
+        ? results.rows[0].stripe_subscription_id
+        : null;
+      resolve(stripeSubscriptionId);
     });
   });
 };

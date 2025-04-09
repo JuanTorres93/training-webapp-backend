@@ -266,3 +266,49 @@ exports.getLastPaymentForLoggedUser = async (req, res, next) => {
     });
   }
 };
+
+exports.cancelSubscription = async (req, res, next) => {
+  const userId = req.session.passport.user.id;
+
+  // Get the subscription for the user
+  const stripeSubscriptionId = await paymentsDb.getUserStripeSubscriptionId(
+    userId
+  );
+
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("stripeSubscriptionId");
+  console.log(stripeSubscriptionId);
+
+  if (!stripeSubscriptionId) {
+    return res.status(404).json({
+      status: "fail",
+      message: "No subscription found for this user",
+    });
+  }
+
+  // Cancel the subscription in Stripe
+  try {
+    // const stripeSubscription = await stripe.subscriptions.del(
+    // stripeSubscriptionId.stripe_subscription_id
+    // );
+
+    // Update the subscription in the database
+    // await subscriptionsDb.updateUserSubscription(
+    // userId,
+    // stripeSubscriptionId.id,
+    // stripeSubscription.status
+    // );
+
+    res.status(200).json({
+      status: "success",
+      message: "Subscription cancelled successfully",
+    });
+  } catch (error) {
+    console.log("error");
+    console.log(error);
+    return res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
