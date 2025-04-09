@@ -11,3 +11,7 @@ ON CONFLICT (type) DO NOTHING;
 INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
 VALUES ('PAID', 'Paid subscription. Includes everything.%$Suscripción de pago. Incluye todo.', 100, 'Paid%$Pagada', 'Normal, paid subscription.') -- 1 euro
 ON CONFLICT (type) DO NOTHING;
+
+INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
+VALUES ('EXPIRED', 'Expired subscription%$Suscripción caducada', 0, 'Expired%$Caducada', 'Expired subscription') 
+ON CONFLICT (type) DO NOTHING;

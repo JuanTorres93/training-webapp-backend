@@ -203,6 +203,25 @@ const selectFreeTrialSubscription = async () => {
   });
 };
 
+const selectExpiredSubscription = async () => {
+  const q =
+    "SELECT " +
+    SELECT_SUSCRIPTION_FIELDS +
+    " FROM " +
+    TABLE_NAME +
+    " WHERE type = 'EXPIRED';";
+  const params = [];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) reject(error);
+      const suscription = results.rows[0];
+
+      resolve(suscription);
+    });
+  });
+};
+
 const truncateTableTest = () => {
   const appIsBeingTested = process.env.NODE_ENV === "test";
 
@@ -217,7 +236,7 @@ const truncateTableTest = () => {
   const q =
     "DELETE FROM " +
     TABLE_NAME +
-    " WHERE type NOT IN ('FREE', 'FREE_TRIAL', 'PAID');";
+    " WHERE type NOT IN ('FREE', 'FREE_TRIAL', 'PAID', 'EXPIRED');";
   const params = [];
 
   return new Promise((resolve, reject) => {
@@ -260,6 +279,7 @@ module.exports = {
   selectSubscriptionForUser,
   selectSuscriptionByType,
   selectFreeTrialSubscription,
+  selectExpiredSubscription,
   updateUserSubscription,
   truncateTableTest,
 };

@@ -238,7 +238,34 @@ exports.webhookCheckout = async (req, res, next) => {
       });
     }
   }
-  // TODO process cancel event
+
+  if (event.type === "customer.subscription.deleted") {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('"customer.subscription.deleted" RECEIVED');
+    try {
+      const expiredSubscriptionId = (
+        await subscriptionsDb.selectExpiredSubscription()
+      ).id;
+      // Add payment of 0; and null stripeSubscriptionId and nextPaymentDate
+      await createPayment(userId, expiredSubscriptionId, 0, null, null);
+
+      // Update the user subscription in the database to expired
+      await subscriptionsDb.updateUserSubscription(
+        userId,
+        expiredSubscriptionId
+      );
+
+      // TODO DELETE THESE DEBUG LOGS
+      console.log('"customer.subscription.deleted" COMPLETED');
+    } catch (error) {
+      console.log("error");
+      console.log(error);
+      return res.status(400).json({
+        status: "fail",
+        message: "Error updating subscription in database",
+      });
+    }
+  }
 
   res.status(200).json({ received: true });
 };
@@ -288,16 +315,9 @@ exports.cancelSubscription = async (req, res, next) => {
 
   // Cancel the subscription in Stripe
   try {
-    // const stripeSubscription = await stripe.subscriptions.del(
-    // stripeSubscriptionId.stripe_subscription_id
-    // );
-
-    // Update the subscription in the database
-    // await subscriptionsDb.updateUserSubscription(
-    // userId,
-    // stripeSubscriptionId.id,
-    // stripeSubscription.status
-    // );
+    await stripe.subscriptions.update(stripeSubscriptionId, {
+      cancel_at_period_end: true, // o false si quieres cancelarla de inmediato
+    });
 
     res.status(200).json({
       status: "success",
