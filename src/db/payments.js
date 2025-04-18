@@ -10,7 +10,7 @@ const queryLastPayment = `select
                           from ${TABLE_NAME}
                           where user_id = $1
                           and next_payment_date is not NULL
-                          order by next_payment_date desc
+                          order by created_at desc
                           limit 1;`;
 
 exports.createPayment = async ({
