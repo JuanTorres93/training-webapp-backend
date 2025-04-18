@@ -9,6 +9,7 @@ const queryLastPayment = `select
                             ${SELECT_PAYMENTS_FIELDS}
                           from ${TABLE_NAME}
                           where user_id = $1
+                          and next_payment_date is not NULL
                           order by next_payment_date desc
                           limit 1;`;
 
