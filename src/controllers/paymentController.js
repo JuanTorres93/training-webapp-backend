@@ -243,8 +243,33 @@ exports.webhookCheckout = async (req, res, next) => {
 
   if (event.type === "customer.subscription.updated") {
     // Mark subscription for cancellation
+    const data = event.data;
+    const cancelationRequested =
+      data.object.cancel_at_period_end === true &&
+      data.previous_attributes?.cancel_at_period_end === false;
+
     // TODO DELETE THESE DEBUG LOGS
-    console.log("UPDATING SUBSCRIPTION");
+    console.log("cancelationRequested");
+    console.log(cancelationRequested);
+
+    if (cancelationRequested) {
+      const stripeSubscriptionId = data.object.id;
+
+      try {
+        // TODO DELETE THESE DEBUG LOGS
+        console.log("Marking subscription for cancellation");
+        await paymentsDb.markStripeSubscriptionAsCancelled(
+          stripeSubscriptionId
+        );
+      } catch (error) {
+        console.log("error");
+        console.log(error);
+        return res.status(400).json({
+          status: "fail",
+          message: "Error canceling subscription",
+        });
+      }
+    }
   }
 
   // Delete subscription
@@ -275,6 +300,7 @@ exports.webhookCheckout = async (req, res, next) => {
     }
   }
 
+  // Notify Stripe that the webhook was received successfully
   res.status(200).json({ received: true });
 };
 
