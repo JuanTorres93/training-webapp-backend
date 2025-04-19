@@ -68,7 +68,9 @@ exports.getCheckoutSession = async (req, res, next) => {
             unit_amount: subscription.base_price_in_eur_cents,
             recurring: {
               // How often the subscription will be charged
-              interval: "month",
+              // interval: "month",
+              // TODO DELETE BELOW AND UNCOMMENT ABOVE
+              interval: "day",
             },
             product_data: {
               // Name of the product
@@ -239,13 +241,15 @@ exports.webhookCheckout = async (req, res, next) => {
     }
   }
 
+  if (event.type === "customer.subscription.updated") {
+    // Mark subscription for cancellation
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("UPDATING SUBSCRIPTION");
+  }
+
+  // Delete subscription
   if (event.type === "customer.subscription.deleted") {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('"customer.subscription.deleted" RECEIVED');
     const subscription = event.data.object;
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("subscription");
-    console.log(subscription);
 
     // access metadata specified in the checkout session
     const userId = subscription.metadata.userId;
@@ -261,9 +265,6 @@ exports.webhookCheckout = async (req, res, next) => {
         userId,
         expiredSubscriptionId
       );
-
-      // TODO DELETE THESE DEBUG LOGS
-      console.log('"customer.subscription.deleted" COMPLETED');
     } catch (error) {
       console.log("error");
       console.log(error);
@@ -318,11 +319,9 @@ exports.cancelSubscription = async (req, res, next) => {
 
   // Cancel the subscription in Stripe
   try {
-    // await stripe.subscriptions.update(stripeSubscriptionId, {
-    //   cancel_at_period_end: true,
-    // });
-    // TODO IMPORTANT: REMOVE BELOW AND UNCOMMENT ABOVE
-    await stripe.subscriptions.cancel(stripeSubscriptionId);
+    await stripe.subscriptions.update(stripeSubscriptionId, {
+      cancel_at_period_end: true,
+    });
 
     res.status(200).json({
       status: "success",

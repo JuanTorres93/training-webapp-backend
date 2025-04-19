@@ -136,6 +136,7 @@ const registerNewUser = async ({
       const endFreeTrialDate = new Date();
       // Add 1 month to the current date
       endFreeTrialDate.setMonth(endFreeTrialDate.getMonth() + 1);
+
       await createPayment({
         userId: createdUser.id,
         subscriptionId: subsId,

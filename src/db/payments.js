@@ -3,7 +3,7 @@ const qh = require("./queryHelper.js");
 
 const TABLE_NAME = "payments";
 const SELECT_PAYMENTS_FIELDS =
-  "id, user_id, subscription_id, amount_in_eur, next_payment_date, created_at";
+  "id, user_id, subscription_id, amount_in_eur, next_payment_date, marked_for_cancel, created_at";
 
 const queryLastPayment = `select 
                             ${SELECT_PAYMENTS_FIELDS}
