@@ -114,3 +114,23 @@ exports.markStripeSubscriptionAsCancelled = async (stripeSubscriptionId) => {
     });
   });
 };
+
+exports.markStripeSubscriptionAsResumed = async (stripeSubscriptionId) => {
+  // Mark last payment as resumed
+  const q = `UPDATE ${TABLE_NAME} 
+            SET marked_for_cancel = false
+            WHERE stripe_subscription_id = $1
+            AND created_at = (
+              SELECT MAX(created_at) 
+              FROM ${TABLE_NAME} 
+              WHERE stripe_subscription_id = $1
+            );`;
+  const params = [stripeSubscriptionId];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) reject(error);
+      resolve(results);
+    });
+  });
+};

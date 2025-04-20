@@ -36,4 +36,11 @@ router.get(
   paymentController.cancelSubscription
 );
 
+router.get(
+  "/resume-subscription",
+  mw.authenticatedUser,
+  mw.checkUserExistsById,
+  paymentController.resumeSubscription
+);
+
 module.exports = router;

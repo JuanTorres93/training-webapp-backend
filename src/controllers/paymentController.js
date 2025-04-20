@@ -242,22 +242,22 @@ exports.webhookCheckout = async (req, res, next) => {
   }
 
   if (event.type === "customer.subscription.updated") {
-    // Mark subscription for cancellation
     const data = event.data;
+
+    // Check if the subscription was canceled
     const cancelationRequested =
       data.object.cancel_at_period_end === true &&
       data.previous_attributes?.cancel_at_period_end === false;
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("cancelationRequested");
-    console.log(cancelationRequested);
+    // Check if the subscription was resumed
+    const resumeRequested =
+      data.object.cancel_at_period_end === false &&
+      data.previous_attributes?.cancel_at_period_end === true;
 
     if (cancelationRequested) {
       const stripeSubscriptionId = data.object.id;
 
       try {
-        // TODO DELETE THESE DEBUG LOGS
-        console.log("Marking subscription for cancellation");
         await paymentsDb.markStripeSubscriptionAsCancelled(
           stripeSubscriptionId
         );
@@ -267,6 +267,19 @@ exports.webhookCheckout = async (req, res, next) => {
         return res.status(400).json({
           status: "fail",
           message: "Error canceling subscription",
+        });
+      }
+    } else if (resumeRequested) {
+      const stripeSubscriptionId = data.object.id;
+
+      try {
+        await paymentsDb.markStripeSubscriptionAsResumed(stripeSubscriptionId);
+      } catch (error) {
+        console.log("error");
+        console.log(error);
+        return res.status(400).json({
+          status: "fail",
+          message: "Error resuming subscription",
         });
       }
     }
@@ -352,6 +365,41 @@ exports.cancelSubscription = async (req, res, next) => {
     res.status(200).json({
       status: "success",
       message: "Subscription cancelled successfully",
+    });
+  } catch (error) {
+    console.log("error");
+    console.log(error);
+    return res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
+
+exports.resumeSubscription = async (req, res, next) => {
+  const userId = req.session.passport.user.id;
+
+  // Get the subscription for the user
+  const stripeSubscriptionId = await paymentsDb.getUserStripeSubscriptionId(
+    userId
+  );
+
+  if (!stripeSubscriptionId) {
+    return res.status(404).json({
+      status: "fail",
+      message: "No subscription found for this user",
+    });
+  }
+
+  // Resume the subscription in Stripe
+  try {
+    await stripe.subscriptions.update(stripeSubscriptionId, {
+      cancel_at_period_end: false,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Subscription resumed successfully",
     });
   } catch (error) {
     console.log("error");
