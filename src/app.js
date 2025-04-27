@@ -54,6 +54,10 @@ const createApp = () => {
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("corsOptions");
+  console.log(corsOptions);
+
   if (process.env.DB_HOST === "db-test-for-frontend") {
     // This allows the connection with jsdom in jest
     // Otherwise, there is a CORS error despite the fact

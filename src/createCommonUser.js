@@ -13,16 +13,8 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     // oauth_registrarion: null,
   };
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("common_user");
-  console.log(common_user);
-
   try {
     const user = await usersDB.selectUserByEmail(common_user.email);
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("user");
-    console.log(user);
 
     if (user) {
       return;
@@ -40,10 +32,6 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         credentials: "include",
       });
       createUserData = await createUserResponse.json();
-
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("createUserData");
-      console.log(createUserData);
     } else {
       createUserData = await testRequestInterface
         .post("/users")
@@ -216,10 +204,6 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     // Iterate over the workouts templates
     workoutsTemplates.map(async (workoutTemplate) => {
       let exercisesToAdd = [];
-
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("workoutTemplate");
-      console.log(workoutTemplate);
 
       const templateName = workoutTemplate.name;
       if (templateName.includes("Push Day")) {
