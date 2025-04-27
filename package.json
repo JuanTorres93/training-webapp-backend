@@ -34,6 +34,7 @@
     "docker-test": "jest --watchAll --runInBand --verbose #MUST BE RUN WITH DOCKER COMPOSE. docker-compose build backend-test && docker-compose run --rm backend-test",
     "jenkins-test": "jest --runInBand --forceExit --detectOpenHandles --ci --bail",
     "start": "nodemon server.js",
+    "start:prod": "node server.js",
     "docker": "docker run --rm --env-file ./.envDocker --name tb -p 54321:54321 -v /app/node_modules -v \"$(pwd):/app\" training-backend",
     "docker-build": "docker build -t training-backend ."
   },
