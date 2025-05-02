@@ -122,9 +122,9 @@ const createApp = () => {
   const cookie = {
     maxAge: config.MAX_COOKIE_AGE_MILLISECONDS, // milliseconds until cookie expires
     // Secure only in production
-    secure: process.env.NODE_ENV === "production", // It's only sent to the server via HTTPS
+    secure: false, //process.env.NODE_ENV === "production", // It's only sent to the server via HTTPS
     // Same site only in production
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Allow cross-site cookie through different browsers
+    sameSite: "lax", //process.env.NODE_ENV === "production" ? "none" : "lax", // Allow cross-site cookie through different browsers
     httpOnly: true, // Specifies whether or not the cookies should be accessible via
     // JavaScript in the browser (Document.cookie). This setting is set
     // to true, because it ensures that any cross-site scripting attack (XSS) is impossible
