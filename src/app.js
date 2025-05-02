@@ -49,7 +49,7 @@ const createApp = () => {
 
   // CORS configuration
   const corsOptions = {
-    origin: [process.env.CLIENT_URL],
+    origin: process.env.CLIENT_URL, // Not in array, according ChatGPT, arrays can cause issues when using credentials true
     credentials: true, // Required for cookies, authorization headers with HTTPS
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
