@@ -8,5 +8,9 @@ app.listen(PORT, async () => {
   console.log("Server is listening");
 
   // TODO DELETE WHEN REFACTORING DEMANDS IT
-  await createCommonUser(`http://localhost:${process.env.SERVER_PORT}`);
+  if (process.env.NODE_ENV === "production") {
+    await createCommonUser(`http://backend-service:${process.env.SERVER_PORT}`);
+  } else {
+    await createCommonUser(`http://localhost:${process.env.SERVER_PORT}`);
+  }
 });
