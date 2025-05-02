@@ -14,7 +14,14 @@ const createCommonUser = async (host, testRequestInterface = null) => {
   };
 
   try {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("Creating common user");
+
     const user = await usersDB.selectUserByEmail(common_user.email);
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("user");
+    console.log(user);
 
     if (user) {
       return;
@@ -23,19 +30,25 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     let createUserData;
 
     if (!appIsBeingTested) {
-      const createUserResponse = await fetch(`${host}/users`, {
-        method: "POST",
-        body: JSON.stringify(common_user),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-      createUserData = await createUserResponse.json();
+      try {
+        const createUserResponse = await fetch(`${host}/users`, {
+          method: "POST",
+          body: JSON.stringify(common_user),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+        createUserData = await createUserResponse.json();
 
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("createUserData");
-      console.log(createUserData);
+        // TODO DELETE THESE DEBUG LOGS
+        console.log("createUserData");
+        console.log(createUserData);
+      } catch (error) {
+        // TODO DELETE THESE DEBUG LOGS
+        console.log("error");
+        console.log(error);
+      }
     } else {
       createUserData = await testRequestInterface
         .post("/users")
