@@ -47,6 +47,16 @@ const createApp = () => {
   // Enable request logs
   if (!appIsBeingTested) app.use(morgan("short"));
 
+  if (process.env.NODE_ENV === "production") {
+    // ⚠️ Required when your app is behind a proxy or Ingress (e.g., in Kubernetes).
+    // This tells Express to trust headers like `X-Forwarded-Proto`.
+    // As a result, `req.secure` will be `true` if the original request used HTTPS,
+    // which is necessary for Express to send cookies with `secure: true`.
+    app.set("trust proxy", 1);
+
+    app.use(morgan("combined"));
+  }
+
   // CORS configuration
   const corsOptions = {
     origin: process.env.CLIENT_URL, // Not in array, according ChatGPT, arrays can cause issues when using credentials true
