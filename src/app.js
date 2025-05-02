@@ -121,6 +121,10 @@ const createApp = () => {
     // Other properties can be 'expires' or 'httpOnly', amongst others
   };
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("cookie");
+  console.log(cookie);
+
   app.use(
     session({
       // secret is used as a key for signing and/or encrypting cookies
