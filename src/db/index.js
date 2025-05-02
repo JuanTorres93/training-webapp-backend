@@ -54,6 +54,9 @@ const query = (text, params, callback) => {
   //                  throw error
   //              }
   //          })
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("query: process.env.NODE_ENV");
+  console.log(process.env.NODE_ENV);
   return pool.query(text, params, callback);
 };
 

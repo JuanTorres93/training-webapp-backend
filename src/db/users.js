@@ -184,10 +184,21 @@ const selectUserByEmail = async (email) => {
     " WHERE email = $1;";
   const params = [email];
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("q");
+  console.log(q);
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("params");
+  console.log(params);
+
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
       if (error) return reject(error);
       const user = results.rows[0];
+
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("results.rows");
+      console.log(results.rows);
       resolve(user);
     });
   });
