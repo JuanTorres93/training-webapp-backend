@@ -127,6 +127,14 @@ const registerNewUser = async ({
     returningFields
   );
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("q");
+  console.log(q);
+
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("params");
+  console.log(params);
+
   return new Promise((resolve, reject) => {
     query(q, params, async (error, results) => {
       if (error) reject(error);
@@ -143,6 +151,10 @@ const registerNewUser = async ({
         amountInEur: 0,
         nextPaymentDate: endFreeTrialDate,
       });
+
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("createdUser");
+      console.log(createdUser);
       resolve(createdUser);
     });
   });

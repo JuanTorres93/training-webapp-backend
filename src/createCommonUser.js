@@ -34,25 +34,19 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     let createUserData;
 
     if (!appIsBeingTested) {
-      try {
-        const createUserResponse = await fetch(`${host}/users`, {
-          method: "POST",
-          body: JSON.stringify(common_user),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        });
-        createUserData = await createUserResponse.json();
+      const createUserResponse = await fetch(`${host}/users`, {
+        method: "POST",
+        body: JSON.stringify(common_user),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      createUserData = await createUserResponse.json();
 
-        // TODO DELETE THESE DEBUG LOGS
-        console.log("createUserData");
-        console.log(createUserData);
-      } catch (error) {
-        // TODO DELETE THESE DEBUG LOGS
-        console.log("error");
-        console.log(error);
-      }
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("createUserData");
+      console.log(createUserData);
     } else {
       createUserData = await testRequestInterface
         .post("/users")
