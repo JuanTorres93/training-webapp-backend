@@ -17,6 +17,10 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     // TODO DELETE THESE DEBUG LOGS
     console.log("Creating common user");
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("host");
+    console.log(host);
+
     const user = await usersDB.selectUserByEmail(common_user.email);
 
     // TODO DELETE THESE DEBUG LOGS
