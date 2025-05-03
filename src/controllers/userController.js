@@ -42,13 +42,7 @@ exports.getEverythingFromUserInTestEnv = async (req, res, next) => {
 
 exports.registerNewUser = async (req, res, next) => {
   try {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("creating new user");
-
     const createdUser = await dbUsers.registerNewUser(req.body);
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("createdUser");
-    console.log(createdUser);
     return res.status(201).json(createdUser);
   } catch (error) {
     return res.status(400).json({
