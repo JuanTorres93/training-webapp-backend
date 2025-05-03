@@ -64,10 +64,6 @@ const createApp = () => {
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("corsOptions");
-  console.log(corsOptions);
-
   if (process.env.DB_HOST === "db-test-for-frontend") {
     // This allows the connection with jsdom in jest
     // Otherwise, there is a CORS error despite the fact
@@ -82,11 +78,7 @@ const createApp = () => {
   if (!appIsBeingTested) {
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
-      // TODO DELETE BELOW AND UNCOMMENT ABOVE
-      // windowMs: 1 * 60 * 1000, // 15 minutes
-      max: 200, // limit each IP to 100 requests per windowMs
-      // TODO DELETE BELOW AND UNCOMMENT ABOVE
-      // max: 2, // limit each IP to 100 requests per windowMs
+      max: 200, // limit each IP to 200 requests per windowMs
       message: "Too many requests, please try again later.",
     });
 
@@ -130,10 +122,6 @@ const createApp = () => {
     // to true, because it ensures that any cross-site scripting attack (XSS) is impossible
     // Other properties can be 'expires' or 'httpOnly', amongst others
   };
-
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("cookie");
-  console.log(cookie);
 
   app.use(
     session({

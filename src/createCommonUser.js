@@ -14,18 +14,7 @@ const createCommonUser = async (host, testRequestInterface = null) => {
   };
 
   try {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("Creating common user");
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("host");
-    console.log(host);
-
     const user = await usersDB.selectUserByEmail(common_user.email);
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("user");
-    console.log(user);
 
     if (user) {
       return;
@@ -43,10 +32,6 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         credentials: "include",
       });
       createUserData = await createUserResponse.json();
-
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("createUserData");
-      console.log(createUserData);
     } else {
       createUserData = await testRequestInterface
         .post("/users")
@@ -71,15 +56,8 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         credentials: "include",
       });
       loginData = await loginResponse.json();
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("loginData");
-      console.log(loginData);
 
       cookie = loginResponse.headers.get("set-cookie");
-
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("cookie");
-      console.log(cookie);
     } else {
       loginData = await testRequestInterface.post("/login").send({
         username: common_user.username,
@@ -172,13 +150,6 @@ const createCommonUser = async (host, testRequestInterface = null) => {
       exercisesResponses.map((response) => response.json())
     );
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("exercises");
-    console.log(exercises);
-    // console.log('All common exercises created');
-
-    // console.log('Creating shared workouts templates');
-
     const common_workouts_templates = [
       {
         userId: createUserData.id,
@@ -224,13 +195,6 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     const workoutsTemplates = await Promise.all(
       workoutsTemplatesResponses.map((response) => response.json())
     );
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("workoutsTemplates");
-    console.log(workoutsTemplates);
-
-    // console.log('All common workouts templates created');
-    // console.log('Adding exercises to templates');
 
     let exercisesToAddPromises;
     // Iterate over the workouts templates
