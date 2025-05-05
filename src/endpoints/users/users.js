@@ -15,8 +15,8 @@ const router = express.Router();
 // ==================================
 
 // Get all users
-// TODO IMPORTANT: ADD AUTHORIZATION AND AUTHENTICATION
-router.get("/", userController.getAllUsers);
+// TODO IMPORTANT: ADD AUTHORIZATION AND AUTHENTICATION If this endpoint is wanted
+// router.get("/", userController.getAllUsers);
 
 // Truncate test table
 router.get("/truncate", userController.truncateTestTable);
