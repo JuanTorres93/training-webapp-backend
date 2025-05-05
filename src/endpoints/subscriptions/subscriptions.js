@@ -7,7 +7,6 @@ const mw = require("../../utils/middleware.js");
 
 const router = express.Router();
 
-// TODO IMPORTANT protect this route
 router.get(
   "/",
   mw.authenticatedUser,
