@@ -55,6 +55,34 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
   }
 };
 
+const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
+  const loggedUser = req.session.passport.user;
+  const loggedUserId = loggedUser.id;
+  const exerciseId = req.params.exerciseId
+    ? req.params.exerciseId
+    : req.body.exerciseId;
+  const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
+    exerciseId,
+    loggedUserId
+  );
+  if (exerciseBelongsToUser) {
+    return next();
+  }
+  // Two steps to avoid unnecessary queries to the database if the logged in user owns the exercise
+  const commonUser = await dbUsers.selectUserByEmail(
+    process.env.DB_COMMON_USER_EMAIL
+  );
+  const commonUserId = commonUser.id;
+  const exerciseBelongsToCommonUser = await dbExercises.exerciseBelongsToUser(
+    exerciseId,
+    commonUserId
+  );
+  if (exerciseBelongsToCommonUser) {
+    return next();
+  }
+  return res.status(403).json({ msg: "Not authorized" });
+};
+
 const workoutBelongsToLoggedInUser = async (req, res, next) => {
   const loggedUser = req.session.passport.user;
   const loggedUserId = loggedUser.id;
@@ -395,6 +423,7 @@ module.exports = {
   authenticatedUser,
   loggedUserIdEqualsUserIdInRequest,
   exerciseBelongsToLoggedInUser,
+  exerciseBelongsToLoggedInORCommonUser,
   workoutBelongsToLoggedInUser,
   workoutTemplateBelongsToLoggedInUser,
   workoutTemplateBelongsToLoggedInORCommonUser,

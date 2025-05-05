@@ -68,9 +68,7 @@ exports.getCheckoutSession = async (req, res, next) => {
             unit_amount: subscription.base_price_in_eur_cents,
             recurring: {
               // How often the subscription will be charged
-              // interval: "month",
-              // TODO DELETE BELOW AND UNCOMMENT ABOVE
-              interval: "day",
+              interval: "month",
             },
             product_data: {
               // Name of the product

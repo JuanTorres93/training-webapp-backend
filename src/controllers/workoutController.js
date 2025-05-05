@@ -1,4 +1,4 @@
-const dbWorkouts = require('../db/workouts');
+const dbWorkouts = require("../db/workouts");
 
 //////////////////////
 // READ OPERATIONS
@@ -20,7 +20,11 @@ exports.getWorkoutById = async (req, res, next) => {
 exports.getLastWorkoutsFromATemplateByUserId = async (req, res, next) => {
   const { templateId, userId, numberOfWorkouts } = req.params;
 
-  const workout = await dbWorkouts.selectLastNWorkoutsFromUser(templateId, userId, numberOfWorkouts);
+  const workout = await dbWorkouts.selectLastNWorkoutsFromUser(
+    templateId,
+    userId,
+    numberOfWorkouts
+  );
 
   res.status(200).json(workout);
 };
@@ -41,7 +45,10 @@ exports.getAllWorkoutsFromTemplate = async (req, res, next) => {
   const { templateId } = req.params;
   const user = req.session.passport.user;
 
-  const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateId(templateId, user.id);
+  const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateId(
+    templateId,
+    user.id
+  );
 
   res.status(200).json(workoutsIds);
 };
@@ -53,13 +60,11 @@ exports.createWorkout = async (req, res, next) => {
   const userId = req.user.id;
 
   try {
-    const createdWorkout = await dbWorkouts.createWorkouts(
-      userId, req.body
-    );
+    const createdWorkout = await dbWorkouts.createWorkouts(userId, req.body);
     return res.status(201).json(createdWorkout);
   } catch (error) {
     return res.status(400).json({
-      msg: "Error when creating workout"
+      msg: "Error when creating workout",
     });
   }
 };
@@ -83,7 +88,10 @@ exports.updateWorkout = async (req, res, next) => {
     description,
   };
 
-  const updatedWorkout = await dbWorkouts.updateWorkout(workoutId, updateWorkoutInfo);
+  const updatedWorkout = await dbWorkouts.updateWorkout(
+    workoutId,
+    updateWorkoutInfo
+  );
 
   res.status(200).json(updatedWorkout);
 };
@@ -92,7 +100,10 @@ exports.updateExerciseInWorkout = async (req, res, next) => {
   const { workoutId, exerciseId } = req.params;
   const { exerciseSet, reps, weight, time_in_seconds } = req.body;
 
-  const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(workoutId, exerciseId);
+  const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(
+    workoutId,
+    exerciseId
+  );
 
   if (!exerciseInWorkoutExists) {
     return res.status(404).json({
@@ -108,7 +119,10 @@ exports.updateExerciseInWorkout = async (req, res, next) => {
     time_in_seconds,
   };
 
-  const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(workoutId, updateExerciseInfo);
+  const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(
+    workoutId,
+    updateExerciseInfo
+  );
 
   res.status(200).json(updatedExercise);
 };
@@ -124,7 +138,7 @@ exports.addExerciseToWorkout = async (req, res, next) => {
     workoutId,
   };
 
-  // TODO CHECK primary key is not duplicated
+  // TODO CHECK primary key is not duplicated?
   try {
     const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData);
 
@@ -139,7 +153,7 @@ exports.addExerciseToWorkout = async (req, res, next) => {
     return res.status(201).json(capitalizedAddedExercise);
   } catch (error) {
     return res.status(400).json({
-      msg: "Error when adding exercise to workout"
+      msg: "Error when adding exercise to workout",
     });
   }
 };
@@ -158,7 +172,10 @@ exports.deleteWorkout = async (req, res, next) => {
 exports.deleteExerciseFromWorkout = async (req, res, next) => {
   const { workoutId, exerciseId } = req.params;
 
-  const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(workoutId, exerciseId);
+  const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(
+    workoutId,
+    exerciseId
+  );
 
   res.status(200).json(deletedExercise);
 };
@@ -166,7 +183,11 @@ exports.deleteExerciseFromWorkout = async (req, res, next) => {
 exports.deleteExerciseSetFromWorkout = async (req, res, next) => {
   const { workoutId, exerciseId, exerciseSet } = req.params;
 
-  const deletedExercise = await dbWorkouts.deleteSetFromExercise(workoutId, exerciseId, exerciseSet);
+  const deletedExercise = await dbWorkouts.deleteSetFromExercise(
+    workoutId,
+    exerciseId,
+    exerciseSet
+  );
 
   res.status(200).json(deletedExercise);
 };
