@@ -67,7 +67,6 @@ router.get(
 // ===================================
 
 // Create new workout template
-// TODO implement 403 response
 router.post(
   "/",
   workoutsTemplatesValidators.validateCreateWorkoutTemplateParams,
