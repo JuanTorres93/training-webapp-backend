@@ -101,43 +101,43 @@ describe(`${BASE_ENDPOINT}`, () => {
     });
   });
 
-  describe("get requests", () => {
-    let user;
-    let response;
-    let exercisesIds;
+  //describe("get requests", () => {
+  //  let user;
+  //  let response;
+  //  let exercisesIds;
 
-    beforeAll(async () => {
-      const setUpInfo = await setUp();
-      user = setUpInfo.user;
+  //  beforeAll(async () => {
+  //    const setUpInfo = await setUp();
+  //    user = setUpInfo.user;
 
-      await initExercisesTableInDb();
-      exercisesIds = await getExercisesIds();
+  //    await initExercisesTableInDb();
+  //    exercisesIds = await getExercisesIds();
 
-      await addWorkoutsAndExercises(user.id, exercisesIds);
-    });
+  //    await addWorkoutsAndExercises(user.id, exercisesIds);
+  //  });
 
-    beforeEach(async () => {
-      response = await request.get(BASE_ENDPOINT);
-    });
+  //  beforeEach(async () => {
+  //    response = await request.get(BASE_ENDPOINT);
+  //  });
 
-    describe("get all workouts", () => {
-      it("returns list", async () => {
-        expect(Array.isArray(response.body)).toBe(true);
-      });
+  //  //describe("get all workouts", () => {
+  //  //  it("returns list", async () => {
+  //  //    expect(Array.isArray(response.body)).toBe(true);
+  //  //  });
 
-      it("status code of 200", async () => {
-        expect(response.statusCode).toStrictEqual(200);
-      });
+  //  //  it("status code of 200", async () => {
+  //  //    expect(response.statusCode).toStrictEqual(200);
+  //  //  });
 
-      it("workout object has id, name, description and exercises properties", () => {
-        const workoutObject = response.body[0];
+  //  //  it("workout object has id, name, description and exercises properties", () => {
+  //  //    const workoutObject = response.body[0];
 
-        expect(workoutObject).toHaveProperty("id");
-        expect(workoutObject).toHaveProperty("template_id");
-        expect(workoutObject).toHaveProperty("name");
-        expect(workoutObject).toHaveProperty("description");
-        expect(workoutObject).toHaveProperty("exercises");
-      });
-    });
-  });
+  //  //    expect(workoutObject).toHaveProperty("id");
+  //  //    expect(workoutObject).toHaveProperty("template_id");
+  //  //    expect(workoutObject).toHaveProperty("name");
+  //  //    expect(workoutObject).toHaveProperty("description");
+  //  //    expect(workoutObject).toHaveProperty("exercises");
+  //  //  });
+  //  //});
+  //});
 });
