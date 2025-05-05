@@ -8,6 +8,64 @@ info:
   title: training-webapp
   description: The API for the training tracker webapp
 paths:
+  /login:
+    post:
+      tags:
+        - Login
+      summary: Login with credentials
+      description: Authenticates a user using email and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user"
+                password:
+                  type: string
+                  example: "s€CuREP@ssw0rd!"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "logged in"
+                  user:
+                    $ref: "#/components/schemas/ResponseUser"
+        "401":
+          $ref: "#/components/responses/401"
+
+  /login/extend-session:
+    post:
+      tags:
+        - Login
+      summary: Extend session
+      description: Extends the user's session by regenerating the session cookie.
+      responses:
+        "200":
+          description: Session successfully extended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Session successfully extended."
+                  expirationDate:
+                    type: string
+                    example: "2025-05-05T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/400"
+
   /users:
     get:
       tags:
