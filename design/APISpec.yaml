@@ -551,9 +551,9 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /workouts/all/{templateName}:
+  /workouts/all/{templateId}:
     parameters:
-      - name: templateName
+      - name: templateId
         in: path
         required: true
         description: Workout id
@@ -563,7 +563,7 @@ paths:
       tags:
         - Workouts
       description: Returns every workout id for a given template
-      operationId: getWorkoutNameFromTemplateName
+      operationId: getAllWorkoutsForTemplateId
       responses:
         "200":
           description: Array of workout ids
@@ -579,6 +579,12 @@ paths:
 
         "401":
           $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
 
   /workouts/addFinishDate/{workoutId}:
     parameters:

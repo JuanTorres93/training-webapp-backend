@@ -17,7 +17,7 @@ const router = express.Router();
 // ==================================
 
 // Get all workouts
-// TODO PROTECT THIS ROUTE IF THE ENDPOINT IS NEEDED
+// TODO later PROTECT THIS ROUTE IF THE ENDPOINT IS NEEDED
 //router.get('/', workoutController.getAllWorkouts);
 
 // Truncate test table
@@ -69,12 +69,13 @@ router.get(
 );
 
 // Get all workouts from a template
-// TODO 403 and 404 responses? Maybe are not necesary
 // TODO test EP
 router.get(
   "/all/:templateId",
   validateUUIDParameter("templateId"),
   mw.authenticatedUser,
+  mw.checkWorkoutTemplateExistsById,
+  mw.workoutTemplateBelongsToLoggedInORCommonUser,
   workoutController.getAllWorkoutsFromTemplate
 );
 
