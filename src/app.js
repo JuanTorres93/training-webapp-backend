@@ -12,6 +12,8 @@ const passport = require("./passport-config.js");
 const rateLimit = require("express-rate-limit");
 
 // My modules imports
+const AppError = require("./utils/appError.js");
+const globalErrorHandler = require("./controllers/errorController.js");
 const paymentController = require("./controllers/paymentController.js");
 const { getPool, getPoolClient } = require("./db/index.js");
 const config = require("./config.js");
@@ -177,6 +179,19 @@ const createApp = () => {
   app.use("/subscriptions", subscriptionsRouter);
   // Mount payments endpoint
   app.use("/payments", paymentsRouter);
+
+  // Handle unhandled routes
+  app.all("*", (req, res, next) => {
+    // Whenever you pass an argument to the next() function,
+    // Express will assume that it is an error, and it will
+    // skip all the other middlewares in the middleware
+    // stack and send this error to the global error handling
+    // middleware.
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  });
+
+  // Global error handling middleware
+  app.use(globalErrorHandler);
 
   // =======================
   // Cron jobs
