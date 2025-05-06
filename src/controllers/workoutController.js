@@ -1,47 +1,51 @@
+const AppError = require("../utils/appError");
+const catchAsync = require("../utils/catchAsync");
 const dbWorkouts = require("../db/workouts");
 
 //////////////////////
 // READ OPERATIONS
 
-exports.getAllWorkouts = async (req, res, next) => {
+exports.getAllWorkouts = catchAsync(async (req, res, next) => {
   const workouts = await dbWorkouts.selectAllWorkouts();
 
   res.status(200).send(workouts);
-};
+});
 
-exports.getWorkoutById = async (req, res, next) => {
+exports.getWorkoutById = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
   const workout = await dbWorkouts.selectworkoutById(workoutId);
 
   res.status(200).json(workout);
-};
+});
 
-exports.getLastWorkoutsFromATemplateByUserId = async (req, res, next) => {
-  const { templateId, userId, numberOfWorkouts } = req.params;
+exports.getLastWorkoutsFromATemplateByUserId = catchAsync(
+  async (req, res, next) => {
+    const { templateId, userId, numberOfWorkouts } = req.params;
 
-  const workout = await dbWorkouts.selectLastNWorkoutsFromUser(
-    templateId,
-    userId,
-    numberOfWorkouts
-  );
+    const workout = await dbWorkouts.selectLastNWorkoutsFromUser(
+      templateId,
+      userId,
+      numberOfWorkouts
+    );
 
-  res.status(200).json(workout);
-};
-
-exports.getLastSingleWorkoutFromTemplateByUserId = async (req, res, next) => {
-  const { templateId, userId } = req.params;
-  let workout;
-  try {
-    workout = await dbWorkouts.selectLastWorkoutFromUser(templateId, userId);
-  } catch (error) {
-    console.log(error);
+    res.status(200).json(workout);
   }
+);
 
-  res.status(200).json(workout);
-};
+exports.getLastSingleWorkoutFromTemplateByUserId = catchAsync(
+  async (req, res, next) => {
+    const { templateId, userId } = req.params;
+    const workout = await dbWorkouts.selectLastWorkoutFromUser(
+      templateId,
+      userId
+    );
 
-exports.getAllWorkoutsFromTemplate = async (req, res, next) => {
+    res.status(200).json(workout);
+  }
+);
+
+exports.getAllWorkoutsFromTemplate = catchAsync(async (req, res, next) => {
   const { templateId } = req.params;
   const user = req.session.passport.user;
 
@@ -51,36 +55,30 @@ exports.getAllWorkoutsFromTemplate = async (req, res, next) => {
   );
 
   res.status(200).json(workoutsIds);
-};
+});
 
 //////////////////////
 // CREATE OPERATIONS
 
-exports.createWorkout = async (req, res, next) => {
+exports.createWorkout = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
-  try {
-    const createdWorkout = await dbWorkouts.createWorkouts(userId, req.body);
-    return res.status(201).json(createdWorkout);
-  } catch (error) {
-    return res.status(400).json({
-      msg: "Error when creating workout",
-    });
-  }
-};
+  const createdWorkout = await dbWorkouts.createWorkouts(userId, req.body);
+  return res.status(201).json(createdWorkout);
+});
 
 //////////////////////
 // UPDATE OPERATIONS
 
-exports.updateEndDateOfWorkout = async (req, res, next) => {
+exports.updateEndDateOfWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
   const workout = await dbWorkouts.addFinishDateToWorkout(workoutId);
 
   res.status(200).json(workout);
-};
+});
 
-exports.updateWorkout = async (req, res, next) => {
+exports.updateWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
   const { description } = req.body;
 
@@ -94,9 +92,9 @@ exports.updateWorkout = async (req, res, next) => {
   );
 
   res.status(200).json(updatedWorkout);
-};
+});
 
-exports.updateExerciseInWorkout = async (req, res, next) => {
+exports.updateExerciseInWorkout = catchAsync(async (req, res, next) => {
   const { workoutId, exerciseId } = req.params;
   const { exerciseSet, reps, weight, time_in_seconds } = req.body;
 
@@ -106,9 +104,12 @@ exports.updateExerciseInWorkout = async (req, res, next) => {
   );
 
   if (!exerciseInWorkoutExists) {
-    return res.status(404).json({
-      msg: `Exercise with id ${exerciseId} does not exist in workout with id ${workoutId}`,
-    });
+    return next(
+      new AppError(
+        `Exercise with id ${exerciseId} does not exist in workout with id ${workoutId}`,
+        404
+      )
+    );
   }
 
   const updateExerciseInfo = {
@@ -125,9 +126,9 @@ exports.updateExerciseInWorkout = async (req, res, next) => {
   );
 
   res.status(200).json(updatedExercise);
-};
+});
 
-exports.addExerciseToWorkout = async (req, res, next) => {
+exports.addExerciseToWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
   const exerciseData = {
@@ -139,37 +140,31 @@ exports.addExerciseToWorkout = async (req, res, next) => {
   };
 
   // TODO CHECK primary key is not duplicated?
-  try {
-    const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData);
+  const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData);
 
-    const capitalizedAddedExercise = {
-      exerciseId: addedExercise.exerciseid,
-      exerciseSet: addedExercise.exerciseset,
-      reps: addedExercise.reps,
-      weight: addedExercise.weight,
-      time_in_seconds: addedExercise.time_in_seconds,
-    };
+  const capitalizedAddedExercise = {
+    exerciseId: addedExercise.exerciseid,
+    exerciseSet: addedExercise.exerciseset,
+    reps: addedExercise.reps,
+    weight: addedExercise.weight,
+    time_in_seconds: addedExercise.time_in_seconds,
+  };
 
-    return res.status(201).json(capitalizedAddedExercise);
-  } catch (error) {
-    return res.status(400).json({
-      msg: "Error when adding exercise to workout",
-    });
-  }
-};
+  return res.status(201).json(capitalizedAddedExercise);
+});
 
 //////////////////////
 // DELETE OPERATIONS
 
-exports.deleteWorkout = async (req, res, next) => {
+exports.deleteWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
   const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId);
 
   res.status(200).json(deletedWorkout);
-};
+});
 
-exports.deleteExerciseFromWorkout = async (req, res, next) => {
+exports.deleteExerciseFromWorkout = catchAsync(async (req, res, next) => {
   const { workoutId, exerciseId } = req.params;
 
   const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(
@@ -178,9 +173,9 @@ exports.deleteExerciseFromWorkout = async (req, res, next) => {
   );
 
   res.status(200).json(deletedExercise);
-};
+});
 
-exports.deleteExerciseSetFromWorkout = async (req, res, next) => {
+exports.deleteExerciseSetFromWorkout = catchAsync(async (req, res, next) => {
   const { workoutId, exerciseId, exerciseSet } = req.params;
 
   const deletedExercise = await dbWorkouts.deleteSetFromExercise(
@@ -190,10 +185,10 @@ exports.deleteExerciseSetFromWorkout = async (req, res, next) => {
   );
 
   res.status(200).json(deletedExercise);
-};
+});
 
-exports.truncateTestTable = async (req, res, next) => {
+exports.truncateTestTable = catchAsync(async (req, res, next) => {
   const truncatedTable = await dbWorkouts.truncateTableTest();
 
   res.status(200).send(truncatedTable);
-};
+});
