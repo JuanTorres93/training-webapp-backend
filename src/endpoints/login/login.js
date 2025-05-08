@@ -1,7 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const jwt = require("jsonwebtoken");
-const CryptoJS = require("crypto-js");
 
 const passport = require("../../passport-config.js");
 
@@ -49,22 +47,16 @@ const _loginUnsuccessfull = (err, req, res, next) => {
 };
 
 // Used for retrieving user info after login WITH OAuth
-loginRouter.get("/success", (req, res, next) => {
-  if (req.user) {
-    const encryptedUserId = CryptoJS.AES.encrypt(
-      req.user.id,
-      process.env.JWT_SECRET_ENCRYPT_INFO_FOR_FRONTEND
-    ).toString();
+loginRouter.get("/success", (req, res) => {
+  res.redirect(`${process.env.CLIENT_URL}/app?login=oauth`);
+});
 
-    const user = {
-      userId: encryptedUserId,
-      expirationDate: _computeExpirationDate(),
-    };
-
-    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "5m" });
-
-    res.redirect(`${process.env.CLIENT_URL}/app/?token=${token}`);
-  }
+// End point for retrieving user info after login with OAuth (For Redux)
+loginRouter.get("/auth/me", mw.authenticatedUser, (req, res) => {
+  res.json({
+    id: req.session.passport.user.id,
+    expirationDate: _computeExpirationDate(),
+  });
 });
 
 // End point for failed (OAuth) login requests

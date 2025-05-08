@@ -43,6 +43,27 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
+  /login/auth/me:
+    get:
+      tags:
+        - Login
+      summary: Get authenticated user information
+      description: Returns the ID of the currently authenticated user.
+      responses:
+        "200":
+          description: Successfully retrieved user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: User ID
+                    example: "09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
+        "401":
+          $ref: "#/components/responses/401"
+
   /login/extend-session:
     post:
       tags:

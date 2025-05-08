@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "crypto-js": "^4.2.0",
     "connect-pg-simple": "^9.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.4",
@@ -9,7 +8,6 @@
     "express-session": "^1.18.0",
     "express-rate-limit": "^7.4.0",
     "express-validator": "^7.0.1",
-    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -31,7 +29,7 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --watch --runInBand --verbose",
-    "docker-test": "jest --watchAll --runInBand --verbose #MUST BE RUN WITH DOCKER COMPOSE. docker-compose build backend-test && docker-compose run --rm backend-test",
+    "docker-test": "jest --watchAll --runInBand --verbose #MUST BE RUN WITH DOCKER COMPOSE. docker-compose build && docker-compose run --rm backend-test",
     "jenkins-test": "jest --runInBand --forceExit --detectOpenHandles --ci --bail",
     "start": "nodemon server.js",
     "start:prod": "node server.js",
