@@ -89,7 +89,15 @@ loginRouter.post(
 // This should be opened in the web browser window
 loginRouter.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  // passport.authenticate("google", { scope: ["profile", "email"] })
+  // Called in this way to receive the state parameter from the frontend
+  (req, res, next) => {
+    const state = req.query.state; // Ej: lang:es
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      state,
+    })(req, res, next);
+  }
 );
 // This is called AFTER authentication
 loginRouter.get(
