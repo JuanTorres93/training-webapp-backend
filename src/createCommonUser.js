@@ -9,6 +9,7 @@ const createCommonUser = async (host, testRequestInterface = null) => {
     password: process.env.DB_COMMON_USER_PASS,
     is_premium: false,
     is_early_adopter: false,
+    language: "en",
     created_at: "2021-09-01T00:00:00.000Z",
     // oauth_registrarion: null,
   };

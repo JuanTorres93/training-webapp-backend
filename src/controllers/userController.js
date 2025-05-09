@@ -42,7 +42,14 @@ exports.getEverythingFromUserInTestEnv = catchAsync(async (req, res, next) => {
 exports.registerNewUser = catchAsync(async (req, res, next) => {
   const createdUser = await dbUsers.registerNewUser(req.body);
 
-  if (createdUser && process.env.NODE_ENV !== "test") {
+  // Send email to the user if it is not a test environment
+  // When testng the frontend, back is called as development, so
+  // DB_HOST is used to discern if it is a test environment in that case
+  if (
+    createdUser &&
+    process.env.NODE_ENV !== "test" &&
+    process.env.DB_HOST !== "db-test-for-frontend"
+  ) {
     await new Email(createdUser).sendWelcome(createdUser.language);
   }
 
