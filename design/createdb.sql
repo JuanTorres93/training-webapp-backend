@@ -22,6 +22,7 @@ CREATE TABLE users (
   oauth_registration VARCHAR(4),
   is_premium BOOLEAN NOT NULL DEFAULT FALSE,
   is_early_adopter BOOLEAN NOT NULL DEFAULT FALSE,
+  language VARCHAR(2) NOT NULL DEFAULT 'en',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

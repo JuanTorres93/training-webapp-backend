@@ -14,6 +14,8 @@ const isEarlyAdopter = "is_early_adopter";
 const createdAt = "created_at";
 const oauthRegistration = "oauth_registration";
 
+const language = "language";
+
 const validateRegisterUserParams = [
   check(username)
     .exists()
@@ -93,6 +95,16 @@ const validateRegisterUserParams = [
   check(oauthRegistration)
     // TODO Not in this app, process optional in another way. I think this can be a security flaw
     .optional()
+    .isString()
+    .withMessage(msgs.parameterMustBeTypeMsg("string"))
+    .trim()
+    .escape(),
+  check(language)
+    // TODO Not in this app, process optional in another way. I think this can be a security flaw
+    .optional()
+    .not()
+    .isEmpty()
+    .withMessage(msgs.parameterEmptyMsg(language))
     .isString()
     .withMessage(msgs.parameterMustBeTypeMsg("string"))
     .trim()

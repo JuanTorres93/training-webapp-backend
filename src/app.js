@@ -25,6 +25,10 @@ const createApp = () => {
   // in every router
   const app = express();
 
+  // Use pug as the template engine (used for sending emails)
+  app.set("view engine", "pug");
+  app.set("views", path.join(__dirname, "views"));
+
   app.post(
     "/webhook-checkout",
     // Parse the body

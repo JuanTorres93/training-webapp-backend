@@ -73,6 +73,7 @@ const registerNewUser = async ({
   created_at,
   subscription_id,
   oauth_registration,
+  language = "en",
 }) => {
   // Build query
   let requiredFields = [
@@ -82,6 +83,7 @@ const registerNewUser = async ({
     "is_premium",
     "is_early_adopter",
     "created_at",
+    "language",
   ];
   let requiredValues = [
     username,
@@ -90,6 +92,7 @@ const registerNewUser = async ({
     is_premium,
     is_early_adopter,
     created_at,
+    language,
   ];
 
   let optionalFields = ["subscription_id", "oauth_registration"];
@@ -115,6 +118,7 @@ const registerNewUser = async ({
     "second_last_name",
     "is_premium",
     "is_early_adopter",
+    "language",
     "created_at",
   ];
 

@@ -1,6 +1,7 @@
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const dbUsers = require("../db/users");
+const Email = require("../utils/email");
 
 //////////////////////////
 // READ OPERATIONS
@@ -40,6 +41,11 @@ exports.getEverythingFromUserInTestEnv = catchAsync(async (req, res, next) => {
 
 exports.registerNewUser = catchAsync(async (req, res, next) => {
   const createdUser = await dbUsers.registerNewUser(req.body);
+
+  if (createdUser && process.env.NODE_ENV !== "test") {
+    await new Email(createdUser).sendWelcome(createdUser.language);
+  }
+
   return res.status(201).json(createdUser);
 });
 
