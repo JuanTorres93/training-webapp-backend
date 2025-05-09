@@ -144,7 +144,7 @@ const googleStrategy = new GoogleStrategy(
           process.env.NODE_ENV !== "test" &&
           process.env.DB_HOST !== "db-test-for-frontend"
         ) {
-          await new Email(newUser).sendWelcome(lang);
+          await new Email(newUser).sendWelcome();
         }
 
         return done(null, newUser);

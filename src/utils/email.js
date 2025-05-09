@@ -7,6 +7,7 @@ module.exports = class Email {
     this.to = user.email;
     this.username = user.username;
     this.from = `Juan Torres <${process.env.EMAIL_FROM}>`;
+    this.language = user.language;
   }
 
   newTransport() {
@@ -57,8 +58,8 @@ module.exports = class Email {
     await this.newTransport().sendMail(mailOptions);
   }
 
-  async sendWelcome(language = "en") {
-    if (language === "es") {
+  async sendWelcome() {
+    if (this.language === "es") {
       await this.send("welcome-es", "¡Bienvenido a Trackoverload!");
     } else {
       await this.send("welcome-en", "Welcome to Trackoverload!");
