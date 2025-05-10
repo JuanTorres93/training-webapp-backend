@@ -11,17 +11,16 @@ module.exports = class Email {
   }
 
   newTransport() {
-    // TODO descomentar e implementar para producción
-    //if (process.env.NODE_ENV === "production") {
-    //  // Sendgrid
-    //  return nodemailer.createTransport({
-    //    service: "SendGrid",
-    //    auth: {
-    //      user: process.env.SENDGRID_USERNAME,
-    //      pass: process.env.SENDGRID_PASSWORD,
-    //    },
-    //  });
-    //}
+    if (process.env.NODE_ENV === "production") {
+      // Sendgrid
+      return nodemailer.createTransport({
+        service: "SendGrid",
+        auth: {
+          user: process.env.SENDGRID_USERNAME,
+          pass: process.env.SENDGRID_PASSWORD,
+        },
+      });
+    }
 
     // The service that will send the email
     if (process.env.NODE_ENV === "development") {
@@ -55,7 +54,11 @@ module.exports = class Email {
     };
 
     // 3) Create a transport and send the email
-    await this.newTransport().sendMail(mailOptions);
+    try {
+      await this.newTransport().sendMail(mailOptions);
+    } catch (error) {
+      console.log("Error sending email:", error);
+    }
   }
 
   async sendWelcome() {
