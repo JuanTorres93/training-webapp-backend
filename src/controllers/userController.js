@@ -97,3 +97,37 @@ exports.truncateTestTable = catchAsync(async (req, res, next) => {
 
   res.status(200).send(truncatedTable);
 });
+
+//////////////////////////
+// FORGOT PASSWORD
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on POSTed email
+  const { email } = req.body;
+  const user = await dbUsers.selectUserByEmail(email);
+
+  if (!user) {
+    return next(new AppError("There is no user with email address.", 404));
+  }
+
+  // 2) Generate the random reset token
+
+  const { resetToken, resetTokenForDB, passwordResetExpires } =
+    dbUsers.createPasswordResetToken();
+
+  await dbUsers.updateResetPasswordToken(
+    user.id,
+    resetTokenForDB,
+    passwordResetExpires
+  );
+
+  // 3) Send it to user's email
+  await new Email(user).sendPasswordReset(
+    `${process.env.CLIENT_URL}/resetPassword/${resetToken}`
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Token sent to email!",
+  });
+});

@@ -65,8 +65,25 @@ const validateStringParameter = (paramName) => {
   ];
 };
 
+const validateEmailParameter = (paramName) => {
+  return [
+    check(paramName)
+      .exists()
+      .withMessage(msgs.parameterMissingMsg(paramName))
+      .not()
+      .isEmpty()
+      .withMessage(msgs.parameterEmptyMsg(paramName))
+      .isEmail()
+      .withMessage(msgs.parameterMustBeTypeMsg("email"))
+      .normalizeEmail(),
+
+    mw.validateResult(400),
+  ];
+};
+
 module.exports = {
   validateIntegerParameter,
   validateStringParameter,
   validateUUIDParameter,
+  validateEmailParameter,
 };

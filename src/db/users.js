@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const { query } = require("./index");
 const qh = require("./queryHelper.js");
 const { selectFreeTrialSubscription } = require("./subscriptions.js");
@@ -7,6 +9,32 @@ const { getPoolClient } = require("./index.js");
 const TABLE_NAME = "users";
 const SELECT_USER_FIELDS =
   "id, username, email, subscription_id, last_name, img, second_last_name, is_premium, is_early_adopter, created_at";
+
+const createPasswordResetToken = () => {
+  // Create a reset token that will be sent to the user
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Save the hashed token to the database
+  // This is done to prevent the token from being exposed in the database.
+  // In this way, even if someone gets access to the database,
+  // they won't be able to use the token to reset the password.
+  const resetTokenForDB = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Give the token an expiration date of 10 minutes
+  // This is done to prevent the token from being used after a certain time.
+  const passwordResetExpires = new Date(
+    Date.now() + 10 * 60 * 1000
+  ).toISOString();
+
+  return {
+    resetToken,
+    resetTokenForDB,
+    passwordResetExpires,
+  };
+};
 
 const checkStringInFieldInUse = async (field, value) => {
   const q =
@@ -23,7 +51,7 @@ const checkStringInFieldInUse = async (field, value) => {
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
       if (error)
-        reject({
+        return reject({
           error,
           exists: null,
         });
@@ -31,7 +59,7 @@ const checkStringInFieldInUse = async (field, value) => {
       if (results !== undefined && results.rows.length > 0) {
         resolve(true);
       } else {
-        reject({
+        return reject({
           error: null,
           exists: false,
         });
@@ -133,7 +161,7 @@ const registerNewUser = async ({
 
   return new Promise((resolve, reject) => {
     query(q, params, async (error, results) => {
-      if (error) reject(error);
+      if (error) return reject(error);
 
       const createdUser = results.rows[0];
 
@@ -158,7 +186,7 @@ const selectAllUsers = () => {
 
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
-      if (error) reject(error);
+      if (error) return reject(error);
       const users = results.rows;
       resolve(users);
     });
@@ -172,7 +200,7 @@ const selectUserById = async (id) => {
 
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
-      if (error) reject(error);
+      if (error) return reject(error);
       const user = results.rows[0];
       resolve(user);
     });
@@ -204,7 +232,7 @@ const selectUserRegisteredByOAuth = async (email) => {
 
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
-      if (error) reject(error);
+      if (error) return reject(error);
       const oauthRegistration = results.rows[0].oauth_registration;
       resolve(oauthRegistration);
     });
@@ -230,7 +258,30 @@ const updateUser = async (id, userObject) => {
 
   return new Promise((resolve, reject) => {
     query(q, params, (error, results) => {
-      if (error) reject(error);
+      if (error) return reject(error);
+
+      const updatedUser = results.rows[0];
+      resolve(updatedUser);
+    });
+  });
+};
+
+const updateResetPasswordToken = async (id, resetToken, expires) => {
+  let returningFields = ["email"];
+
+  const { q, params } = qh.createUpdateTableStatement(
+    TABLE_NAME,
+    id,
+    {
+      password_reset_token: resetToken,
+      password_reset_expires: expires,
+    },
+    returningFields
+  );
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) return reject(error);
 
       const updatedUser = results.rows[0];
       resolve(updatedUser);
@@ -285,7 +336,7 @@ const truncateTableTest = () => {
       params,
       (error, results) => {
         if (error) {
-          reject(error);
+          return reject(error);
         }
 
         resolve("Table " + TABLE_NAME + " truncated in test db.");
@@ -314,7 +365,7 @@ const testDbSelectEverythingFromUserId = (id) => {
       q,
       params,
       (error, results) => {
-        if (error) reject(error);
+        if (error) return reject(error);
 
         resolve(results.rows[0]);
       },
@@ -324,6 +375,7 @@ const testDbSelectEverythingFromUserId = (id) => {
 };
 
 module.exports = {
+  createPasswordResetToken,
   checkStringInFieldInUse,
   checkEmailInUse,
   checkAliasInUse,
@@ -333,6 +385,7 @@ module.exports = {
   selectUserByEmail,
   selectUserRegisteredByOAuth,
   updateUser,
+  updateResetPasswordToken,
   deleteUser,
   truncateTableTest,
   testDbSelectEverythingFromUserId,

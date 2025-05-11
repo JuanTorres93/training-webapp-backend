@@ -4,11 +4,20 @@ const {
   validateRegisterUserParams,
   validateUpdateUserParams,
 } = require("../../validators/users.js");
-const { validateUUIDParameter } = require("../../validators/generalPurpose.js");
+const {
+  validateUUIDParameter,
+  validateEmailParameter,
+} = require("../../validators/generalPurpose.js");
 const userController = require("../../controllers/userController.js");
 const mw = require("../../utils/middleware.js");
 
 const router = express.Router();
+
+router.post(
+  "/forgotPassword",
+  validateEmailParameter("email"),
+  userController.forgotPassword
+);
 
 // ==================================
 // ========== GET requests ==========

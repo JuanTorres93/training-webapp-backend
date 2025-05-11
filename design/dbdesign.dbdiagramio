@@ -23,6 +23,8 @@ Table users {
   img TEXT [Note: 'Image will be stored in server. This will be its URI. ALTERNATIVELY: store it in Postgres DB']
   second_last_name VARCHAR(40)
   password VARCHAR(60) [NOT NULL, Note: 'Bcrypt uses 59 or 60 characters to hash']
+  password_reset_token VARCHAR(64) [Note: 'for forgot password functionality']
+  password_reset_expires TIMESTAMP [Note: 'for forgot password functionality']
   oauth_registration VARCHAR(4) [Note: 'NULL if local strategy. Otherwise code for platform: google, instagram, facebook, etc']
   is_premium bool [NOT NULL]
   is_early_adopter bool [NOT NULL]

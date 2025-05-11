@@ -19,6 +19,8 @@ CREATE TABLE users (
   img TEXT,
   second_last_name VARCHAR(40),
   password VARCHAR(60) NOT NULL,
+  password_reset_token VARCHAR(64),
+  password_reset_expires TIMESTAMP,
   oauth_registration VARCHAR(4),
   is_premium BOOLEAN NOT NULL DEFAULT FALSE,
   is_early_adopter BOOLEAN NOT NULL DEFAULT FALSE,
