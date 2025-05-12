@@ -225,6 +225,22 @@ const selectUserByEmail = async (email) => {
   });
 };
 
+const selectUserByResetToken = async (resetToken) => {
+  const q =
+    "SELECT id FROM " +
+    TABLE_NAME +
+    " WHERE password_reset_token = $1 AND password_reset_expires > NOW();";
+  const params = [resetToken];
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) return reject(error);
+      const user = results.rows[0];
+      resolve(user);
+    });
+  });
+};
+
 const selectUserRegisteredByOAuth = async (email) => {
   const q =
     "SELECT oauth_registration FROM " + TABLE_NAME + " WHERE email = $1;";
@@ -275,6 +291,32 @@ const updateResetPasswordToken = async (id, resetToken, expires) => {
     {
       password_reset_token: resetToken,
       password_reset_expires: expires,
+    },
+    returningFields
+  );
+
+  return new Promise((resolve, reject) => {
+    query(q, params, (error, results) => {
+      if (error) return reject(error);
+
+      const updatedUser = results.rows[0];
+      resolve(updatedUser);
+    });
+  });
+};
+
+const updateUserPassword = async (id, password) => {
+  // NOTE: this function must be called after the middleware that checks
+  // if the password and passwordConfirm are the same
+  let returningFields = ["id", "email"];
+
+  const { q, params } = qh.createUpdateTableStatement(
+    TABLE_NAME,
+    id,
+    {
+      password: password,
+      password_reset_token: null,
+      password_reset_expires: null,
     },
     returningFields
   );
@@ -383,8 +425,10 @@ module.exports = {
   selectAllUsers,
   selectUserById,
   selectUserByEmail,
+  selectUserByResetToken,
   selectUserRegisteredByOAuth,
   updateUser,
+  updateUserPassword,
   updateResetPasswordToken,
   deleteUser,
   truncateTableTest,

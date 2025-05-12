@@ -81,9 +81,31 @@ const validateEmailParameter = (paramName) => {
   ];
 };
 
+const validateStrongPasswordParameter = (paramName) => {
+  return [
+    check(paramName)
+      .exists()
+      .withMessage(msgs.parameterMissingMsg(paramName))
+      .not()
+      .isEmpty()
+      .withMessage(msgs.parameterEmptyMsg(paramName))
+      .isString()
+      .withMessage(msgs.parameterMustBeTypeMsg("string"))
+      .isStrongPassword()
+      .withMessage(
+        `${paramName} must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one symbol.`
+      )
+      .trim()
+      .escape(),
+
+    mw.validateResult(400),
+  ];
+};
+
 module.exports = {
   validateIntegerParameter,
   validateStringParameter,
   validateUUIDParameter,
   validateEmailParameter,
+  validateStrongPasswordParameter,
 };

@@ -69,6 +69,9 @@ const localStrategy = new LocalStrategy((username, password, done) => {
     // TODO IMPORTANT SECURITY. I DON'T KNOW WHAT THIS DOES. I THOUGHT THIS TO BE
     // THE RETURN VALUE WHEN LOGGING, BUT WHEN TESTING IT SEEMS TO BE THE VALUE
     // RETURNED BY deserializUser function
+
+    // TODO IMPORTANT: IF SOMETHING IS UPDATED HERE, CHANGE IT ALSO IN THE
+    // resetPassword FUNCTION IN userController.js
     const user = {
       id: userObject.id,
       username: userObject.username,

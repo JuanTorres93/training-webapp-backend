@@ -418,6 +418,18 @@ const hashPassword = async (req, res, next) => {
   next();
 };
 
+const passwordEqualsPasswordConfirm = (req, res, next) => {
+  const { password, passwordConfirm } = req.body;
+
+  if (password !== passwordConfirm) {
+    return res.status(400).json({
+      msg: "Password and password confirm do not match",
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   processIntegerURLParameter,
   authenticatedUser,
@@ -438,4 +450,5 @@ module.exports = {
   checkExerciseOrderExistsInWorkoutTemplate,
   checkWorkoutTemplateExistsById,
   hashPassword,
+  passwordEqualsPasswordConfirm,
 };

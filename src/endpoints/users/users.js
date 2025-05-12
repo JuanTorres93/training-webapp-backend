@@ -7,6 +7,8 @@ const {
 const {
   validateUUIDParameter,
   validateEmailParameter,
+  validateStringParameter,
+  validateStrongPasswordParameter,
 } = require("../../validators/generalPurpose.js");
 const userController = require("../../controllers/userController.js");
 const mw = require("../../utils/middleware.js");
@@ -17,6 +19,15 @@ router.post(
   "/forgotPassword",
   validateEmailParameter("email"),
   userController.forgotPassword
+);
+
+router.patch(
+  "/resetPassword/:token",
+  validateStringParameter("token"),
+  validateStrongPasswordParameter("password"),
+  validateStrongPasswordParameter("passwordConfirm"),
+  mw.passwordEqualsPasswordConfirm,
+  userController.resetPassword
 );
 
 // ==================================
