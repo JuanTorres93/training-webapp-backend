@@ -423,7 +423,8 @@ const passwordEqualsPasswordConfirm = (req, res, next) => {
 
   if (password !== passwordConfirm) {
     return res.status(400).json({
-      msg: "Password and password confirm do not match",
+      status: "fail",
+      message: "Password and password confirm do not match",
     });
   }
 

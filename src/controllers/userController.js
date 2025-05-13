@@ -166,30 +166,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 3) TODO Update changedPasswordAt property for the user
 
-  // 4) Log the user in
-  // DOC req.login is a Passport method that will create a session for the user
-  req.login(user, (err) => {
-    if (err) return next(err);
-
-    // Session is already active at this point
-    res.status(200).json({
-      status: "success",
-      message: "Password reset and user logged in",
-
-      // TODO IMPORTANT: IF SOMETHING IS UPDATED HERE, CHANGE IT ALSO IN THE
-      // localStrategy in passport-config.js
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        subscription_id: user.subscription_id,
-        last_name: user.last_name,
-        img: user.img,
-        second_last_name: user.second_last_name,
-        is_premium: user.is_premium,
-        is_early_adopter: user.is_early_adopter,
-        created_at: user.created_at,
-      },
-    });
+  res.status(200).json({
+    status: "success",
+    message: "Password reseted successfully!",
   });
 });
