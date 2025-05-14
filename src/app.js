@@ -51,7 +51,6 @@ const createApp = () => {
   const paymentsRouter = require("./endpoints/payments/payments.js");
 
   // Enable request logs
-  if (!appIsBeingTested) app.use(morgan("short"));
 
   if (process.env.NODE_ENV === "production") {
     // ⚠️ Required when your app is behind a proxy or Ingress (e.g., in Kubernetes).
@@ -61,6 +60,8 @@ const createApp = () => {
     app.set("trust proxy", 1);
 
     app.use(morgan("combined"));
+  } else if (!appIsBeingTested) {
+    app.use(morgan("short"));
   }
 
   // CORS configuration
