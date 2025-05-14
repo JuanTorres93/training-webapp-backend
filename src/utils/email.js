@@ -70,11 +70,21 @@ module.exports = class Email {
     }
   }
 
-  async sendPasswordReset(url) {
-    await this.send(
-      "passwordReset",
-      "Your password reset token (valid for only 10 minutes)",
-      { url }
-    );
+  async sendPasswordReset(url, lang = "en") {
+    // NOTE: in this method this.language is not used because the
+    // user will not be logged in.
+    if (lang === "es") {
+      await this.send(
+        "passwordReset-es",
+        "Tu token de restablecimiento de contraseña (válido solo por 10 minutos)",
+        { url }
+      );
+    } else {
+      await this.send(
+        "passwordReset-en",
+        "Your password reset token (valid for only 10 minutes)",
+        { url }
+      );
+    }
   }
 };

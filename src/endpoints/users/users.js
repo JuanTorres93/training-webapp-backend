@@ -16,8 +16,9 @@ const mw = require("../../utils/middleware.js");
 const router = express.Router();
 
 router.post(
-  "/forgotPassword",
+  "/forgotPassword/:language",
   validateEmailParameter("email"),
+  validateStringParameter("language"),
   userController.forgotPassword
 );
 

@@ -125,9 +125,11 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   );
 
   // 3) Send it to user's email
+  const { language } = req.params;
   try {
     await new Email(user).sendPasswordReset(
-      `${process.env.CLIENT_URL}/resetPassword/${resetToken}`
+      `${process.env.CLIENT_URL}/resetPassword/${resetToken}`,
+      language
     );
   } catch (error) {
     await dbUsers.updateResetPasswordToken(user.id, null, null);
