@@ -14,7 +14,7 @@ module.exports = class Email {
   newTransport() {
     if (process.env.NODE_ENV === "production") {
       // Sendgrid via HTTP API
-      sgMail.setApiKey(process.env.SENDGRID_PASSWORD);
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       return null; // no transporter needed
     }
 
