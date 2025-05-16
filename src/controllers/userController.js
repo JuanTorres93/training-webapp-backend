@@ -57,14 +57,15 @@ exports.registerNewUser = catchAsync(async (req, res, next) => {
     process.env.NODE_ENV !== "test" &&
     process.env.DB_HOST !== "db-test-for-frontend"
   ) {
-    try {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("sending WELCOME email");
+    //try {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("sending WELCOME email");
 
-      await new Email(createdUser).sendWelcome();
-    } catch (error) {
-      console.log("Error sending welcome email:", error);
-    }
+    //await new Email(createdUser).sendWelcome();
+    new Email(createdUser).sendWelcome();
+    //} catch (error) {
+    //console.log("Error sending welcome email:", error);
+    //}
   }
 
   return res.status(201).json(createdUser);
