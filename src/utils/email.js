@@ -59,20 +59,28 @@ module.exports = class Email {
       await this.newTransport().sendMail(mailOptions);
     } catch (error) {
       console.log("Error sending email:", error);
+      throw new Error(error);
     }
   }
 
   async sendWelcome() {
-    if (this.language === "es") {
-      await this.send("welcome-es", "¡Bienvenido a Trackoverload!");
-    } else {
-      await this.send("welcome-en", "Welcome to Trackoverload!");
+    // catch cannot be managed in controller due to oauth registration
+    try {
+      if (this.language === "es") {
+        await this.send("welcome-es", "¡Bienvenido a Trackoverload!");
+      } else {
+        await this.send("welcome-en", "Welcome to Trackoverload!");
+      }
+    } catch (error) {
+      console.log("Error sending welcome email:", error);
     }
   }
 
   async sendPasswordReset(url, lang = "en") {
     // NOTE: in this method this.language is not used because the
     // user will not be logged in.
+
+    // catch is managed in the controller:w
     if (lang === "es") {
       await this.send(
         "passwordReset-es",
