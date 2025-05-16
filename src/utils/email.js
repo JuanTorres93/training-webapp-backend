@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const pug = require("pug");
 const { htmlToText } = require("html-to-text");
+const sgMail = require("@sendgrid/mail");
 
 module.exports = class Email {
   constructor(user) {
@@ -12,32 +13,24 @@ module.exports = class Email {
 
   newTransport() {
     if (process.env.NODE_ENV === "production") {
-      // Sendgrid
-      return nodemailer.createTransport({
-        service: "SendGrid",
-        auth: {
-          user: process.env.SENDGRID_USERNAME,
-          pass: process.env.SENDGRID_PASSWORD,
-        },
-      });
+      // Sendgrid via HTTP API
+      sgMail.setApiKey(process.env.SENDGRID_PASSWORD);
+      return null; // no transporter needed
     }
 
-    // The service that will send the email
-    if (process.env.NODE_ENV === "development") {
-      return nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        logger: true,
-        auth: {
-          user: process.env.EMAIL_USERNAME,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-    }
+    // SMTP (Mailtrap u otro)
+    return nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      logger: true,
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
   }
 
   async send(template, subject, options = {}) {
-    // Send the actual email
     // 1) Render the HTML based on a pug template
     const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
       firstName: this.username,
@@ -45,28 +38,32 @@ module.exports = class Email {
       ...options,
     });
 
-    // 2) Define the email options
-    const mailOptions = {
-      from: this.from,
-      to: this.to,
-      subject,
-      html,
-      text: htmlToText(html),
-    };
+    const text = htmlToText(html);
 
-    // 3) Create a transport and send the email
     try {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("SEND METHOD");
+      if (process.env.NODE_ENV === "production") {
+        await sgMail.send({
+          to: this.to,
+          from: this.from,
+          subject,
+          html,
+          text,
+        });
+      } else {
+        const transport = this.newTransport();
 
-      await this.newTransport().sendMail(mailOptions);
+        await transport.sendMail({
+          from: this.from,
+          to: this.to,
+          subject,
+          html,
+          text,
+        });
+      }
     } catch (error) {
       console.log("Error sending email:", error);
       throw error;
     }
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("AFTER SEND METHOD");
   }
 
   async sendWelcome() {
@@ -78,10 +75,6 @@ module.exports = class Email {
   }
 
   async sendPasswordReset(url, lang = "en") {
-    // NOTE: in this method this.language is not used because the
-    // user will not be logged in.
-
-    // catch is managed in the controller:w
     if (lang === "es") {
       await this.send(
         "passwordReset-es",
