@@ -64,15 +64,10 @@ module.exports = class Email {
   }
 
   async sendWelcome() {
-    // catch cannot be managed in controller due to oauth registration
-    try {
-      if (this.language === "es") {
-        await this.send("welcome-es", "¡Bienvenido a Trackoverload!");
-      } else {
-        await this.send("welcome-en", "Welcome to Trackoverload!");
-      }
-    } catch (error) {
-      console.log("Error sending welcome email:", error);
+    if (this.language === "es") {
+      await this.send("welcome-es", "¡Bienvenido a Trackoverload!");
+    } else {
+      await this.send("welcome-en", "Welcome to Trackoverload!");
     }
   }
 

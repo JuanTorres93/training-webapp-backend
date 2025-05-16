@@ -53,7 +53,11 @@ exports.registerNewUser = catchAsync(async (req, res, next) => {
     process.env.NODE_ENV !== "test" &&
     process.env.DB_HOST !== "db-test-for-frontend"
   ) {
-    await new Email(createdUser).sendWelcome();
+    try {
+      await new Email(createdUser).sendWelcome();
+    } catch (error) {
+      console.log("Error sending welcome email:", error);
+    }
   }
 
   return res.status(201).json(createdUser);

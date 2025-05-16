@@ -147,7 +147,14 @@ const googleStrategy = new GoogleStrategy(
           process.env.NODE_ENV !== "test" &&
           process.env.DB_HOST !== "db-test-for-frontend"
         ) {
-          await new Email(newUser).sendWelcome();
+          try {
+            await new Email(newUser).sendWelcome();
+          } catch (error) {
+            console.log(
+              "Error sending welcome email in Google OAuth registration:",
+              error
+            );
+          }
         }
 
         return done(null, newUser);
