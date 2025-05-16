@@ -127,13 +127,21 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 3) Send it to user's email
   const { language } = req.params;
   try {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("user");
+    console.log(user);
     await new Email(user).sendPasswordReset(
       `${process.env.CLIENT_URL}/resetPassword/${resetToken}`,
       language
     );
   } catch (error) {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("error sending email");
+    console.log(error);
     await dbUsers.updateResetPasswordToken(user.id, null, null);
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("BEFORE NEXT");
     return next(
       new AppError(
         "There was an error sending the reset password email. Try again later!",
