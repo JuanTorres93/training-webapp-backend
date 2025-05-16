@@ -44,7 +44,7 @@ module.exports = (err, req, res, next) => {
     sendErrorDev(err, res);
   } else {
     // PRODUCTION ENVIRONMENT
-    let error = { ...err, name: err.name };
+    let error = { ...err, name: err.name, message: err.message };
 
     // TODO DELETE THESE DEBUG LOGS
     console.log("error");
