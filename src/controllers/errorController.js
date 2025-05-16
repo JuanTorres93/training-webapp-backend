@@ -35,12 +35,20 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("err");
+  console.log(err);
+
   if (process.env.NODE_ENV !== "production") {
     // DEVELOPMENT AND TEST ENVIRONMENTS
     sendErrorDev(err, res);
   } else {
     // PRODUCTION ENVIRONMENT
     let error = { ...err, name: err.name };
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("error");
+    console.log(error);
 
     sendErrorProd(error, res);
   }
