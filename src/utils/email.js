@@ -59,7 +59,7 @@ module.exports = class Email {
       await this.newTransport().sendMail(mailOptions);
     } catch (error) {
       console.log("Error sending email:", error);
-      throw new Error(error);
+      throw error;
     }
   }
 
