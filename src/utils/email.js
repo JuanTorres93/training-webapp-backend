@@ -3,6 +3,10 @@ const pug = require("pug");
 const { htmlToText } = require("html-to-text");
 const sgMail = require("@sendgrid/mail");
 
+if (process.env.NODE_ENV === "production") {
+  // Sendgrid via HTTP API
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 module.exports = class Email {
   constructor(user) {
     this.to = user.email;
@@ -12,18 +16,6 @@ module.exports = class Email {
   }
 
   newTransport() {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("process.env.NODE_ENV");
-    console.log(process.env.NODE_ENV);
-    if (process.env.NODE_ENV === "production") {
-      // Sendgrid via HTTP API
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("process.env.SENDGRID_API_KEY");
-      console.log(process.env.SENDGRID_API_KEY);
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      return null; // no transporter needed
-    }
-
     // SMTP (Mailtrap u otro)
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -48,9 +40,6 @@ module.exports = class Email {
 
     try {
       if (process.env.NODE_ENV === "production") {
-        // TODO DELETE THESE DEBUG LOGS
-        console.log("SENDGRID");
-
         await sgMail.send({
           to: this.to,
           from: this.from,
