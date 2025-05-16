@@ -56,11 +56,17 @@ module.exports = class Email {
 
     // 3) Create a transport and send the email
     try {
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("SEND METHOD");
+
       await this.newTransport().sendMail(mailOptions);
     } catch (error) {
       console.log("Error sending email:", error);
       throw error;
     }
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("AFTER SEND METHOD");
   }
 
   async sendWelcome() {
