@@ -12,6 +12,9 @@ module.exports = class Email {
   }
 
   newTransport() {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("process.env.NODE_ENV");
+    console.log(process.env.NODE_ENV);
     if (process.env.NODE_ENV === "production") {
       // Sendgrid via HTTP API
       // TODO DELETE THESE DEBUG LOGS
