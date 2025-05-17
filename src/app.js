@@ -34,6 +34,7 @@ const createApp = () => {
     (req, res, next) => {
       // TODO DELETE THESE DEBUG LOGS
       console.log("REACHES WEBHOOK");
+      next();
     },
     // Parse the body
     express.raw({ type: "application/json" }),
