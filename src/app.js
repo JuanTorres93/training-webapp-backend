@@ -39,15 +39,6 @@ const createApp = () => {
   app.set("view engine", "pug");
   app.set("views", path.join(__dirname, "views"));
 
-  ///////////////////// BORRAR
-  app.use((req, res, next) => {
-    console.log("🔥 BODY CHECK BEFORE ROUTES:");
-    console.log("typeof req.body:", typeof req.body);
-    console.log("isBuffer:", Buffer.isBuffer(req.body));
-    next();
-  });
-  ///////////////////// BORRAR
-
   // Mounted on api not to be modified by ingress in kubernetes
   app.use("/api", webhookApp);
 

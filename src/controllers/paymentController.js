@@ -166,9 +166,6 @@ exports.webhookCheckout = async (req, res, next) => {
   const signature = req.headers["stripe-signature"];
   let event;
 
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("webhook handler");
-
   try {
     // DOC: body needs to be in raw format
     event = stripe.webhooks.constructEvent(
@@ -176,10 +173,6 @@ exports.webhookCheckout = async (req, res, next) => {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("event");
-    console.log(event);
   } catch (error) {
     console.log("error constructing STRIPE event");
     console.log(error);
