@@ -3,7 +3,6 @@ const path = require("path");
 
 // Regular imports
 const express = require("express");
-const bodyParser = require("body-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const cors = require("cors");
@@ -30,7 +29,8 @@ const createApp = () => {
   app.set("views", path.join(__dirname, "views"));
 
   app.post(
-    "/webhook-checkout",
+    // Mounted on api not to be modified by ingress in kubernetes
+    "/api/webhook-checkout",
     // Parse the body
     express.raw({ type: "application/json" }),
     paymentController.webhookCheckout
