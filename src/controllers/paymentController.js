@@ -158,6 +158,9 @@ const getSubscriptionNextPaymentDate = async (subscriptionId) => {
 };
 
 exports.webhookCheckout = async (req, res, next) => {
+  console.log("typeof req.body:", typeof req.body);
+  console.log("raw body preview:", req.body?.toString()?.slice(0, 100));
+
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
   const signature = req.headers["stripe-signature"];
@@ -178,10 +181,10 @@ exports.webhookCheckout = async (req, res, next) => {
     console.log("event");
     console.log(event);
   } catch (error) {
-    console.log("error");
+    console.log("error constructing STRIPE event");
     console.log(error);
     // Send error to Stripe
-    return res.status(400).send(`Webhook error`);
+    return res.status(400).send(`Webhook error ${error.message}`);
   }
 
   // The type is specified in the Stripe webapp,
