@@ -6,7 +6,7 @@ router.post(
   "/webhook-checkout",
   (req, res, next) => {
     // TODO DELETE THESE DEBUG LOGS
-    console.log("REACHES WEBHOOK");
+    console.log("REACHES WEBHOOK in new ROUTER");
     next();
   },
   // Parse the body
