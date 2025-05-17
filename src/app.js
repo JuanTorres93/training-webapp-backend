@@ -17,6 +17,18 @@ const paymentController = require("./controllers/paymentController.js");
 const { getPool, getPoolClient } = require("./db/index.js");
 const config = require("./config.js");
 
+// Routers imports
+const webhookCheckoutRouter = require("./endpoints/webhook/webhook.js");
+const usersRouter = require("./endpoints/users/users.js");
+const exercisesRouter = require("./endpoints/exercises/exercises.js");
+const workoutsRouter = require("./endpoints/workouts/workouts.js");
+const workoutsTemplatesRouter = require("./endpoints/workouts.templates/workoutsTemplates.js");
+const weightsRouter = require("./endpoints/weights/weights.js");
+const loginRouter = require("./endpoints/login/login.js");
+const logoutRouter = require("./endpoints/logout.js");
+const subscriptionsRouter = require("./endpoints/subscriptions/subscriptions.js");
+const paymentsRouter = require("./endpoints/payments/payments.js");
+
 // Function to create the express app. Its main use is for testing
 const createApp = () => {
   const appIsBeingTested = process.env.NODE_ENV === "test";
@@ -28,32 +40,11 @@ const createApp = () => {
   app.set("view engine", "pug");
   app.set("views", path.join(__dirname, "views"));
 
-  app.post(
-    // Mounted on api not to be modified by ingress in kubernetes
-    "/api/webhook-checkout",
-    (req, res, next) => {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("REACHES WEBHOOK");
-      next();
-    },
-    // Parse the body
-    express.raw({ type: "application/json" }),
-    paymentController.webhookCheckout
-  );
+  // Mounted on api not to be modified by ingress in kubernetes
+  app.use("/api", webhookCheckoutRouter);
 
   // Parse HTTP request body to JSON
   app.use(express.json());
-
-  // Routers imports
-  const usersRouter = require("./endpoints/users/users.js");
-  const exercisesRouter = require("./endpoints/exercises/exercises.js");
-  const workoutsRouter = require("./endpoints/workouts/workouts.js");
-  const workoutsTemplatesRouter = require("./endpoints/workouts.templates/workoutsTemplates.js");
-  const weightsRouter = require("./endpoints/weights/weights.js");
-  const loginRouter = require("./endpoints/login/login.js");
-  const logoutRouter = require("./endpoints/logout.js");
-  const subscriptionsRouter = require("./endpoints/subscriptions/subscriptions.js");
-  const paymentsRouter = require("./endpoints/payments/payments.js");
 
   // Enable request logs
 
