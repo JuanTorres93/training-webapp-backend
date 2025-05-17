@@ -17,7 +17,7 @@ const { getPool, getPoolClient } = require("./db/index.js");
 const config = require("./config.js");
 
 // Routers imports
-const webhookCheckoutRouter = require("./endpoints/webhook/webhook.js");
+const webhookApp = require("./endpoints/webhook/webhook.js");
 const usersRouter = require("./endpoints/users/users.js");
 const exercisesRouter = require("./endpoints/exercises/exercises.js");
 const workoutsRouter = require("./endpoints/workouts/workouts.js");
@@ -49,7 +49,7 @@ const createApp = () => {
   ///////////////////// BORRAR
 
   // Mounted on api not to be modified by ingress in kubernetes
-  app.use("/api", webhookCheckoutRouter);
+  app.use("/api", webhookApp);
 
   // Parse HTTP request body to JSON
   app.use(express.json());

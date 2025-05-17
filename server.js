@@ -3,21 +3,7 @@ const createApp = require("./src/app.js");
 const createCommonUser = require("./src/createCommonUser.js").createCommonUser;
 
 const app = createApp();
-
 const PORT = process.env.SERVER_PORT;
-
-///////////////////// BORRAR
-const util = require("util");
-
-console.log("🔍 Middleware stack:");
-console.log(
-  util.inspect(app._router.stack, {
-    showHidden: false,
-    depth: null,
-    colors: true,
-  })
-);
-///////////////////// BORRAR
 
 app.listen(PORT, async () => {
   console.log("Server is listening");

@@ -1,8 +1,8 @@
 const express = require("express");
-const router = express.Router();
 const paymentController = require("../../controllers/paymentController");
 
-router.post(
+const webhookApp = express();
+webhookApp.post(
   "/webhook-checkout",
   (req, res, next) => {
     // TODO DELETE THESE DEBUG LOGS
@@ -14,4 +14,4 @@ router.post(
   paymentController.webhookCheckout
 );
 
-module.exports = router;
+module.exports = webhookApp;
