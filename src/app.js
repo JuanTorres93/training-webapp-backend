@@ -13,7 +13,6 @@ const rateLimit = require("express-rate-limit");
 // My modules imports
 const AppError = require("./utils/appError.js");
 const globalErrorHandler = require("./controllers/errorController.js");
-const paymentController = require("./controllers/paymentController.js");
 const { getPool, getPoolClient } = require("./db/index.js");
 const config = require("./config.js");
 
@@ -40,6 +39,15 @@ const createApp = () => {
   app.set("view engine", "pug");
   app.set("views", path.join(__dirname, "views"));
 
+  ///////////////////// BORRAR
+  app.use((req, res, next) => {
+    console.log("🔥 BODY CHECK BEFORE ROUTES:");
+    console.log("typeof req.body:", typeof req.body);
+    console.log("isBuffer:", Buffer.isBuffer(req.body));
+    next();
+  });
+  ///////////////////// BORRAR
+
   // Mounted on api not to be modified by ingress in kubernetes
   app.use("/api", webhookCheckoutRouter);
 
@@ -47,7 +55,6 @@ const createApp = () => {
   app.use(express.json());
 
   // Enable request logs
-
   if (process.env.NODE_ENV === "production") {
     // ⚠️ Required when your app is behind a proxy or Ingress (e.g., in Kubernetes).
     // This tells Express to trust headers like `X-Forwarded-Proto`.
