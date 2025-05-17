@@ -31,6 +31,10 @@ const createApp = () => {
   app.post(
     // Mounted on api not to be modified by ingress in kubernetes
     "/api/webhook-checkout",
+    (req, res, next) => {
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("REACHES WEBHOOK");
+    },
     // Parse the body
     express.raw({ type: "application/json" }),
     paymentController.webhookCheckout
