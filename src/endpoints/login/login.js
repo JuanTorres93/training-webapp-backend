@@ -65,6 +65,9 @@ loginRouter.get("/auth/me", mw.authenticatedUser, (req, res) => {
 
 // End point for failed (OAuth) login requests
 loginRouter.get("/failed", (req, res, next) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("login failed");
+
   const infoForClient = {
     msg: "Login failed",
   };

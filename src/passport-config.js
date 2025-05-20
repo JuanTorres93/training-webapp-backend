@@ -141,6 +141,9 @@ const googleStrategy = new GoogleStrategy(
           created_at: new Date().toISOString(),
         });
 
+        // TODO DELETE THESE DEBUG LOGS
+        console.log("USER CREATED");
+
         // Send welcome email
         if (
           newUser &&
@@ -149,6 +152,9 @@ const googleStrategy = new GoogleStrategy(
         ) {
           new Email(newUser).sendWelcome();
         }
+
+        // TODO DELETE THESE DEBUG LOGS
+        console.log("EMAIL SENT");
 
         return done(null, newUser);
       }
