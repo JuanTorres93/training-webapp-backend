@@ -103,8 +103,14 @@ loginRouter.get(
 loginRouter.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: "/login/success",
-    failureRedirect: "/login/failed",
+    successRedirect:
+      process.env.NODE_ENV === "production"
+        ? `${process.env.CLIENT_URL}`
+        : "" + "/login/success",
+    failureRedirect:
+      process.env.NODE_ENV === "production"
+        ? `${process.env.CLIENT_URL}`
+        : "" + "/login/failed",
   })
 );
 
