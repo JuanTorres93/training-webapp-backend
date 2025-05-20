@@ -111,13 +111,13 @@ loginRouter.get(
   "/google/callback",
   passport.authenticate("google", {
     successRedirect:
-      process.env.NODE_ENV === "production"
-        ? `${process.env.CLIENT_URL}`
-        : "" + "/login/success",
+      (process.env.NODE_ENV === "production"
+        ? `${process.env.CLIENT_URL}/api`
+        : "") + "/login/success",
     failureRedirect:
-      process.env.NODE_ENV === "production"
-        ? `${process.env.CLIENT_URL}`
-        : "" + "/login/failed",
+      (process.env.NODE_ENV === "production"
+        ? `${process.env.CLIENT_URL}/api`
+        : "") + "/login/failed",
   })
 );
 
