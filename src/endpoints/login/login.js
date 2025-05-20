@@ -48,6 +48,10 @@ const _loginUnsuccessfull = (err, req, res, next) => {
 
 // Used for retrieving user info after login WITH OAuth
 loginRouter.get("/success", (req, res) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("Redirecting to ");
+  console.log(`${process.env.CLIENT_URL}/app?login=oauth`);
+
   res.redirect(`${process.env.CLIENT_URL}/app?login=oauth`);
 });
 
