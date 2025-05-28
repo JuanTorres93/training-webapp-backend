@@ -97,7 +97,7 @@ exports.getCheckoutSession = async (req, res, next) => {
           subscriptionId: subscription.id,
           userEmail: req.user.email,
           username: req.user.username,
-          userLanguage: req.user.language,
+          userLanguage: lang,
         },
       },
     });
@@ -207,7 +207,11 @@ exports.webhookCheckout = async (req, res, next) => {
     // TODO DELETE THESE DEBUG LOGS
     console.log("user");
     console.log(user);
-    new Email(user).sendSubscriptionCreated();
+
+    new Email(user).sendSubscriptionCreated().catch((error) => {
+      console.log("Error sending subscription created email");
+      console.log(error);
+    });
 
     // Update the subscription in the database
     try {
