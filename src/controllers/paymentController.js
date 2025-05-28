@@ -8,6 +8,9 @@ const Email = require("../utils/email.js");
 
 // TODO Handle error. I used to use catchAsync, but don't have that error handling in this project
 exports.getCheckoutSession = async (req, res, next) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("req.user");
+  console.log(req.user);
   try {
     // 1) Get the subscription type
     const subscription = await subscriptionsDb.selectSuscriptionById(

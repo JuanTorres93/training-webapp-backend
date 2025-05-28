@@ -73,12 +73,20 @@ module.exports = class Email {
   }
 
   async sendSubscriptionCreated() {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("Sending subscription created email...");
     if (this.language === "es") {
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("ESPANISH");
+
       await this.send(
         "subscriptionCreated-es",
         "¡Gracias por suscribirte a TrackOverload!"
       );
     } else {
+      // TODO DELETE THESE DEBUG LOGS
+      console.log("ENGLISH");
+
       await this.send(
         "subscriptionCreated-en",
         "Thanks for subscribing to TrackOverload!"
