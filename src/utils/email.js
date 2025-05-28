@@ -72,6 +72,20 @@ module.exports = class Email {
     }
   }
 
+  async sendSubscriptionCreated() {
+    if (this.language === "es") {
+      await this.send(
+        "subscriptionCreated-es",
+        "¡Gracias por suscribirte a TrackOverload!"
+      );
+    } else {
+      await this.send(
+        "subscriptionCreated-en",
+        "Thanks for subscribing to TrackOverload!"
+      );
+    }
+  }
+
   async sendPasswordReset(url, lang = "en") {
     if (lang === "es") {
       await this.send(

@@ -4,6 +4,8 @@ const subscriptionsDb = require("../db/subscriptions.js");
 const paymentsDb = require("../db/payments.js");
 const { langSeparator } = require("../config.js");
 
+const Email = require("../utils/email.js");
+
 // TODO Handle error. I used to use catchAsync, but don't have that error handling in this project
 exports.getCheckoutSession = async (req, res, next) => {
   try {
@@ -90,6 +92,9 @@ exports.getCheckoutSession = async (req, res, next) => {
         metadata: {
           userId: req.user.id,
           subscriptionId: subscription.id,
+          userEmail: req.user.email,
+          username: req.user.username,
+          userLanguage: req.user.language,
         },
       },
     });
@@ -158,9 +163,6 @@ const getSubscriptionNextPaymentDate = async (subscriptionId) => {
 };
 
 exports.webhookCheckout = async (req, res, next) => {
-  console.log("typeof req.body:", typeof req.body);
-  console.log("raw body preview:", req.body?.toString()?.slice(0, 100));
-
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
   const signature = req.headers["stripe-signature"];
@@ -191,6 +193,14 @@ exports.webhookCheckout = async (req, res, next) => {
     const userId = subscription.metadata.userId;
     const subscriptionId = subscription.metadata.subscriptionId;
 
+    const user = {
+      email: subscription.metadata.userEmail,
+      username: subscription.metadata.username,
+      language: subscription.metadata.userLanguage,
+    };
+
+    new Email(user).sendSubscriptionCreated();
+
     // Update the subscription in the database
     try {
       await subscriptionsDb.updateUserSubscription(userId, subscriptionId);
@@ -210,6 +220,8 @@ exports.webhookCheckout = async (req, res, next) => {
   }
 
   if (event.type === "invoice.payment_succeeded") {
+    // TODO NEXT: Send email to user
+
     // This if runs when the payment is successful. Either on subscription creation
     // or on subscription renewal
     const payment = event.data.object;
@@ -256,6 +268,8 @@ exports.webhookCheckout = async (req, res, next) => {
       data.previous_attributes?.cancel_at_period_end === true;
 
     if (cancelationRequested) {
+      // TODO NEXT: Send email to user
+
       const stripeSubscriptionId = data.object.id;
 
       try {
@@ -274,6 +288,7 @@ exports.webhookCheckout = async (req, res, next) => {
       const stripeSubscriptionId = data.object.id;
 
       try {
+        // TODO NEXT: Send email to user
         await paymentsDb.markStripeSubscriptionAsResumed(stripeSubscriptionId);
       } catch (error) {
         console.log("error");
