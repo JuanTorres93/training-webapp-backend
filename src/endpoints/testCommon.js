@@ -1,4 +1,4 @@
-const newUserRequestNoOauth = {
+exports.newUserRequestNoOauth = {
   username: "first_test_user",
   email: "first_user@domain.com",
   is_premium: false,
@@ -10,18 +10,25 @@ const newUserRequestNoOauth = {
   // oauth_registration: null,
 };
 
-const newExerciseRequest = {
+exports.newExerciseRequest = {
   name: "first_test_exercise",
   description: "This is the description for a test exercise",
 };
 
-const newWorkoutRequest = {
+exports.newWorkoutRequest = {
   name: "first_test_workout",
   description: "This is the description for a test workout",
 };
 
-module.exports = {
-  newUserRequestNoOauth,
-  newExerciseRequest,
-  newWorkoutRequest,
-};
+exports.expectedUserProperties = [
+  "id",
+  "username",
+  "email",
+  "subscription_id",
+  "last_name",
+  "img",
+  "second_last_name",
+  "is_premium",
+  "is_early_adopter",
+  "created_at",
+];
