@@ -199,6 +199,11 @@ exports.webhookCheckout = async (req, res, next) => {
       language: subscription.metadata.userLanguage,
     };
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("Sending subscription created email");
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("user");
+    console.log(user);
     new Email(user).sendSubscriptionCreated();
 
     // Update the subscription in the database
