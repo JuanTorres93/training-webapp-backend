@@ -73,23 +73,43 @@ module.exports = class Email {
   }
 
   async sendSubscriptionCreated() {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("Sending subscription created email...");
     if (this.language === "es") {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("ESPANISH");
-
       await this.send(
         "subscriptionCreated-es",
         "¡Gracias por suscribirte a TrackOverload!"
       );
     } else {
-      // TODO DELETE THESE DEBUG LOGS
-      console.log("ENGLISH");
-
       await this.send(
         "subscriptionCreated-en",
         "Thanks for subscribing to TrackOverload!"
+      );
+    }
+  }
+
+  async sendSubscriptionCancelled() {
+    if (this.language === "es") {
+      await this.send(
+        "subscriptionCancelled-es",
+        "Tu suscripción a TrackOverload ha sido cancelada"
+      );
+    } else {
+      await this.send(
+        "subscriptionCancelled-en",
+        "Your subscription to TrackOverload has been cancelled"
+      );
+    }
+  }
+
+  async sendPaymentReceived() {
+    if (this.language === "es") {
+      await this.send(
+        "paymentReceived-es",
+        "Hemos recibido tu pago en TrackOverload"
+      );
+    } else {
+      await this.send(
+        "paymentReceived-en",
+        "We have received your payment on TrackOverload"
       );
     }
   }

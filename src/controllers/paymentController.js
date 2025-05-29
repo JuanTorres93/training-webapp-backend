@@ -8,9 +8,6 @@ const Email = require("../utils/email.js");
 
 // TODO Handle error. I used to use catchAsync, but don't have that error handling in this project
 exports.getCheckoutSession = async (req, res, next) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("req.user");
-  console.log(req.user);
   try {
     // 1) Get the subscription type
     const subscription = await subscriptionsDb.selectSuscriptionById(
@@ -202,16 +199,8 @@ exports.webhookCheckout = async (req, res, next) => {
       language: subscription.metadata.userLanguage,
     };
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("Sending subscription created email");
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("user");
-    console.log(user);
-
-    new Email(user).sendSubscriptionCreated().catch((error) => {
-      console.log("Error sending subscription created email");
-      console.log(error);
-    });
+    // Send email to user
+    new Email(user).sendSubscriptionCreated();
 
     // Update the subscription in the database
     try {
@@ -232,8 +221,6 @@ exports.webhookCheckout = async (req, res, next) => {
   }
 
   if (event.type === "invoice.payment_succeeded") {
-    // TODO NEXT: Send email to user
-
     // This if runs when the payment is successful. Either on subscription creation
     // or on subscription renewal
     const payment = event.data.object;
@@ -247,6 +234,15 @@ exports.webhookCheckout = async (req, res, next) => {
       stripeSubscriptionId
     );
     const amountInEur = payment.amount_paid / 100;
+
+    const user = {
+      email: payment.subscription_details.metadata.userEmail,
+      username: payment.subscription_details.metadata.username,
+      language: payment.subscription_details.metadata.userLanguage,
+    };
+
+    // Send email to user
+    new Email(user).sendPaymentReceived();
 
     try {
       await createPayment(
@@ -280,7 +276,13 @@ exports.webhookCheckout = async (req, res, next) => {
       data.previous_attributes?.cancel_at_period_end === true;
 
     if (cancelationRequested) {
-      // TODO NEXT: Send email to user
+      // Send email to user
+      const user = {
+        email: data.object.metadata.userEmail,
+        username: data.object.metadata.username,
+        language: data.object.metadata.userLanguage,
+      };
+      new Email(user).sendSubscriptionCancelled();
 
       const stripeSubscriptionId = data.object.id;
 
