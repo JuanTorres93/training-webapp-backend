@@ -100,6 +100,20 @@ module.exports = class Email {
     }
   }
 
+  async sendSubscriptionResumed() {
+    if (this.language === "es") {
+      await this.send(
+        "subscriptionResumed-es",
+        "¡Nos alegra tenerte de vuelta!"
+      );
+    } else {
+      await this.send(
+        "subscriptionResumed-en",
+        "We're happy to have you back!"
+      );
+    }
+  }
+
   async sendPaymentReceived() {
     if (this.language === "es") {
       await this.send(

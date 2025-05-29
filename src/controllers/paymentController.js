@@ -301,8 +301,15 @@ exports.webhookCheckout = async (req, res, next) => {
     } else if (resumeRequested) {
       const stripeSubscriptionId = data.object.id;
 
+      const user = {
+        email: data.object.metadata.userEmail,
+        username: data.object.metadata.username,
+        language: data.object.metadata.userLanguage,
+      };
+      // Send email to user
+      new Email(user).sendSubscriptionResumed();
+
       try {
-        // TODO NEXT: Send email to user
         await paymentsDb.markStripeSubscriptionAsResumed(stripeSubscriptionId);
       } catch (error) {
         console.log("error");
