@@ -1,5 +1,7 @@
 const crypto = require("crypto");
 
+const { User } = require("../models");
+
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const dbUsers = require("../db/users");
@@ -18,9 +20,9 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 exports.getUserById = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const user = await dbUsers.selectUserById(userId);
+  const user = await User.findByPk(userId);
 
-  if (user === undefined) {
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
 

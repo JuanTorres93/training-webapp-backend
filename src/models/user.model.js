@@ -75,6 +75,16 @@ module.exports = (sequelize, { SubscriptionModel }) => {
     {
       tableName: "users", // Explicitly specify the table name
       timestamps: false, // Disable automatic timestamps
+      defaultScope: {
+        // Exclude fields for all queries by default
+        attributes: {
+          exclude: [
+            "password",
+            "password_reset_token",
+            "password_reset_expires",
+          ],
+        },
+      },
     }
   );
 
