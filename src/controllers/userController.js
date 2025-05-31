@@ -104,22 +104,28 @@ exports.registerNewUser = catchAsync(async (req, res, next) => {
 
 exports.updateUserById = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
-  const { alias, email, password, last_name, second_last_name, img } = req.body;
 
-  const newUserInfo = {
-    alias,
-    email,
-    password,
-    last_name,
-    second_last_name,
-    img,
-  };
-
-  const updatedUser = await dbUsers.updateUser(userId, newUserInfo);
-
-  if (updatedUser === undefined) {
+  const user = await User.findByPk(userId);
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
+
+  const infoToUpdate = req.body;
+  // TODO IMPORTANT: Manage password updates separately
+  // // Filter sensitive fields
+  // const sensitiveFields = [
+  //   "password",
+  //   "password_reset_token",
+  //   "password_reset_expires",
+  // ];
+
+  // Object.keys(infoToUpdate).forEach((key) => {
+  //   if (sensitiveFields.includes(key)) {
+  //     delete infoToUpdate[key];
+  //   }
+  // });
+
+  const updatedUser = await user.update(infoToUpdate);
 
   res.status(200).json(updatedUser);
 });
