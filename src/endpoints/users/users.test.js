@@ -1,9 +1,12 @@
+const factory = require("../../utils/test_utils/factory.js");
+
 const {
   request,
   BASE_ENDPOINT,
   successfulPostRequest,
   setUp,
 } = require("./testsSetup");
+const { expectedUserProperties } = require("../testCommon.js");
 const hash = require("../../hashing.js");
 
 const selectEverythingFromUserId = async (id) => {
@@ -25,25 +28,19 @@ describe(`${BASE_ENDPOINT}`, () => {
     });
 
     describe("register user successfully", () => {
-      it("returns user object", () => {
-        const user = response.body;
-        expect(user).toHaveProperty("id");
-        expect(user).toHaveProperty("username");
-        expect(user).toHaveProperty("email");
-        expect(user).toHaveProperty("subscription_id");
-        expect(user).toHaveProperty("last_name");
-        expect(user).toHaveProperty("img");
-        expect(user).toHaveProperty("second_last_name");
-        expect(user).toHaveProperty("is_premium");
-        expect(user).toHaveProperty("is_early_adopter");
-        expect(user).toHaveProperty("created_at");
-        // Do NOT return user password
-        expect(user).not.toHaveProperty("password");
-      });
+      it(
+        "returns user object",
+        factory.checkCorrectResource(
+          () => response.body,
+          expectedUserProperties,
+          ["password"]
+        )
+      );
 
-      it("status code of 201", () => {
-        expect(response.statusCode).toStrictEqual(201);
-      });
+      it(
+        "status code of 201",
+        factory.checkStatusCode(() => response, 201)
+      );
 
       it("does not store password as is submitted", async () => {
         const userInDb = await selectEverythingFromUserId(response.body.id);
