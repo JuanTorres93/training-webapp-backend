@@ -1,5 +1,7 @@
-module.exports = (sequelize, DataTypes) => {
-  const User = (module.exports = sequelize.define(
+const { DataTypes } = require("sequelize");
+
+module.exports = (sequelize, { SubscriptionModel }) => {
+  const User = sequelize.define(
     "User",
     {
       id: {
@@ -21,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: "subscriptions", // Name of the referenced table
+          model: SubscriptionModel, // Model of the referenced table
           key: "id",
         },
         // TODO Add default value para FREE_TRIAL
@@ -52,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
+      language: {
+        type: DataTypes.STRING(2),
+        defaultValue: "en", // Default language
+      },
       created_at: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -60,12 +66,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "users", // Explicitly specify the table name
+      timestamps: false, // Disable automatic timestamps
     }
-  ));
+  );
 
   // IMPORTANT This function is async. Research about possible problems here
   User.sync({
     //alter: true, // DOC: Use 'true' to update the table structure if it changes
+    // force: false, // DOC: Use 'true' to drop the table and recreate it
   });
 
   return User;

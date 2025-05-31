@@ -13,8 +13,25 @@ const rateLimit = require("express-rate-limit");
 // My modules imports
 const AppError = require("./utils/appError.js");
 const globalErrorHandler = require("./controllers/errorController.js");
+// TODO Borrar cuando se pase a Sequelize
 const { getPool, getPoolClient } = require("./db/index.js");
 const config = require("./config.js");
+
+const { sequelize, Subscription } = require("./models/index.js");
+const {
+  initSubscriptions,
+} = require("./models/initializeDefaultValuesDatabase.js");
+
+// Connect to and initialize database
+(async () => {
+  try {
+    await sequelize.authenticate();
+    await initSubscriptions(Subscription);
+    console.log("Connection to DB has been established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
+})();
 
 // Routers imports
 const webhookApp = require("./endpoints/webhook/webhook.js");

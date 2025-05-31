@@ -1,5 +1,5 @@
 -- IMPORTANT: EVERY TIME A NEW SUBSCRIPTION TYPE IS ADDED, IT MUST BE INSERTED ALSO IN THE
--- truncateTable in subscriptions.js db file
+-- truncateTable in subscriptions.js db file and initializeDefaultValuesDatabase.js
 INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
 VALUES ('FREE', 'Free subscription%$Suscripción gratuita', 0, 'Free%$Gratis', 'Free subscription for selected people')
 ON CONFLICT (type) DO NOTHING;
