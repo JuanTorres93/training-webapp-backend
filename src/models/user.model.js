@@ -41,6 +41,14 @@ module.exports = (sequelize, { SubscriptionModel }) => {
         type: DataTypes.STRING(60),
         allowNull: false,
       },
+      password_reset_token: {
+        type: DataTypes.STRING(64),
+        // Note: 'for forgot password functionality'
+      },
+      password_reset_expires: {
+        type: DataTypes.DATE,
+        // Note: 'for forgot password functionality'
+      },
       oauth_registration: {
         type: DataTypes.STRING(4),
       },
