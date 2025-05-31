@@ -1,17 +1,23 @@
 const catchAsync = require("../utils/catchAsync");
 const dbExercises = require("../db/exercises");
 
+const { Exercise } = require("../models");
+
 ///////////////////
 // READ OPERATIONS
 
 exports.getAllExercises = catchAsync(async (req, res, next) => {
-  const exercises = await dbExercises.selectAllExercises();
+  const exercises = await Exercise.findAll();
 
   res.status(200).send(exercises);
 });
 
 exports.getAllCommonExercses = catchAsync(async (req, res, next) => {
-  const commonExercises = await dbExercises.selectCommonExercises();
+  const commonExercises = await Exercise.findAll({
+    where: {
+      email: process.env.DB_COMMON_USER_EMAIL,
+    },
+  });
 
   res.status(200).json(commonExercises);
 });
@@ -19,7 +25,7 @@ exports.getAllCommonExercses = catchAsync(async (req, res, next) => {
 exports.getExerciseById = catchAsync(async (req, res, next) => {
   const { exerciseId } = req.params;
 
-  const exercise = await dbExercises.selectExerciseById(exerciseId);
+  const exercise = await Exercise.findByPk(exerciseId);
 
   res.status(200).json(exercise);
 });

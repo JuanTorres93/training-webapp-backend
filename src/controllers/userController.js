@@ -12,7 +12,12 @@ const hash = require("../hashing");
 // READ OPERATIONS
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await dbUsers.selectAllUsers();
+  // NOTE: Not tested
+  const users = await User.findAll({
+    attributes: {
+      exclude: ["password", "password_reset_token", "password_reset_expires"],
+    },
+  });
 
   res.status(200).send(users);
 });
@@ -30,15 +35,31 @@ exports.getUserById = catchAsync(async (req, res, next) => {
 });
 
 exports.getEverythingFromUserInTestEnv = catchAsync(async (req, res, next) => {
+  const appIsBeingTested = process.env.NODE_ENV === "test";
+
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Nothing in users.",
+    });
+  }
+
   const { userId } = req.params;
 
-  const user = await dbUsers.testDbSelectEverythingFromUserId(userId);
+  const user = await User.scope("sensitiveScope").findByPk(userId);
 
-  if (user === undefined) {
+  // Avoid toJSON() method being called automatically
+  // which would remove sensitive fields
+  const userAllData = {
+    ...user.get(),
+  };
+
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
 
-  res.status(200).json(user);
+  res.status(200).json(userAllData);
 });
 
 //////////////////////////
@@ -136,13 +157,39 @@ exports.updateUserById = catchAsync(async (req, res, next) => {
 exports.deleteUserById = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const deletedUser = await dbUsers.deleteUser(userId);
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
 
-  res.status(200).json(deletedUser);
+  await sequelize.transaction(async (t) => {
+    // TODO IMPORTANT: Espero que haya más errores aquí conforme
+    // vaya implementando más sequelize
+    // Delete all payments associated with the user
+    await Payment.destroy({
+      where: { user_id: userId },
+      transaction: t,
+    });
+
+    // Delete the user
+    await user.destroy({ transaction: t });
+  });
+
+  res.status(200).json(user);
 });
 
 exports.truncateTestTable = catchAsync(async (req, res, next) => {
-  const truncatedTable = await dbUsers.truncateTableTest();
+  const appIsBeingTested = process.env.NODE_ENV === "test";
+
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Truncated users.",
+    });
+  }
+
+  await sequelize.query("TRUNCATE TABLE users RESTART IDENTITY CASCADE");
 
   res.status(200).send(truncatedTable);
 });
@@ -151,6 +198,8 @@ exports.truncateTestTable = catchAsync(async (req, res, next) => {
 // FORGOT PASSWORD
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // TODO IMPORTANT: Use model and check from FRONTEND
+
   // 1) Get user based on POSTed email
   const { email } = req.body;
   const user = await dbUsers.selectUserByEmail(email);

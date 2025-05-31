@@ -85,6 +85,18 @@ module.exports = (sequelize, { SubscriptionModel }) => {
           ],
         },
       },
+      scopes: {
+        sensitiveScope: {
+          // Include sensitive fields for specific queries
+          attributes: {
+            include: [
+              "password",
+              "password_reset_token",
+              "password_reset_expires",
+            ],
+          },
+        },
+      },
     }
   );
 
