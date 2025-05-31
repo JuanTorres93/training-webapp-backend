@@ -88,6 +88,16 @@ module.exports = (sequelize, { SubscriptionModel }) => {
     }
   );
 
+  User.prototype.toJSON = function () {
+    // Exclude sensitive fields from the JSON representation
+    // For example, when creating a user. In that case the defaultScope seems not to be applied
+    const values = { ...this.get() };
+    delete values.password;
+    delete values.password_reset_token;
+    delete values.password_reset_expires;
+    return values;
+  };
+
   // IMPORTANT This function is async. Research about possible problems here
   User.sync({
     //alter: true, // DOC: Use 'true' to update the table structure if it changes

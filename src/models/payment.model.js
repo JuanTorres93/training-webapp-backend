@@ -34,7 +34,6 @@ module.exports = (sequelize, { UserModel, SubscriptionModel }) => {
       },
       stripe_subscription_id: {
         type: DataTypes.TEXT,
-        allowNull: false,
       },
       marked_for_cancel: {
         type: DataTypes.BOOLEAN,

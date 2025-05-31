@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 
-const { User } = require("../models");
+const { sequelize, User, Subscription, Payment } = require("../models");
 
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
@@ -45,20 +45,58 @@ exports.getEverythingFromUserInTestEnv = catchAsync(async (req, res, next) => {
 // CREATE OPERATIONS
 
 exports.registerNewUser = catchAsync(async (req, res, next) => {
-  const createdUser = await dbUsers.registerNewUser(req.body);
+  const resultNewUser = await sequelize.transaction(async (t) => {
+    // Get subscription ID
+    const freeTrialSubscription = await Subscription.findOne({
+      where: { type: "FREE_TRIAL" },
+    });
+    let subscriptionId;
+
+    if (freeTrialSubscription) {
+      subscriptionId = freeTrialSubscription.id;
+    } else {
+      subscriptionId = req.body.subscription_id;
+    }
+
+    // Create the new user
+    const newUser = await User.create(
+      {
+        ...req.body,
+        subscription_id: subscriptionId,
+      },
+      { transaction: t }
+    );
+
+    const endFreeTrialDate = new Date();
+    // Add 1 month to the current date
+    endFreeTrialDate.setMonth(endFreeTrialDate.getMonth() + 1);
+
+    // Create a payment record for the free trial
+    await Payment.create(
+      {
+        user_id: newUser.id,
+        subscription_id: subscriptionId,
+        amount_in_eur: 0, // Free trial has no cost
+        next_payment_date: endFreeTrialDate,
+      },
+      { transaction: t }
+    );
+
+    return newUser;
+  });
 
   // Send email to the user if it is not a test environment
   // When testng the frontend, back is called as development, so
   // DB_HOST is used to discern if it is a test environment in that case
   if (
-    createdUser &&
+    resultNewUser &&
     process.env.NODE_ENV !== "test" &&
     process.env.DB_HOST !== "db-test-for-frontend"
   ) {
-    new Email(createdUser).sendWelcome();
+    new Email(resultNewUser).sendWelcome();
   }
 
-  return res.status(201).json(createdUser);
+  return res.status(201).json(resultNewUser);
 });
 
 //////////////////////////
