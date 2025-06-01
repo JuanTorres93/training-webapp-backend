@@ -74,11 +74,13 @@ User.belongsToMany(Exercise, {
   through: "users_exercises", // Join table for many-to-many relationship
   foreignKey: "user_id",
   as: "exercises", // Alias for the association
+  timestamps: false, // Disable timestamps for this association
 });
 Exercise.belongsToMany(User, {
   through: "users_exercises", // Join table for many-to-many relationship
   foreignKey: "exercise_id",
   as: "users", // Alias for the association
+  timestamps: false, // Disable timestamps for this association
 });
 
 // Users - Workout Templates

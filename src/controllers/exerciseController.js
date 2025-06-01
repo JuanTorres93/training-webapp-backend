@@ -1,7 +1,7 @@
 const catchAsync = require("../utils/catchAsync");
-const dbExercises = require("../db/exercises");
+const AppError = require("../utils/appError");
 
-const { Exercise } = require("../models");
+const { sequelize, User, Exercise } = require("../models");
 
 ///////////////////
 // READ OPERATIONS
@@ -33,18 +33,46 @@ exports.getExerciseById = catchAsync(async (req, res, next) => {
 exports.getAllExercisesFromUser = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const exercises = await dbExercises.selectAllExercisesFromUser(userId);
+  const userWithExercises = await User.findOne({
+    where: {
+      id: userId,
+    },
+    include: [
+      {
+        model: Exercise,
+        as: "exercises",
+      },
+    ],
+    order: [[{ model: Exercise, as: "exercises" }, "id", "ASC"]],
+  });
 
-  res.status(200).json(exercises);
+  if (!userWithExercises) {
+    return next(new AppError(`User with ID ${userId} not found`, 404));
+  }
+
+  res.status(200).json(userWithExercises.exercises);
 });
 
 ///////////////////
 // CREATE OPERATIONS
 exports.createExercise = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const createdExercise = await dbExercises.createExercise(userId, req.body);
 
-  return res.status(201).json(createdExercise);
+  // Get user
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new AppError(`User with ID ${userId} not found`, 404));
+  }
+
+  // Create new exercise
+  const newExercise = await Exercise.create({
+    ...req.body,
+  });
+
+  // Associate the new exercise with the user
+  await user.addExercise(newExercise);
+
+  return res.status(201).json(newExercise);
 });
 
 ///////////////////
@@ -58,12 +86,18 @@ exports.updateExercise = catchAsync(async (req, res, next) => {
     description,
   };
 
-  const updatedExercise = await dbExercises.updateExercise(
-    exerciseId,
-    newExerciseInfo
-  );
+  const updatedExercise = await Exercise.update(newExerciseInfo, {
+    where: {
+      id: exerciseId,
+    },
+    returning: true,
+  });
 
-  res.status(200).json(updatedExercise);
+  // updatedExercise is an array where:
+  // - updatedExercise[0] is the number of affected rows
+  // - updatedExercise[1] is an array of the updated instances
+  // - updatedExercise[1][0] is the first updated instance (the only one in this case)
+  res.status(200).json(updatedExercise[1][0]);
 });
 
 ///////////////////
@@ -71,13 +105,38 @@ exports.updateExercise = catchAsync(async (req, res, next) => {
 exports.deleteExercise = catchAsync(async (req, res, next) => {
   const { exerciseId } = req.params;
 
-  const deletedexercise = await dbExercises.deleteExercise(exerciseId);
+  const deletedExercise = await Exercise.findByPk(exerciseId);
+  // const deletedexercise = await dbExercises.deleteExercise(exerciseId);
+  await sequelize.transaction(async (t) => {
+    // Delete related associations
+    await deletedExercise.setUsers([], { transaction: t }); // Removes all associations with users
 
-  res.status(200).json(deletedexercise);
+    // Delete the exercise
+    await deletedExercise.destroy({ transaction: t });
+  });
+
+  res.status(200).json(deletedExercise);
 });
 
 exports.truncateTestTable = catchAsync(async (req, res, next) => {
-  const truncatedTable = await dbExercises.truncateTableTest();
+  const appIsBeingTested = process.env.NODE_ENV === "test";
 
-  res.status(200).send(truncatedTable);
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Truncated exercises.",
+    });
+  }
+
+  await sequelize.transaction(async (t) => {
+    await sequelize.query(
+      "TRUNCATE TABLE users_exercises RESTART IDENTITY CASCADE"
+    );
+    await sequelize.query("TRUNCATE TABLE exercises RESTART IDENTITY CASCADE");
+  });
+
+  res
+    .status(200)
+    .send("Table exercises and users_exercises truncated in test db.");
 });
