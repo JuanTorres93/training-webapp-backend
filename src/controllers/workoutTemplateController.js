@@ -147,8 +147,16 @@ exports.getLastTemplatesPerformedAndFinishedByUser = catchAsync(
 // CREATE OPERATIONS
 
 exports.createTemplate = catchAsync(async (req, res, next) => {
-  const createdWorkoutTemplate =
-    await dbWorkoutsTemplates.createWorkoutTemplate(req.body);
+  const newWorkoutTemplate = await WorkoutTemplate.create({
+    ...req.body,
+    user_id: req.body.userId,
+  });
+
+  // This is done to comply with pre-sequelize code.
+  const createdWorkoutTemplate = newWorkoutTemplate.toJSON();
+  createdWorkoutTemplate.userId = createdWorkoutTemplate.user_id;
+  delete createdWorkoutTemplate.user_id;
+
   return res.status(201).json(createdWorkoutTemplate);
 });
 
