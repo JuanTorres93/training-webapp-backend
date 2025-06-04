@@ -11,7 +11,6 @@ const {
   User,
   UserWorkouts,
 } = require("../models");
-const e = require("express");
 
 ////////////////////
 // READ OPERATIONS
@@ -52,13 +51,7 @@ const _processTemplateToSpec_HardModificationSequelize = (workoutTemplate) => {
   return workoutTemplate;
 };
 
-exports.getTemplateById = catchAsync(async (req, res, next) => {
-  const { templateId } = req.params;
-
-  //const workoutTemplate = await _getTemplateAsSpecHardModificationSequelize(
-  //  templateId
-  //);
-
+const _getTemplateById = async (templateId) => {
   const workoutTemplate = await WorkoutTemplate.findByPk(templateId, {
     include: [
       {
@@ -77,6 +70,13 @@ exports.getTemplateById = catchAsync(async (req, res, next) => {
     );
   }
 
+  return workoutTemplate;
+};
+
+exports.getTemplateById = catchAsync(async (req, res, next) => {
+  const { templateId } = req.params;
+
+  const workoutTemplate = await _getTemplateById(templateId);
   const workoutTemplateProcessed =
     _processTemplateToSpec_HardModificationSequelize(workoutTemplate);
 
@@ -172,46 +172,89 @@ exports.updateTemplate = catchAsync(async (req, res, next) => {
     description,
   };
 
-  const updatedWorkoutTemplate =
-    await dbWorkoutsTemplates.updateWorkoutTemplate(
-      templateId,
-      updateWorkoutTemplateInfo
+  // NOTE: I'm not using returning the updated template directly
+  // because the specification requires to return the full template with its exercises.
+  await WorkoutTemplate.update(updateWorkoutTemplateInfo, {
+    where: { id: templateId },
+  });
+
+  // Get the full updated template with its exercises.
+  const fullUpdatedWorkoutTemplate = await _getTemplateById(templateId);
+
+  // Process the template to match the specification.
+  const updatedWorkoutTemplateProcessed =
+    _processTemplateToSpec_HardModificationSequelize(
+      fullUpdatedWorkoutTemplate
     );
 
-  res.status(200).json(updatedWorkoutTemplate);
+  res.status(200).json(updatedWorkoutTemplateProcessed);
 });
 
 exports.updateExerciseInTemplate = catchAsync(async (req, res, next) => {
   const { templateId, exerciseId, exerciseOrder } = req.params;
   const { newExerciseOrder, exerciseSets } = req.body;
 
-  const updateExerciseInfo = {
-    exerciseId,
-    newExerciseOrder,
-    exerciseSets,
+  const updateExerciseInfoSequelize = {
+    exercise_order: newExerciseOrder,
+    exercise_sets: exerciseSets,
+  };
+  const [affectedRows, updatedExercise] = await WorkoutTemplateExercises.update(
+    updateExerciseInfoSequelize,
+    {
+      where: {
+        workout_template_id: templateId,
+        exercise_id: exerciseId,
+        exercise_order: exerciseOrder,
+      },
+      returning: true, // This will return the updated instance
+    }
+  );
+
+  // NOTE: This is done to comply with pre-sequelize code.
+  const updatedExerciseProcessed = {
+    workoutTemplateId: updatedExercise[0].workout_template_id,
+    exerciseId: updatedExercise[0].exercise_id,
+    exerciseOrder: updatedExercise[0].exercise_order,
+    exerciseSets: updatedExercise[0].exercise_sets,
   };
 
-  const updatedExercise =
-    await dbWorkoutsTemplates.updateExerciseFromWorkoutTemplate(
-      templateId,
-      exerciseOrder,
-      updateExerciseInfo
-    );
-
-  res.status(200).json(updatedExercise);
+  res.status(200).json(updatedExerciseProcessed);
 });
 
 exports.addExerciseToTemplate = catchAsync(async (req, res, next) => {
   const { templateId } = req.params;
+  const { exerciseId, exerciseOrder, exerciseSets } = req.body;
 
-  const exercise = {
-    ...req.body,
-    workoutTemplateId: templateId,
+  const exerciseToAdd = await Exercise.findByPk(exerciseId);
+  if (!exerciseToAdd) {
+    return next(new AppError(`Exercise with ID ${exerciseId} not found`, 404));
+  }
+  const template = await WorkoutTemplate.findByPk(templateId);
+  if (!template) {
+    return next(new AppError(`Template with ID ${templateId} not found`, 404));
+  }
+  await template.addExercise(exerciseToAdd, {
+    through: {
+      exercise_order: exerciseOrder,
+      exercise_sets: exerciseSets,
+    },
+  });
+
+  const result = await WorkoutTemplateExercises.findOne({
+    where: {
+      workout_template_id: templateId,
+      exercise_id: exerciseId,
+      exercise_order: exerciseOrder,
+    },
+  });
+
+  // NOTE: This is done to comply with pre-sequelize code.
+  const addedExercise = {
+    workoutTemplateId: result.workout_template_id,
+    exerciseId: result.exercise_id,
+    exerciseOrder: result.exercise_order,
+    exerciseSets: result.exercise_sets,
   };
-
-  const addedExercise = await dbWorkoutsTemplates.addExerciseToWorkoutTemplate(
-    exercise
-  );
 
   return res.status(201).json(addedExercise);
 });
