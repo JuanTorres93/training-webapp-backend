@@ -7,6 +7,7 @@ const {
   setUp,
 } = require("./testsSetup");
 const { query } = require("../../db/index");
+const actions = require("../../utils/test_utils/actions.js");
 
 const expectedExerciseProperties = ["id", "name", "description"];
 
@@ -21,10 +22,7 @@ describe(`${BASE_ENDPOINT}`, () => {
         newUser = setUpInfo.newUser;
 
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         response = await request
           .post(BASE_ENDPOINT)
@@ -33,7 +31,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it(
@@ -84,7 +82,7 @@ describe(`${BASE_ENDPOINT}`, () => {
         newUser = setUpInfo.newUser;
 
         // Ensure user is logged out
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       describe("400 error code when", () => {

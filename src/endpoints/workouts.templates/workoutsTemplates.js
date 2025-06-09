@@ -2,7 +2,6 @@ const express = require("express");
 
 const templatesController = require("../../controllers/workoutTemplateController.js");
 const workoutsTemplatesValidators = require("../../validators/workoutsTemplates.js");
-const dbWorkoutsTemplates = require("../../db/workoutsTemplates.js");
 const {
   validateIntegerParameter,
   validateUUIDParameter,

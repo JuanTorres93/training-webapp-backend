@@ -5,78 +5,9 @@ const {
   createNewTemplateRequest,
   setUp,
 } = require("./testsSetup");
+const actions = require("../../utils/test_utils/actions.js");
 
 describe(BASE_ENDPOINT, () => {
-  //describe('get requests', () => {
-  //    beforeAll(async () => {
-  //        const setUpInfo = await setUp();
-  //    });
-
-  //    describe('happy path', () => {
-  //        beforeAll(async () => {
-  //            // login user
-  //            await request.post('/login').send({
-  //                username: newUserReq.username,
-  //                password: newUserReq.password,
-  //            });
-  //        });
-
-  //        afterAll(async () => {
-  //            // logout user
-  //            await request.get('/logout');
-  //        });
-
-  //        it('returns 200 status code', async () => {
-  //            const response = await request.get(BASE_ENDPOINT);
-
-  //            expect(response.statusCode).toStrictEqual(200);
-  //        });
-
-  //        it("returns list", async () => {
-  //            const response = await request.get(BASE_ENDPOINT);
-
-  //            expect(Array.isArray(response.body)).toBe(true);
-  //        });
-
-  //        it('workout template object has correct properties', async () => {
-  //            const response = await request.get(BASE_ENDPOINT);
-
-  //            const workoutTemplate = response.body[0];
-
-  //            expect(workoutTemplate).toHaveProperty('id');
-  //            expect(workoutTemplate).toHaveProperty('exercises');
-  //            expect(workoutTemplate).toHaveProperty('name');
-  //            expect(workoutTemplate).toHaveProperty('description');
-  //        });
-
-  //        it('id is UUID', async () => {
-  //            const response = await request.get(BASE_ENDPOINT);
-  //            const workoutTemplate = response.body[0];
-
-  //            expect(workoutTemplate.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-  //        })
-  //    });
-
-  //    describe('unhappy path', () => {
-  //        beforeAll(async () => {
-  //            // Ensure user is logged out
-  //            await request.post('/login').send({
-  //                username: newUserReq.username,
-  //                password: newUserReq.password,
-  //            });
-  //            await request.get('/logout');
-  //        });
-
-  //        describe('401 response when', () => {
-  //            it('user is not logged in', async () => {
-  //                const response = await request.get(BASE_ENDPOINT);
-  //                expect(response.statusCode).toStrictEqual(401);
-  //            });
-  //        });
-  //    });
-
-  //});
-
   describe("post requests", () => {
     let user;
 
@@ -89,15 +20,12 @@ describe(BASE_ENDPOINT, () => {
     describe("happy path", () => {
       beforeAll(async () => {
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
       });
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("returns 201 status code", async () => {
@@ -130,11 +58,8 @@ describe(BASE_ENDPOINT, () => {
     describe("unhappy path", () => {
       beforeAll(async () => {
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("400 response when", () => {

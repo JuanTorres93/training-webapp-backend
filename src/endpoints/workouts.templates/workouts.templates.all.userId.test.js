@@ -5,6 +5,7 @@ const {
   newUserReq,
   setUp,
 } = require("./testsSetup");
+const actions = require("../../utils/test_utils/actions.js");
 
 describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
   describe("get requests", () => {
@@ -25,15 +26,12 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
     describe("happy path", () => {
       beforeAll(async () => {
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
       });
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("status code of 200", async () => {
@@ -62,11 +60,8 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
     describe("unhappy path", () => {
       beforeAll(async () => {
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("401 response when", () => {
@@ -79,7 +74,7 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
       describe("403 response when", () => {
         it("trying to read another user's workout template", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -87,7 +82,7 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
           const response = await request.get(BASE_ENDPOINT + `/all/${user.id}`);
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });

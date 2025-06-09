@@ -6,6 +6,7 @@ const {
   successfulPostRequest,
   setUp,
 } = require("./testsSetup");
+const actions = require("../../utils/test_utils/actions.js");
 
 describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
   let newExercise;
@@ -20,18 +21,14 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         newExercise = setUpInfo.newExercise;
 
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-
+        await actions.loginUser(request, newUserReq);
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${newExercise.id}`);
       });
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("status code of 200", () => {
@@ -56,10 +53,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         newExercise = setUpInfo.newExercise;
 
         // Login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${newExercise.id}`);
@@ -67,11 +61,8 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
 
       afterAll(async () => {
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("400 response when", () => {
@@ -117,10 +108,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         newExercise = setUpInfo.newExercise;
 
         // Login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         // Test response
         response = await request
@@ -128,7 +116,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
           .send(putBodyRequest);
 
         // Logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("returns updated exercise", () => {
@@ -153,11 +141,8 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         newExercise = setUpInfo.newExercise;
 
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("returns 400 error code when", () => {
@@ -195,7 +180,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       describe("403 response when", () => {
         it("trying to update another user's exercise", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -205,7 +190,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
             .send(putBodyRequest);
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });
@@ -235,11 +220,8 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         newExercise = setUpInfo.newExercise;
 
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("returns 400 error code when", () => {
@@ -271,7 +253,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       describe("403 response when", () => {
         it("trying to update another user's exercise", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -281,7 +263,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
           );
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });
@@ -305,10 +287,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         newExercise = setUpInfo.newExercise;
 
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         // Test response
         response = await request.delete(BASE_ENDPOINT + `/${newExercise.id}`);
@@ -316,7 +295,7 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("status code of 200", async () => {

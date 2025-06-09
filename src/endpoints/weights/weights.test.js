@@ -9,6 +9,7 @@ const {
   newUserRequestNoOauth: newUserReq,
   setUp,
 } = require("./testsSetup.js");
+const actions = require("../../utils/test_utils/actions.js");
 
 const expectedWeightProperties = ["user_id", "date", "value"];
 
@@ -22,10 +23,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       newUser = setupInfo.newUser;
 
       // login user
-      await request.post("/login").send({
-        username: newUserReq.username,
-        password: newUserReq.password,
-      });
+      await actions.loginUser(request, newUserReq);
 
       response = await request
         .post(BASE_ENDPOINT + `/${newUser.id}`)
@@ -33,7 +31,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
     });
 
     afterAll(async () => {
-      await request.get("/logout");
+      await actions.logoutUser(request);
     });
 
     describe("happy path", () => {
@@ -130,7 +128,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       describe("401 error when", () => {
         beforeAll(async () => {
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
         });
 
         it("user is not logged in", async () => {
@@ -144,7 +142,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       describe("403 error when", () => {
         it("trying to add weight to another user", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: otherUserName,
             password: newUserReq.password,
           });
@@ -155,7 +153,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
           expect(response.statusCode).toStrictEqual(403);
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
         });
       });
     });
@@ -172,10 +170,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       otherUser = setupInfo.otherUser;
 
       // login user
-      await request.post("/login").send({
-        username: newUserReq.username,
-        password: newUserReq.password,
-      });
+      await actions.loginUser(request, newUserReq);
 
       // add weight
       await request
@@ -186,7 +181,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
     });
 
     afterAll(async () => {
-      await request.get("/logout");
+      await actions.logoutUser(request);
     });
 
     describe("happy path", () => {
@@ -243,7 +238,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       // NOTE: These are last because they require the user to be logged out and logged in as another user
       describe("401 error when", () => {
         it("user is not logged in", async () => {
-          await request.get("/logout");
+          await actions.logoutUser(request);
           response = await request.get(BASE_ENDPOINT + `/${newUser.id}`);
           expect(response.statusCode).toStrictEqual(401);
         });
@@ -252,7 +247,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       describe("403 error when", () => {
         it("trying to get weights for another user", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: otherUserName,
             password: newUserReq.password,
           });
@@ -273,10 +268,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       newUser = setupInfo.newUser;
 
       // login user
-      await request.post("/login").send({
-        username: newUserReq.username,
-        password: newUserReq.password,
-      });
+      await actions.loginUser(request, newUserReq);
 
       // create weight to update
       await request
@@ -383,7 +375,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       describe("401 error when", () => {
         beforeAll(async () => {
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
         });
 
         it("user is not logged in", async () => {
@@ -397,7 +389,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
       describe("403 error when", () => {
         it("trying to add weight to another user", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: otherUserName,
             password: newUserReq.password,
           });
@@ -408,7 +400,7 @@ describe(`${BASE_ENDPOINT}/{userId}`, () => {
           expect(response.statusCode).toStrictEqual(403);
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
         });
       });
     });

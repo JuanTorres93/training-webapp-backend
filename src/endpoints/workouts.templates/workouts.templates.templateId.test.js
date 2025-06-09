@@ -3,9 +3,9 @@ const {
   OTHER_USER_ALIAS,
   request,
   newUserReq,
-  reqNewTemplate,
   setUp,
 } = require("./testsSetup");
+const actions = require("../../utils/test_utils/actions.js");
 
 describe(BASE_ENDPOINT + "/{templateId}", () => {
   describe("get requests", () => {
@@ -24,15 +24,12 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
     describe("happy path", () => {
       beforeAll(async () => {
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
       });
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("status code of 200", async () => {
@@ -85,11 +82,8 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
     describe("unhappy path", () => {
       beforeAll(async () => {
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("401 response when", () => {
@@ -104,7 +98,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
       describe("403 response when", () => {
         it("trying to read another user's workout template", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -114,7 +108,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
           );
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });
@@ -156,10 +150,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         };
 
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         // delete template and recreate it
         // This is done because template is created in setUp function and this
@@ -175,7 +166,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("returns 201 status code", async () => {
@@ -203,11 +194,8 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         };
 
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("400 response when", () => {
@@ -271,7 +259,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
       describe("403 response when", () => {
         it("trying to add exercise to another user's workout template", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -281,7 +269,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
             .send(req);
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });
@@ -326,15 +314,12 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
     describe("happy path", () => {
       beforeAll(async () => {
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
       });
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("returns 200 status code", async () => {
@@ -405,13 +390,10 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         };
 
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       describe("returns 400 error code when", () => {
@@ -449,7 +431,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
       describe("403 response when", () => {
         it("trying to update exercise in another user's workout template", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -463,7 +445,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
             .send(req);
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });
@@ -497,11 +479,8 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
     describe("unhappy path", () => {
       beforeAll(async () => {
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       describe("returns 400 error code when", () => {
@@ -533,7 +512,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
       describe("403 response when", () => {
         it("trying to delete another user's workout template", async () => {
           // login other user
-          await request.post("/login").send({
+          await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
             password: newUserReq.password,
           });
@@ -543,7 +522,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
           );
 
           // logout user
-          await request.get("/logout");
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
       });
@@ -561,10 +540,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
     describe("happy path", () => {
       it("status code of 200", async () => {
         // login user. HERE CAUSE setUp ends loggin out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         // Check if template exists before deletion
         const getResponse = await request.get(
@@ -577,7 +553,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         );
 
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
 
         expect(response.statusCode).toStrictEqual(200);
       });
@@ -593,17 +569,14 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         const { newTemplate } = await setUp();
 
         // login user. HERE CAUSE setUp ends loggin out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         const response = await request.delete(
           BASE_ENDPOINT + `/${newTemplate.id}`
         );
 
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
 
         const workoutTemplate = response.body;
 
@@ -625,10 +598,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         const { newTemplate, newExercise } = await setUp();
 
         // login user. HERE CAUSE setUp ends loggin out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         await request.delete(
           BASE_ENDPOINT + `/${newTemplate.id}/exercises/${newExercise.id}/1`
@@ -639,7 +609,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         );
 
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
 
         const workoutTemplate = response.body;
 

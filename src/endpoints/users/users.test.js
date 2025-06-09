@@ -42,7 +42,7 @@ describe(`${BASE_ENDPOINT}`, () => {
         factory.checkStatusCode(() => response, 201)
       );
 
-      it("does not store password as is submitted", async () => {
+      it("does not store password as is submitted (plain text)", async () => {
         const userInDb = await selectEverythingFromUserId(response.body.id);
 
         expect(userInDb.password.trim()).not.toEqual(
@@ -124,45 +124,4 @@ describe(`${BASE_ENDPOINT}`, () => {
       });
     });
   });
-
-  //describe("get requests", () => {
-  //  // ============
-  //  // GET requests
-  //  // ============
-  //  let response;
-
-  //  beforeEach(async () => {
-  //    await setUp();
-  //    response = await request.get(BASE_ENDPOINT);
-  //  });
-
-  //  describe("get all users", () => {
-  //    it("returns list", async () => {
-  //      expect(Array.isArray(response.body)).toBe(true);
-  //    });
-
-  //    it("status code of 200", async () => {
-  //      expect(response.statusCode).toStrictEqual(200);
-  //    });
-
-  //    it("user object has id, username, email, last_name, img and second_last_name properties", () => {
-  //      const userObject = response.body[0];
-
-  //      expect(userObject).toHaveProperty("id");
-  //      expect(userObject).toHaveProperty("username");
-  //      expect(userObject).toHaveProperty("email");
-  //      expect(userObject).toHaveProperty("last_name");
-  //      expect(userObject).toHaveProperty("img");
-  //      expect(userObject).toHaveProperty("second_last_name");
-  //      expect(userObject).not.toHaveProperty("password");
-  //    });
-
-  //    it("id is UUID type", () => {
-  //      const userObject = response.body[0];
-  //      expect(userObject.id).toMatch(
-  //        /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/
-  //      );
-  //    });
-  //  });
-  //});
 });

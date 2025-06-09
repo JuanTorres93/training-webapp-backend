@@ -1,12 +1,6 @@
-const {
-  request,
-  BASE_ENDPOINT,
-  newUserReq,
-  initExercisesTableInDb,
-  addWorkoutsAndExercises,
-  getExercisesIds,
-  setUp,
-} = require("./testsSetup");
+const { request, BASE_ENDPOINT, newUserReq, setUp } = require("./testsSetup");
+
+const actions = require("../../utils/test_utils/actions.js");
 
 describe(`${BASE_ENDPOINT}`, () => {
   let template;
@@ -20,10 +14,7 @@ describe(`${BASE_ENDPOINT}`, () => {
         const { user } = setupInfo;
 
         // login user
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
+        await actions.loginUser(request, newUserReq);
 
         const newTemplateReq = {
           userId: user.id,
@@ -46,7 +37,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
       afterAll(async () => {
         // logout user
-        await request.get("/logout");
+        await actions.logoutUser(request);
       });
 
       it("returns workout object", () => {
@@ -74,11 +65,8 @@ describe(`${BASE_ENDPOINT}`, () => {
         await setUp();
 
         // Ensure user is logged out
-        await request.post("/login").send({
-          username: newUserReq.username,
-          password: newUserReq.password,
-        });
-        await request.get("/logout");
+        await actions.loginUser(request, newUserReq);
+        await actions.logoutUser(request);
       });
 
       it("400 response when mandatory parameter is missing", async () => {
