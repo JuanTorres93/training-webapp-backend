@@ -39,11 +39,10 @@ const setUp = async () => {
   const newTemplate = responseNewTemplate.body;
 
   // Add exercise to db
-  const exerciseResponse = await request.post("/exercises").send({
+  const { exercise: newExercise } = await actions.createNewExercise(request, {
     name: "Pull up",
     description: "Fucks your shoulder",
   });
-  const newExercise = exerciseResponse.body;
 
   // Add exercise to template
   const addedExerciseResponse = await request
@@ -65,6 +64,12 @@ const setUp = async () => {
     newExerciseInTemplate,
   };
 };
+
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
 
 describe(
   BASE_ENDPOINT + "/{templateId}/exercises/{exerciseId}/{exerciseOrder}",

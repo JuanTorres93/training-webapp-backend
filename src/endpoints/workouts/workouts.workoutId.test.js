@@ -1,15 +1,20 @@
+const { sequelize } = require("../../models");
 const {
   request,
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
   newUserReq,
   exercises,
-  initExercisesTableInDb,
   addWorkoutsAndExercises,
   getExercisesIds,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
+
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
 
 describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
   let template;
@@ -22,7 +27,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
     const setupInfo = await setUp();
     const { user } = setupInfo;
 
-    await initExercisesTableInDb();
+    await actions.fillExercisesTable(request, newUserReq, exercises);
 
     // login user
     await actions.loginUser(request, newUserReq);
@@ -212,7 +217,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
     beforeAll(async () => {
       const setupInfo = await setUp();
       user = setupInfo.user;
-      await initExercisesTableInDb();
+      await actions.fillExercisesTable(request, newUserReq, exercises);
 
       try {
         exercisesIds = await getExercisesIds();
@@ -326,7 +331,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       const setupInfo = await setUp();
       user = setupInfo.user;
 
-      await initExercisesTableInDb();
+      await actions.fillExercisesTable(request, newUserReq, exercises);
 
       try {
         exercisesIds = await getExercisesIds();
@@ -455,7 +460,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
     beforeAll(async () => {
       const setupInfo = await setUp();
       user = setupInfo.user;
-      await initExercisesTableInDb();
+      await actions.fillExercisesTable(request, newUserReq, exercises);
 
       try {
         exercisesIds = await getExercisesIds();

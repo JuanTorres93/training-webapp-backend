@@ -11,6 +11,12 @@ const actions = require("../../utils/test_utils/actions.js");
 
 const expectedExerciseProperties = ["id", "name", "description"];
 
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
+
 describe(`${BASE_ENDPOINT}`, () => {
   describe("post requests", () => {
     describe("happy path", () => {

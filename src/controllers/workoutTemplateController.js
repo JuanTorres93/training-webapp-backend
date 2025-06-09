@@ -6,11 +6,13 @@ const {
   sequelize,
   WorkoutTemplate,
   Exercise,
+  WorkoutExercises,
   WorkoutTemplateExercises,
   Workout,
   User,
   UserWorkouts,
 } = require("../models");
+const { where } = require("../models/sequelizeConfig");
 
 ////////////////////
 // READ OPERATIONS
@@ -282,14 +284,33 @@ exports.deleteTemplate = catchAsync(async (req, res, next) => {
 
   // Delete the template
   await sequelize.transaction(async (t) => {
+    // Find all workouts associated with the template
+    const workoutsIds = await Workout.findAll({
+      where: { template_id: templateId },
+      attributes: ["id"],
+      transaction: t,
+    });
+    // Delete all user workouts associated with the template's workouts
+    await UserWorkouts.destroy({
+      where: { workout_id: workoutsIds.map((w) => w.id) },
+      transaction: t,
+    });
+    // Delete all exercises associated with the template's workouts
+    await WorkoutExercises.destroy({
+      where: { workout_id: workoutsIds.map((w) => w.id) },
+      transaction: t,
+    });
+    // Delete the workouts associated with the template
     await Workout.destroy({
       where: { template_id: templateId },
       transaction: t,
     });
+    // Delete the exercises associated with the template
     await WorkoutTemplateExercises.destroy({
       where: { workout_template_id: templateId },
       transaction: t,
     });
+    // Finally, delete the template itself
     await WorkoutTemplate.destroy({
       where: { id: templateId },
       transaction: t,

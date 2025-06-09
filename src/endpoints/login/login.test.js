@@ -9,6 +9,12 @@ const {
 
 const { expectedUserProperties } = require("../testCommon.js");
 
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
+
 describe(BASE_ENDPOINT, () => {
   describe("post requests", () => {
     beforeAll(async () => {

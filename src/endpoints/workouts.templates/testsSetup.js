@@ -45,16 +45,14 @@ const setUp = async () => {
   await request.get("/workouts/truncate");
 
   // Add user to db
-  const userResponse = await request.post("/users").send(newUserReq);
-  const user = userResponse.body;
+  const { user } = await actions.createNewUser(request, newUserReq);
 
   // Add other user to db
-  const otherUserResponse = await request.post("/users").send({
+  const { otherUser } = await actions.createNewUser(request, {
     ...newUserReq,
     username: OTHER_USER_ALIAS,
     email: "other@user.com",
   });
-  const otherUser = otherUserResponse.body;
 
   // DOC first parameter does nothing?
   await createCommonUser("", request);
@@ -68,16 +66,17 @@ const setUp = async () => {
     TEMPLATE_AND_WORKOUT_NAME,
     "set up template description"
   );
-  const responseNewTemplate = await request
-    .post(BASE_ENDPOINT)
-    .send(reqNewTemplate);
-  const newTemplate = responseNewTemplate.body;
+
+  const { template: newTemplate } = await actions.createNewEmptyTemplate(
+    request,
+    reqNewTemplate
+  );
 
   // Add exercise to db
-  const exerciseResponse = await request.post("/exercises").send({
-    ...newExerciseRequest,
-  });
-  const newExercise = exerciseResponse.body;
+  const { exercise: newExercise } = await actions.createNewExercise(
+    request,
+    newExerciseRequest
+  );
 
   // Add exercise to template
   const reqAddExerciseToTemplate = {
@@ -85,28 +84,27 @@ const setUp = async () => {
     exerciseOrder: 1,
     exerciseSets: 3,
   };
-  const responseAddExerciseToTemplate = await request
-    .post(BASE_ENDPOINT + `/${newTemplate.id}`)
-    .send(reqAddExerciseToTemplate);
-  const newExerciseInTemplate = responseAddExerciseToTemplate.body;
+  const { exerciseInTemplate: newExerciseInTemplate } =
+    await actions.addExerciseToExistingTemplate(
+      request,
+      newTemplate.id,
+      reqAddExerciseToTemplate
+    );
 
   // Add workout to db
-  const workoutResponse = await request.post("/workouts").send({
-    name: TEMPLATE_AND_WORKOUT_NAME,
+  const { workout: newWorkout } = await actions.createNewWorkout(request, {
+    template_id: newTemplate.id,
     description: "This is the description for a test workout",
   });
-  const newWorkout = workoutResponse.body;
 
   // Add exercise to workout
-  const workoutExerciseResponse = await request
-    .post(`/workouts/${newWorkout.id}`)
-    .send({
-      exerciseId: newExercise.id,
-      exerciseSet: 1,
-      reps: 3,
-      weight: 40,
-      time_in_seconds: 70,
-    });
+  await actions.addExerciseToWorkout(request, newWorkout.id, {
+    exerciseId: newExercise.id,
+    exerciseSet: 1,
+    reps: 3,
+    weight: 40,
+    time_in_seconds: 70,
+  });
 
   // logout user
   await actions.logoutUser(request);

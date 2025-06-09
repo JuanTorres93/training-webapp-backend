@@ -37,25 +37,23 @@ const setUp = async () => {
   await request.get("/users/truncate");
 
   // Add user to db
-  const newUserResponse = await request.post("/users").send(newUserReq);
-  const newUser = newUserResponse.body;
+  const { user: newUser } = await actions.createNewUser(request, newUserReq);
 
   // Add other user to db
-  const otherUserResponse = await request.post("/users").send({
+  const { user: otherUser } = await actions.createNewUser(request, {
     ...newUserReq,
     username: OTHER_USER_ALIAS,
     email: "other@user.com",
   });
-  const otherUser = otherUserResponse.body;
 
   // login user
   await actions.loginUser(request, newUserReq);
 
   // Add exercise to db
-  const newExercisesResponse = await request
-    .post(BASE_ENDPOINT)
-    .send(successfulPostRequest);
-  const newExercise = newExercisesResponse.body;
+  const { exercise: newExercise } = await actions.createNewExercise(
+    request,
+    successfulPostRequest
+  );
 
   // logout user
   await actions.logoutUser(request);

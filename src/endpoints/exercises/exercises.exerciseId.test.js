@@ -8,6 +8,12 @@ const {
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
 
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
+
 describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
   let newExercise;
 

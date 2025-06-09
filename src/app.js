@@ -22,17 +22,6 @@ const {
   initSubscriptions,
 } = require("./models/initializeDefaultValuesDatabase.js");
 
-// Connect to and initialize database
-(async () => {
-  try {
-    await sequelize.authenticate();
-    await initSubscriptions(Subscription);
-    console.log("Connection to DB has been established successfully.");
-  } catch (error) {
-    console.error("Unable to connect to the database:", error);
-  }
-})();
-
 // Routers imports
 const webhookApp = require("./endpoints/webhook/webhook.js");
 const usersRouter = require("./endpoints/users/users.js");
@@ -47,6 +36,17 @@ const paymentsRouter = require("./endpoints/payments/payments.js");
 
 // Function to create the express app. Its main use is for testing
 const createApp = () => {
+  // Connect to and initialize database
+  (async () => {
+    try {
+      await sequelize.authenticate();
+      await initSubscriptions(Subscription);
+      console.log("Connection to DB has been established successfully.");
+    } catch (error) {
+      console.error("Unable to connect to the database:", error);
+    }
+  })();
+
   const appIsBeingTested = process.env.NODE_ENV === "test";
   // Create server and enable body parser in order not to import it
   // in every router

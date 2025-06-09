@@ -3,12 +3,18 @@ const {
   OTHER_USER_ALIAS,
   request,
   newUserReq,
-  initExercisesTableInDb,
+  exercises,
   addWorkoutsAndExercises,
   getExercisesIds,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
+
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
 
 describe(`${BASE_ENDPOINT}` + "/last/{templateId}/user/{userId}", () => {
   let exercisesIds = {};
@@ -17,7 +23,7 @@ describe(`${BASE_ENDPOINT}` + "/last/{templateId}/user/{userId}", () => {
   beforeAll(async () => {
     // Test's set up
     const setupInfo = await setUp();
-    await initExercisesTableInDb();
+    await actions.fillExercisesTable(request, newUserReq, exercises);
 
     user = setupInfo.user;
     otherUser = setupInfo.otherUser;

@@ -13,6 +13,12 @@ const actions = require("../../utils/test_utils/actions.js");
 
 const expectedWeightProperties = ["user_id", "date", "value"];
 
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
+
 describe(`${BASE_ENDPOINT}/{userId}`, () => {
   describe("post requests", () => {
     let response;

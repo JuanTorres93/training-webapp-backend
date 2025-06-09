@@ -12,6 +12,12 @@ const selectEverythingFromUserId = async (id) => {
   return response.body;
 };
 
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
+
 describe(`${BASE_ENDPOINT}/{id}`, () => {
   let response;
   let newUser;

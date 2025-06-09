@@ -13,6 +13,12 @@ const dbExercises = require("../../db/exercises.js");
 const {
   newUserRequestNoOauth,
   newWorkoutRequest,
+  benchPress,
+  barbellRow,
+  pullUp,
+  dip,
+  deadLift,
+  squat,
 } = require("../testCommon.js");
 
 function logErrors(err, req, res, next) {
@@ -39,122 +45,76 @@ const createWorkoutRequest = {
   description: "This is the description for a workout with exercises",
 };
 
-const exercises = [
-  [
-    "bench press",
-    "A compound upper body exercise where you lie on a bench and press a barbell upwards, targeting chest, shoulders, and triceps.",
-  ],
-  [
-    "barbell row",
-    "An upper body exercise where you bend forward at the hips, pulling a barbell towards your torso, targeting back muscles like lats and rhomboids.",
-  ],
-  [
-    "pull up",
-    "A bodyweight exercise where you hang from a bar and pull yourself up until your chin is above the bar, primarily targeting the back, arms, and shoulders.",
-  ],
-  [
-    "dip",
-    "A bodyweight exercise where you suspend yourself between parallel bars and lower your body until your upper arms are parallel to the ground, targeting chest, triceps, and shoulders.",
-  ],
-  [
-    "dead lift",
-    "A compound movement where you lift a barbell from the ground to a standing position, engaging muscles in the back, glutes, hamstrings, and core.",
-  ],
-  [
-    "squat",
-    "A compound lower body exercise where you lower your hips towards the ground, keeping your back straight, and then stand back up, primarily targeting quadriceps, hamstrings, glutes, and core.",
-  ],
-];
-
-// Fill database with some exercises to be able to add them to workouts
-const initExercisesTableInDb = async () => {
-  // login user
-  await actions.loginUser(request, newUserReq);
-
-  // Create exercises
-  for (const exercise of exercises) {
-    const req = {
-      name: exercise[0],
-      description: exercise[1],
-    };
-    await request.post("/exercises").send(req);
-  }
-
-  // logout user
-  await actions.logoutUser(request);
-};
+const exercises = [benchPress, barbellRow, pullUp, dip, deadLift, squat];
 
 const addWorkoutsAndExercises = async (userId, exercisesIds) => {
   // login user
   await actions.loginUser(request, newUserReq);
 
   // Create templates for the workouts
-  const pushTemplateRequest = {
-    userId,
-    name: "Push",
-    description: "Push workout",
-  };
-  const pushTemplateResponse = await request
-    .post("/workouts/templates")
-    .send(pushTemplateRequest);
-  const pushTemplate = pushTemplateResponse.body;
-  const pushTemplateId = pushTemplateResponse.body.id;
+  const { template: pushTemplate } = await actions.createNewEmptyTemplate(
+    request,
+    {
+      userId,
+      name: "Push",
+      description: "Push workout",
+    }
+  );
 
-  const pullTemplateRequest = {
-    userId,
-    name: "Pull",
-    description: "Pull workout",
-  };
-  const pullTemplateResponse = await request
-    .post("/workouts/templates")
-    .send(pullTemplateRequest);
-  const pullTemplateId = pullTemplateResponse.body.id;
+  const { template: pullTemplate } = await actions.createNewEmptyTemplate(
+    request,
+    {
+      userId,
+      name: "Pull",
+      description: "Pull workout",
+    }
+  );
 
-  const legTemplateRequest = {
-    userId,
-    name: "Leg",
-    description: "Leg workout",
-  };
-  const legTemplateResponse = await request
-    .post("/workouts/templates")
-    .send(legTemplateRequest);
-  const legTemplateId = legTemplateResponse.body.id;
+  const { template: legTemplate } = await actions.createNewEmptyTemplate(
+    request,
+    {
+      userId,
+      name: "Leg",
+      description: "Leg workout",
+    }
+  );
 
-  // Create some workouts with their exercises
-  const pushResponse = await request.post(BASE_ENDPOINT).send({
-    template_id: pushTemplateId,
-    description: "Test push workout",
-  });
+  // Create some workouts
+  const { response: pushResponse, workout: pushWorkout } =
+    await actions.createNewWorkout(request, {
+      template_id: pushTemplate.id,
+      description: "Test push workout",
+    });
 
-  const pullResponse = await request.post(BASE_ENDPOINT).send({
-    template_id: pullTemplateId,
-    description: "Test pull workout",
-  });
+  const { response: pullResponse, workout: pullWorkout } =
+    await actions.createNewWorkout(request, {
+      template_id: pullTemplate.id,
+      description: "Test pull workout",
+    });
 
-  const legResponse = await request.post(BASE_ENDPOINT).send({
-    template_id: legTemplateId,
-    description: "Test leg workout",
-  });
+  const { response: legResponse, workout: legWorkout } =
+    await actions.createNewWorkout(request, {
+      template_id: legTemplate.id,
+      description: "Test leg workout",
+    });
 
   // Add exercises to workouts
   // PUSH: bench press
-  await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[0][0]],
     exerciseSet: 1,
     reps: 5,
     weight: 55,
     time_in_seconds: 0,
   });
-
-  await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[0][0]],
     exerciseSet: 2,
     reps: 5,
     weight: 55,
     time_in_seconds: 0,
   });
-
-  await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[0][0]],
     exerciseSet: 3,
     reps: 4,
@@ -163,7 +123,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
   });
 
   // PUSH: dip
-  await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[3][0]],
     exerciseSet: 1,
     reps: 8,
@@ -171,7 +131,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[3][0]],
     exerciseSet: 2,
     reps: 8,
@@ -179,7 +139,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${pushResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[3][0]],
     exerciseSet: 3,
     reps: 7,
@@ -188,7 +148,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
   });
 
   // PULL: barbell row
-  await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[1][0]],
     exerciseSet: 1,
     reps: 9,
@@ -196,7 +156,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[1][0]],
     exerciseSet: 2,
     reps: 8,
@@ -204,7 +164,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[1][0]],
     exerciseSet: 3,
     reps: 8,
@@ -213,7 +173,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
   });
 
   // PULL: pull up
-  await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[2][0]],
     exerciseSet: 1,
     reps: 6,
@@ -221,7 +181,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[2][0]],
     exerciseSet: 2,
     reps: 6,
@@ -229,7 +189,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${pullResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[2][0]],
     exerciseSet: 3,
     reps: 6,
@@ -238,7 +198,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
   });
 
   // LEG: dead lift
-  await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[4][0]],
     exerciseSet: 1,
     reps: 8,
@@ -246,7 +206,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[4][0]],
     exerciseSet: 2,
     reps: 8,
@@ -254,7 +214,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[4][0]],
     exerciseSet: 3,
     reps: 8,
@@ -263,7 +223,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
   });
 
   // LEG: squat
-  await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[5][0]],
     exerciseSet: 1,
     reps: 5,
@@ -271,7 +231,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[5][0]],
     exerciseSet: 2,
     reps: 5,
@@ -279,7 +239,7 @@ const addWorkoutsAndExercises = async (userId, exercisesIds) => {
     time_in_seconds: 0,
   });
 
-  await request.post(BASE_ENDPOINT + `/${legResponse.body.id}`).send({
+  await actions.addExerciseToWorkout(request, pushWorkout.id, {
     exerciseId: exercisesIds[exercises[5][0]],
     exerciseSet: 3,
     reps: 4,
@@ -354,7 +314,6 @@ module.exports = {
   successfulPostRequest,
   createWorkoutRequest,
   request,
-  initExercisesTableInDb,
   addWorkoutsAndExercises,
   getExercisesIds,
   setUp,
