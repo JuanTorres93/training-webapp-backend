@@ -15,13 +15,6 @@ const router = express.Router();
 // ========== GET requests ==========
 // ==================================
 
-// Get all workouts templates
-// TODO modify spec to need authenticated user
-//router.get('/',
-//    mw.authenticatedUser,
-//    templatesController.getAllTemplates
-//);
-
 // Truncate test table
 router.get("/truncate", templatesController.truncateTestTable);
 

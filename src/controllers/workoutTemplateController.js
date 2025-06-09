@@ -14,13 +14,6 @@ const {
 
 ////////////////////
 // READ OPERATIONS
-exports.getAllTemplates = catchAsync(async (req, res, next) => {
-  // TODO TEST
-  const templates = await dbWorkoutsTemplates.selectAllWorkoutsTemplates();
-
-  res.status(200).send(templates);
-});
-
 exports.getCommonTemplates = catchAsync(async (req, res, next) => {
   // TODO TEST
   const commonTemplates =
@@ -265,27 +258,106 @@ exports.addExerciseToTemplate = catchAsync(async (req, res, next) => {
 exports.deleteTemplate = catchAsync(async (req, res, next) => {
   const { templateId } = req.params;
 
-  const deletedWorkoutTemplate =
-    await dbWorkoutsTemplates.deleteWorkoutTemplate(templateId);
+  // Get template info to return after deletion
+  const template = await WorkoutTemplate.findOne({
+    where: { id: templateId },
+    attributes: { exclude: ["user_id"] },
+    include: [
+      {
+        model: Exercise,
+        as: "exercises",
+        through: {
+          model: WorkoutTemplateExercises,
+          attributes: ["exercise_order", "exercise_sets"],
+        },
+      },
+    ],
+  });
+  if (!template) {
+    return next(new AppError(`Template with ID ${templateId} not found`, 404));
+  }
 
-  res.status(200).json(deletedWorkoutTemplate);
+  const processedTemplate =
+    _processTemplateToSpec_HardModificationSequelize(template);
+
+  // Delete the template
+  await sequelize.transaction(async (t) => {
+    await Workout.destroy({
+      where: { template_id: templateId },
+      transaction: t,
+    });
+    await WorkoutTemplateExercises.destroy({
+      where: { workout_template_id: templateId },
+      transaction: t,
+    });
+    await WorkoutTemplate.destroy({
+      where: { id: templateId },
+      transaction: t,
+    });
+  });
+
+  res.status(200).json(processedTemplate);
 });
 
 exports.deleteExerciseFromTemplate = catchAsync(async (req, res, next) => {
   const { templateId, exerciseId, exerciseOrder } = req.params;
 
-  const deletedExercise =
-    await dbWorkoutsTemplates.deleteExerciseFromWorkoutTemplate(
-      templateId,
-      exerciseId,
-      exerciseOrder
-    );
+  // Get exercise info to return after deletion
+  const exercise = await WorkoutTemplateExercises.findOne({
+    where: {
+      workout_template_id: templateId,
+      exercise_id: exerciseId,
+      exercise_order: exerciseOrder,
+    },
+  });
 
-  res.status(200).json(deletedExercise[0]);
+  if (!exercise) {
+    return next(
+      new AppError(
+        `Exercise with ID ${exerciseId} and order ${exerciseOrder} not found in template ${templateId}`,
+        404
+      )
+    );
+  }
+
+  // NOTE: This is done to comply with pre-sequelize code.
+  const processedExercise = {
+    workoutTemplateId: exercise.workout_template_id,
+    exerciseId: exercise.exercise_id,
+    exerciseOrder: exercise.exercise_order,
+    exerciseSets: exercise.exercise_sets,
+  };
+
+  // Delete the exercise from the template
+  await WorkoutTemplateExercises.destroy({
+    where: {
+      workout_template_id: templateId,
+      exercise_id: exerciseId,
+      exercise_order: exerciseOrder,
+    },
+  });
+
+  res.status(200).json(processedExercise);
 });
 
 exports.truncateTestTable = catchAsync(async (req, res, next) => {
-  const truncatedTable = await dbWorkoutsTemplates.truncateTableTest();
+  const appIsBeingTested = process.env.NODE_ENV === "test";
 
-  res.status(200).send(truncatedTable);
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Truncated workouts_templates.",
+    });
+  }
+
+  await sequelize.transaction(async (t) => {
+    await sequelize.query(
+      "TRUNCATE TABLE workout_template RESTART IDENTITY CASCADE"
+    );
+  });
+
+  res
+    .status(200)
+    .send("Table exercises and workout_template truncated in test db.");
 });
