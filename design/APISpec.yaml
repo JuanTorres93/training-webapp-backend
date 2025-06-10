@@ -88,20 +88,20 @@ paths:
           $ref: "#/components/responses/400"
 
   /users:
-    get:
-      tags:
-        - Users
-      description: Returns all registered users
-      operationId: getAllUsers
-      responses:
-        "200":
-          description: All the users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResponseUser"
+    #get:
+    #  tags:
+    #    - Users
+    #  description: Returns all registered users
+    #  operationId: getAllUsers
+    #  responses:
+    #    "200":
+    #      description: All the users
+    #      content:
+    #        application/json:
+    #          schema:
+    #            type: array
+    #            items:
+    #              $ref: "#/components/schemas/ResponseUser"
 
     post:
       tags:
@@ -151,6 +151,9 @@ paths:
 
         "400":
           $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
 
         "403":
           $ref: "#/components/responses/403"

@@ -6,7 +6,10 @@ const {
   successfulPostRequest,
   setUp,
 } = require("./testsSetup");
-const { expectedUserProperties } = require("../testCommon.js");
+const {
+  expectedUserProperties,
+  newUserMandatoryParams,
+} = require("../testCommon.js");
 const hash = require("../../hashing.js");
 
 const selectEverythingFromUserId = async (id) => {
@@ -33,9 +36,9 @@ describe(`${BASE_ENDPOINT}`, () => {
       });
     });
 
-    describe("register user successfully", () => {
+    describe("happy path", () => {
       it(
-        "returns user object",
+        "returns user object as specified in swagger documentation",
         factory.checkCorrectResource(
           () => response.body,
           expectedUserProperties,
@@ -69,35 +72,17 @@ describe(`${BASE_ENDPOINT}`, () => {
 
     describe("unhappy paths", () => {
       it("400 response when mandatory parameter is missing", async () => {
-        // username is missing
-        let response = await request.post(BASE_ENDPOINT).send({
-          email: "John.Doe@domain.com",
-          last_name: "Doe",
-          password: "$ecur3_P@ssword",
-          second_last_name: "Smith",
-        });
+        for (const param of newUserMandatoryParams) {
+          const body = { ...successfulPostRequest };
 
-        expect(response.statusCode).toStrictEqual(400);
+          // remove the mandatory parameter
+          delete body[param];
 
-        // email is missing
-        response = await request.post(BASE_ENDPOINT).send({
-          username: "John",
-          last_name: "Doe",
-          password: "$ecur3_P@ssword",
-          second_last_name: "Smith",
-        });
+          // username is missing
+          let response = await request.post(BASE_ENDPOINT).send(body);
 
-        expect(response.statusCode).toStrictEqual(400);
-
-        // password is missing
-        response = await request.post(BASE_ENDPOINT).send({
-          username: "John",
-          email: "John.Doe@domain.com",
-          last_name: "Doe",
-          second_last_name: "Smith",
-        });
-
-        expect(response.statusCode).toStrictEqual(400);
+          expect(response.statusCode).toStrictEqual(400);
+        }
       });
 
       it("409 response when email already exists in db", async () => {
@@ -126,6 +111,17 @@ describe(`${BASE_ENDPOINT}`, () => {
         };
         let response = await request.post(BASE_ENDPOINT).send(req);
         response = await request.post(BASE_ENDPOINT).send(req);
+        expect(response.statusCode).toStrictEqual(409);
+      });
+
+      it("409 response when username already exists in db but with different capitalization", async () => {
+        let req = {
+          ...successfulPostRequest,
+          username: successfulPostRequest.username.toUpperCase(),
+          email: "notExistingEmail@domain.com",
+          password: "@n0th3r_PasswOrd",
+        };
+        const response = await request.post(BASE_ENDPOINT).send(req);
         expect(response.statusCode).toStrictEqual(409);
       });
     });

@@ -1,9 +1,11 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   request,
   BASE_ENDPOINT,
   successfulPostRequest,
   setUp,
 } = require("./testsSetup.js");
+const { expectedUserProperties } = require("../testCommon.js");
 const actions = require("../../utils/test_utils/actions.js");
 const hash = require("../../hashing.js");
 
@@ -21,11 +23,13 @@ afterAll(async () => {
 describe(`${BASE_ENDPOINT}/{id}`, () => {
   let response;
   let newUser;
+  let otherUser;
 
   beforeAll(async () => {
     // Test's set up
     const setUpInfo = await setUp();
     newUser = setUpInfo.newUser;
+    otherUser = setUpInfo.otherUser;
 
     // login user
     await actions.loginUser(request, successfulPostRequest);
@@ -43,39 +47,67 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
         expect(response.statusCode).toStrictEqual(200);
       });
 
-      it("user object has correct properties", () => {
-        const userObject = response.body;
-
-        expect(userObject).toHaveProperty("id");
-        expect(userObject).toHaveProperty("username");
-        expect(userObject).toHaveProperty("email");
-        expect(userObject).toHaveProperty("subscription_id");
-        expect(userObject).toHaveProperty("last_name");
-        expect(userObject).toHaveProperty("img");
-        expect(userObject).toHaveProperty("second_last_name");
-        expect(userObject).toHaveProperty("is_premium");
-        expect(userObject).toHaveProperty("is_early_adopter");
-        expect(userObject).toHaveProperty("created_at");
-        // Do NOT return user password
-        expect(userObject).not.toHaveProperty("password");
-      });
+      it(
+        "returns user object as specified in swagger documentation",
+        factory.checkCorrectResource(
+          () => response.body,
+          expectedUserProperties,
+          ["password"]
+        )
+      );
     });
 
     describe("uphappy paths", () => {
       describe("400 response when", () => {
-        it("userid is string", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it("userid is not UUID", async () => {
+          const wrongIds = [
+            "wrongId",
+            "true",
+            "false",
+            "123",
+            "-23",
+            "00000000-0000-0000-0000-00000000000", // too short
+            "00000000-0000-0000-0000-0000000000000", // too long
+            "00000000-0000-0000-0000-00000000000g", // invalid character
+            // TODO extract SQL injection attempts to a separate test, make
+            // it reusable and apply it to all endpoints
+            // SQL injection attempts
+            "00000000-0000-0000-0000-000000000000; DROP TABLE users;",
+            "00000000-0000-0000-0000-000000000000' OR '1'='1",
+            "00000000-0000-0000-0000-000000000000' OR '1'='1' --",
+            "00000000-0000-0000-0000-000000000000' OR '1'='1' #",
+            "00000000-0000-0000-0000-000000000000' OR '1'='1' UNION SELECT * FROM users --",
+          ];
 
-        it("userid is boolean", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
+          for (const wrongId of wrongIds) {
+            const response = await request.get(BASE_ENDPOINT + `/${wrongId}`);
+            expect(response.statusCode).toStrictEqual(400);
+          }
         });
+      });
 
-        it("userid is not positive", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/-34");
-          expect(response.statusCode).toStrictEqual(400);
+      describe("401 response when", () => {
+        it("no user is logged in", async () => {
+          await actions.logoutUser(request);
+          const response = await request.get(BASE_ENDPOINT + `/${newUser.id}`);
+          expect(response.statusCode).toStrictEqual(401);
+        });
+      });
+
+      describe("403 response when", () => {
+        it("another user tries to get the information", async () => {
+          await actions.logoutUser(request);
+          // login as user
+          await actions.loginUser(request, successfulPostRequest);
+
+          // Try to get another user's information
+          const response = await request.get(
+            BASE_ENDPOINT + `/${otherUser.id}`
+          );
+
+          // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
         });
       });
 

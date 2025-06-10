@@ -5,7 +5,6 @@ require("dotenv").config();
 const supertest = require("supertest");
 const createApp = require("../../app.js");
 
-const actions = require("../../utils/test_utils/actions.js");
 const app = createApp();
 const BASE_ENDPOINT = "/login";
 

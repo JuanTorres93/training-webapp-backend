@@ -1,3 +1,5 @@
+// NOTE: below are the mandatory parameters for the new user request
+// in exports.newUserMandatoryParams
 exports.newUserRequestNoOauth = {
   username: "first_test_user",
   email: "first_user@domain.com",
@@ -9,6 +11,15 @@ exports.newUserRequestNoOauth = {
   second_last_name: "Sanches",
   // oauth_registration: null,
 };
+
+exports.newUserMandatoryParams = [
+  "username",
+  "email",
+  "is_premium",
+  "is_early_adopter",
+  "created_at",
+  "password",
+];
 
 exports.newExerciseRequest = {
   name: "first_test_exercise",
