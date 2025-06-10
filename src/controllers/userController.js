@@ -12,7 +12,7 @@ const hash = require("../hashing");
 // READ OPERATIONS
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-  // NOTE: Not tested
+  // NOTE: Not used nor tested
   const users = await User.findAll({
     attributes: {
       exclude: ["password", "password_reset_token", "password_reset_expires"],

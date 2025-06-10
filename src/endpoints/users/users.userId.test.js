@@ -59,31 +59,10 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
 
     describe("uphappy paths", () => {
       describe("400 response when", () => {
-        it("userid is not UUID", async () => {
-          const wrongIds = [
-            "wrongId",
-            "true",
-            "false",
-            "123",
-            "-23",
-            "00000000-0000-0000-0000-00000000000", // too short
-            "00000000-0000-0000-0000-0000000000000", // too long
-            "00000000-0000-0000-0000-00000000000g", // invalid character
-            // TODO extract SQL injection attempts to a separate test, make
-            // it reusable and apply it to all endpoints
-            // SQL injection attempts
-            "00000000-0000-0000-0000-000000000000; DROP TABLE users;",
-            "00000000-0000-0000-0000-000000000000' OR '1'='1",
-            "00000000-0000-0000-0000-000000000000' OR '1'='1' --",
-            "00000000-0000-0000-0000-000000000000' OR '1'='1' #",
-            "00000000-0000-0000-0000-000000000000' OR '1'='1' UNION SELECT * FROM users --",
-          ];
-
-          for (const wrongId of wrongIds) {
-            const response = await request.get(BASE_ENDPOINT + `/${wrongId}`);
-            expect(response.statusCode).toStrictEqual(400);
-          }
-        });
+        it(
+          "userid is not UUID",
+          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+        );
       });
 
       describe("401 response when", () => {
@@ -154,6 +133,10 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
         await actions.logoutUser(request);
       });
 
+      it("status code of 200", async () => {
+        expect(response.statusCode).toStrictEqual(200);
+      });
+
       it("returns updated user", () => {
         const updatedUser = response.body;
 
@@ -219,26 +202,10 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
       });
 
       describe("400 response when", () => {
-        it("userid is string", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/wrongId")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("userid is boolean", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/true")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("userid is not positive", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/-23")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "userid is not UUID",
+          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+        );
       });
 
       describe("401 response when", () => {
@@ -301,20 +268,10 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
       });
 
       describe("400 error code when", () => {
-        it("userid is string", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("userid is boolean", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("userid is not positive", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/-23");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "userid is not UUID",
+          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+        );
       });
 
       describe("401 error code when", () => {
@@ -366,17 +323,12 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
         // login user
         await actions.loginUser(request, successfulPostRequest);
 
-        // return db registry to its original state
+        // return db entry to its original state
         await request.put(BASE_ENDPOINT + `/${newUser.id}`).send({
           ...successfulPostRequest,
           img: null,
         });
         response = await request.delete(BASE_ENDPOINT + `/${newUser.id}`);
-      });
-
-      afterAll(async () => {
-        // logout user
-        //await actions.logoutUser(request);
       });
 
       it("status code of 200", async () => {
