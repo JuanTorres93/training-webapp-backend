@@ -215,20 +215,20 @@ paths:
           $ref: "#/components/responses/404"
 
   /exercises:
-    get:
-      tags:
-        - Exercises
-      description: Returns all exercises
-      operationId: getAllExercises
-      responses:
-        "200":
-          description: List of all exercises
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResponseExercise"
+    #get:
+    #  tags:
+    #    - Exercises
+    #  description: Returns all exercises
+    #  operationId: getAllExercises
+    #  responses:
+    #    "200":
+    #      description: List of all exercises
+    #      content:
+    #        application/json:
+    #          schema:
+    #            type: array
+    #            items:
+    #              $ref: "#/components/schemas/ResponseExercise"
     post:
       tags:
         - Exercises
@@ -1570,7 +1570,8 @@ components:
           type: string
           description: Exercise email
       example:
-        id: 3
+        # UUID id
+        id: 9876234-1234-1234-1234-123456789012
         name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object

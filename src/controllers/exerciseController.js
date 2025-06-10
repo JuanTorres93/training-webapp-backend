@@ -6,11 +6,11 @@ const { sequelize, User, Exercise } = require("../models");
 ///////////////////
 // READ OPERATIONS
 
-exports.getAllExercises = catchAsync(async (req, res, next) => {
-  const exercises = await Exercise.findAll();
-
-  res.status(200).send(exercises);
-});
+//exports.getAllExercises = catchAsync(async (req, res, next) => {
+//  const exercises = await Exercise.findAll();
+//
+//  res.status(200).send(exercises);
+//});
 
 exports.getAllCommonExercses = catchAsync(async (req, res, next) => {
   const commonExercises = await Exercise.findAll({

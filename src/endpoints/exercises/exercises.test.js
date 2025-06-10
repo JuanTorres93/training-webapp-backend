@@ -6,12 +6,12 @@ const {
   successfulPostRequest,
   setUp,
 } = require("./testsSetup");
-const { query } = require("../../db/index");
 const actions = require("../../utils/test_utils/actions.js");
+const { UUIDRegex } = require("../testCommon.js");
 
 const expectedExerciseProperties = ["id", "name", "description"];
 
-const { sequelize } = require("../../models");
+const { sequelize, Exercise } = require("../../models");
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();
@@ -50,9 +50,7 @@ describe(`${BASE_ENDPOINT}`, () => {
 
       it("id is UUID", () => {
         const id = response.body.id;
-        const regex =
-          /[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/;
-        expect(id).toMatch(regex);
+        expect(id).toMatch(UUIDRegex);
       });
 
       it(
@@ -60,22 +58,20 @@ describe(`${BASE_ENDPOINT}`, () => {
         factory.checkStatusCode(() => response, 201)
       );
 
-      it("also updates users_exercises table", () => {
-        const q =
-          "SELECT user_id, exercise_id from users_exercises WHERE exercise_id = $1;";
-        const params = [response.body.id];
-        query(
-          q,
-          params,
-          (error, results) => {
-            if (error) throw error;
-            info = results.rows[0];
-
-            expect(info).not.toBeUndefined();
-            expect(info.user_id).toStrictEqual(newUser.id);
-          },
-          true
+      it("also updates users_exercises table", async () => {
+        const info2 = await sequelize.query(
+          "SELECT user_id, exercise_id FROM users_exercises WHERE exercise_id = :exerciseId",
+          {
+            replacements: { exerciseId: response.body.id },
+          }
         );
+
+        expect(info2[0][0]).not.toBeUndefined();
+        expect(info2[0][0].user_id).toStrictEqual(newUser.id);
+        expect(info2[0][0].exercise_id).toStrictEqual(response.body.id);
+
+        expect(info2[0][0].user_id).toMatch(UUIDRegex);
+        expect(info2[0][0].exercise_id).toMatch(UUIDRegex);
       });
     });
 
@@ -98,6 +94,7 @@ describe(`${BASE_ENDPOINT}`, () => {
             request,
             BASE_ENDPOINT,
             {
+              // name is missing
               description: "Smith",
             },
             400
@@ -115,34 +112,6 @@ describe(`${BASE_ENDPOINT}`, () => {
             401
           )
         );
-      });
-    });
-  });
-
-  describe("get requests", () => {
-    beforeAll(async () => {
-      await setUp();
-    });
-
-    describe("get all exercises", () => {
-      it("returns list", async () => {
-        const response = await request.get(BASE_ENDPOINT);
-        expect(Array.isArray(response.body)).toBe(true);
-      });
-
-      it("status code of 200", async () => {
-        const response = await request.get(BASE_ENDPOINT);
-        expect(response.statusCode).toStrictEqual(200);
-      });
-
-      it("exercise object has id, name, and description properties", async () => {
-        const response = await request.get(BASE_ENDPOINT);
-
-        const exerciseObject = response.body[0];
-
-        expect(exerciseObject).toHaveProperty("id");
-        expect(exerciseObject).toHaveProperty("name");
-        expect(exerciseObject).toHaveProperty("description");
       });
     });
   });
