@@ -75,9 +75,9 @@ describe(BASE_ENDPOINT, () => {
           )
         );
 
-        describe("password is not strong", () => {
+        describe("...password is not strong", () => {
           it(
-            "returns 400 when password is all lowercase",
+            "password is all lowercase",
             factory.checkUnhappyRequest(
               request,
               BASE_ENDPOINT,
@@ -90,7 +90,7 @@ describe(BASE_ENDPOINT, () => {
           );
 
           it(
-            "returns 400 when password is just lower and uppercase",
+            "password is just lower and uppercase",
             factory.checkUnhappyRequest(
               request,
               BASE_ENDPOINT,
@@ -103,7 +103,7 @@ describe(BASE_ENDPOINT, () => {
           );
 
           it(
-            "returns 400 when password is just lowercase and special characters",
+            "password is just lowercase and special characters",
             factory.checkUnhappyRequest(
               request,
               BASE_ENDPOINT,
@@ -116,7 +116,7 @@ describe(BASE_ENDPOINT, () => {
           );
 
           it(
-            "returns 400 when password is just lowercase and numbers",
+            "password is just lowercase and numbers",
             factory.checkUnhappyRequest(
               request,
               BASE_ENDPOINT,

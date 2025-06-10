@@ -40,8 +40,8 @@ paths:
                     example: "logged in"
                   user:
                     $ref: "#/components/schemas/ResponseUser"
-        "401":
-          $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
 
   /login/auth/me:
     get:
