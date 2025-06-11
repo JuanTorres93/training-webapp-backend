@@ -14,9 +14,15 @@ const { sequelize, User, Exercise } = require("../models");
 
 exports.getAllCommonExercses = catchAsync(async (req, res, next) => {
   const commonExercises = await Exercise.findAll({
-    where: {
-      email: process.env.DB_COMMON_USER_EMAIL,
-    },
+    include: [
+      {
+        model: User,
+        as: "users",
+        where: {
+          email: process.env.DB_COMMON_USER_EMAIL,
+        },
+      },
+    ],
   });
 
   res.status(200).json(commonExercises);
