@@ -1,14 +1,17 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   request,
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
   newUserReq,
   successfulPostRequest,
+  expectedExerciseProperties,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
+const { UUIDRegex } = require("../testCommon.js");
 
-const { sequelize } = require("../../models");
+const { sequelize, User, Exercise } = require("../../models");
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();
@@ -41,12 +44,45 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         expect(response.statusCode).toStrictEqual(200);
       });
 
-      it("exercise object has id, name, and description properties", () => {
-        const exerciseObject = response.body;
+      it(
+        "returns exercise object",
+        factory.checkCorrectResource(
+          () => response.body,
+          expectedExerciseProperties
+        )
+      );
 
-        expect(exerciseObject).toHaveProperty("id");
-        expect(exerciseObject).toHaveProperty("name");
-        expect(exerciseObject).toHaveProperty("description");
+      it("id is UUID", () => {
+        const id = response.body.id;
+        expect(id).toMatch(UUIDRegex);
+      });
+
+      it("can read common user exercise", async () => {
+        const commonUserExercise = await Exercise.findOne({
+          include: [
+            {
+              model: User,
+              as: "users",
+              where: {
+                email: process.env.DB_COMMON_USER_EMAIL,
+              },
+            },
+          ],
+        });
+
+        const res = await request.get(
+          BASE_ENDPOINT + `/${commonUserExercise.id}`
+        );
+        expect(res.statusCode).toStrictEqual(200);
+
+        for (const property of expectedExerciseProperties) {
+          expect(res.body).toHaveProperty(property);
+        }
+        expect(res.body.id).toStrictEqual(commonUserExercise.id);
+        expect(res.body.name).toStrictEqual(commonUserExercise.name);
+        expect(res.body.description).toStrictEqual(
+          commonUserExercise.description
+        );
       });
     });
 
@@ -63,6 +99,8 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
 
         // Test response
         response = await request.get(BASE_ENDPOINT + `/${newExercise.id}`);
+
+        await actions.logoutUser(request);
       });
 
       afterAll(async () => {
@@ -72,27 +110,47 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       });
 
       describe("400 response when", () => {
-        it("exerciseId is string", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "exerciseId is not UUID",
+          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+        );
+      });
 
-        it("exerciseId is boolean", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
+      describe("401 response when", () => {
+        it("user is not logged in", async () => {
+          // Logout user
+          await actions.logoutUser(request);
+          const response = await request.get(
+            BASE_ENDPOINT + `/${newExercise.id}`
+          );
+          expect(response.statusCode).toStrictEqual(401);
         });
+      });
 
-        it("exerciseId is not positive", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/-34");
-          expect(response.statusCode).toStrictEqual(400);
+      describe("403 response when", () => {
+        it("exercise does not belong to logged in user", async () => {
+          // login other user
+          await actions.loginUser(request, {
+            username: OTHER_USER_ALIAS,
+            password: newUserReq.password,
+          });
+
+          const response = await request.get(
+            BASE_ENDPOINT + `/${newExercise.id}`
+          );
+          // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
         });
       });
 
       describe("404 response when", () => {
         it("exerciseId is valid but exercise with that id does not exist", async () => {
+          await actions.loginUser(request, newUserReq);
           // Valid UUID but (probably) not existing in the database
           const uuid = "00000000-0000-0000-0000-000000000000";
           const response = await request.get(BASE_ENDPOINT + "/" + uuid);
+          await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(404);
         });
       });
