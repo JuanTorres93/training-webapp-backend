@@ -1,13 +1,16 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   request,
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
   newUserReq,
+  expectedExerciseProperties,
+  successfulPostRequest,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
 
-const { sequelize } = require("../../models");
+const { sequelize, Exercise, User } = require("../../models");
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();
@@ -32,10 +35,7 @@ describe(`${BASE_ENDPOINT}` + "/all/{userId}", () => {
 
         // Test response
         response = await request.get(BASE_ENDPOINT + `/all/${newUser.id}`);
-      });
 
-      afterAll(async () => {
-        // logout user
         await actions.logoutUser(request);
       });
 
@@ -47,12 +47,41 @@ describe(`${BASE_ENDPOINT}` + "/all/{userId}", () => {
         expect(Array.isArray(response.body)).toStrictEqual(true);
       });
 
-      it("exercise object has id, name, and description properties", () => {
-        const exerciseObject = response.body[0];
+      it(
+        "list contains exercise object",
+        factory.checkCorrectResource(
+          () => response.body[0],
+          expectedExerciseProperties
+        )
+      );
 
-        expect(exerciseObject).toHaveProperty("id");
-        expect(exerciseObject).toHaveProperty("name");
-        expect(exerciseObject).toHaveProperty("description");
+      it("returns all user exercises", async () => {
+        const includeObject = {
+          model: User,
+          as: "users",
+          where: { id: newUser.id },
+        };
+
+        const initialExercises = await Exercise.findAll({
+          include: [includeObject],
+        });
+
+        const initialExercisesCount = initialExercises.length;
+
+        await actions.loginUser(request, newUserReq);
+
+        // add a new exercise
+        await actions.createNewExercise(request, {
+          ...successfulPostRequest,
+        });
+
+        await actions.logoutUser(request);
+
+        const finalExercises = await Exercise.findAll({
+          include: [includeObject],
+        });
+
+        expect(finalExercises.length).toStrictEqual(initialExercisesCount + 1);
       });
     });
 
@@ -76,20 +105,14 @@ describe(`${BASE_ENDPOINT}` + "/all/{userId}", () => {
       });
 
       describe("400 response when", () => {
-        it("userId is string", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/all/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("userId is boolean", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/all/true");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("userId is not positive", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/all/-34");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "exerciseId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/all/TEST_PARAM",
+            "get"
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -102,7 +125,7 @@ describe(`${BASE_ENDPOINT}` + "/all/{userId}", () => {
       });
 
       describe("403 response when", () => {
-        it("trying to read another user's workout", async () => {
+        it("trying to read another user's exercises", async () => {
           // login other user
           await actions.loginUser(request, {
             username: OTHER_USER_ALIAS,
@@ -111,6 +134,23 @@ describe(`${BASE_ENDPOINT}` + "/all/{userId}", () => {
 
           const response = await request.get(
             BASE_ENDPOINT + `/all/${newUser.id}`
+          );
+
+          // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to read common user's exercises", async () => {
+          const commonUser = await User.findOne({
+            where: {
+              email: process.env.DB_COMMON_USER_EMAIL,
+            },
+          });
+
+          await actions.loginUser(request, newUserReq);
+          const response = await request.get(
+            BASE_ENDPOINT + `/all/${commonUser.id}`
           );
 
           // logout user
