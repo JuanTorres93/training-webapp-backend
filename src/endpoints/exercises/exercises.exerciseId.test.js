@@ -353,20 +353,14 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("exerciseid is string", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is boolean", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is not positive", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/-23");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "exerciseId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "delete"
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -391,6 +385,26 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
           );
 
           // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to delete common user's exercise", async () => {
+          const commonUserExercise = await Exercise.findOne({
+            include: [
+              {
+                model: User,
+                as: "users",
+                where: {
+                  email: process.env.DB_COMMON_USER_EMAIL,
+                },
+              },
+            ],
+          });
+          await actions.loginUser(request, newUserReq);
+          const response = await request.delete(
+            BASE_ENDPOINT + `/${commonUserExercise.id}`
+          );
           await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
@@ -438,6 +452,11 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
         expect(deletedexercise.description).toStrictEqual(
           successfulPostRequest.description
         );
+      });
+
+      it("exercise is deleted from DB", async () => {
+        const deletedExercise = await Exercise.findByPk(newExercise.id);
+        expect(deletedExercise).toBeNull();
       });
     });
   });
