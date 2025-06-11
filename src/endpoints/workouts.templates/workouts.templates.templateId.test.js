@@ -1,8 +1,10 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
   request,
   newUserReq,
+  mandatoryExercisePropertiesInRequest,
   assertTemplateSwaggerSpec,
   setUp,
 } = require("./testsSetup");
@@ -161,13 +163,6 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         // login user
         await actions.loginUser(request, newUserReq);
 
-        // delete template and recreate it
-        // This is done because template is created in setUp function and this
-        // very endpoint is in charge of creating them
-        await request.delete(BASE_ENDPOINT + `/${newTemplate.id}`);
-        response = await request.post(BASE_ENDPOINT).send(reqNewTemplate);
-        newTemplate = response.body;
-
         response = await request
           .post(BASE_ENDPOINT + `/${newTemplate.id}`)
           .send(req);
@@ -182,7 +177,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         expect(response.statusCode).toStrictEqual(201);
       });
 
-      it("returns workout template object", async () => {
+      it("returns added exercise", async () => {
         const workoutTemplateExercise = response.body;
 
         expect(workoutTemplateExercise).toHaveProperty("workoutTemplateId");
@@ -207,52 +202,31 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         await actions.logoutUser(request);
       });
 
+      // TODO create some test to check an exercise cannot be added and share exercise order
+
       describe("400 response when", () => {
-        it("templateId is string", async () => {
-          const response = await request
-            .post(BASE_ENDPOINT + "/wrongId")
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("templateId is boolean", async () => {
-          const response = await request
-            .post(BASE_ENDPOINT + "/true")
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("templateId is not positive", async () => {
-          const response = await request.post(BASE_ENDPOINT + "/-34").send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "templateId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "get"
+          )
+        );
 
         it("mandatory body parameter is missing", async () => {
-          // exerciseId is missing
-          let res = await request
-            .post(BASE_ENDPOINT + `/${newTemplate.id}`)
-            .send({
+          for (const property of mandatoryExercisePropertiesInRequest) {
+            const rightReq = {
+              exerciseId: newExercise.id,
               exerciseOrder: 1,
               exerciseSets: 3,
-            });
-
-          expect(res.statusCode).toStrictEqual(400);
-
-          // exerciseSets is missing
-          res = await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
-            exerciseId: newExercise.id,
-            exerciseOrder: 1,
-          });
-
-          expect(res.statusCode).toStrictEqual(400);
-
-          // exerciseOrder is missing
-          res = await request.post(BASE_ENDPOINT + `/${newTemplate.id}`).send({
-            exerciseId: newExercise.id,
-            exerciseSets: 3,
-          });
-
-          expect(res.statusCode).toStrictEqual(400);
+            };
+            delete rightReq[property];
+            const response = await request
+              .post(BASE_ENDPOINT + `/${newTemplate.id}`)
+              .send(rightReq);
+            expect(response.statusCode).toStrictEqual(400);
+          }
         });
       });
 
@@ -278,6 +252,24 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
             .send(req);
 
           // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to add exercise to common user's template", async () => {
+          const commonUser = await User.findOne({
+            where: { email: process.env.DB_COMMON_USER_EMAIL },
+          });
+          const commonTemplate = await WorkoutTemplate.findOne({
+            where: { user_id: commonUser.id },
+          });
+
+          await actions.loginUser(request, newUserReq);
+
+          const response = await request
+            .post(BASE_ENDPOINT + `/${commonTemplate.id}`)
+            .send(req);
+
           await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });

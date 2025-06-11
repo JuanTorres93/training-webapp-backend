@@ -18,6 +18,11 @@ const OTHER_USER_ALIAS = "other user";
 const TEMPLATE_AND_WORKOUT_NAME = "test_workout";
 const expectedTemplateProperties = ["id", "userId", "name", "description"];
 const mandatoryTemplatePropertiesInRequest = ["userId", "name"];
+const mandatoryExercisePropertiesInRequest = [
+  "exerciseId",
+  "exerciseOrder",
+  "exerciseSets",
+];
 
 function logErrors(err, req, res, next) {
   console.error(err.stack);
@@ -147,6 +152,7 @@ module.exports = {
   newUserReq,
   expectedTemplateProperties,
   mandatoryTemplatePropertiesInRequest,
+  mandatoryExercisePropertiesInRequest,
   createNewTemplateRequest,
   setUp,
   assertTemplateSwaggerSpec,

@@ -2143,8 +2143,8 @@ components:
 
     WorkoutTemplateExercise:
       value:
-        workoutTemplateId: 2
-        exerciseId: 7
+        workoutTemplateId: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
+        exerciseId: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
         exerciseOrder: 2
         exerciseSets: 3
 
@@ -2262,7 +2262,7 @@ components:
 
     AddExerciseToWorkoutTemplate:
       value:
-        exerciseId: 2
+        exerciseId: 9876234-1234-1234-1234-123456789012
         exerciseOrder: 6
         exerciseSets: 4
 
