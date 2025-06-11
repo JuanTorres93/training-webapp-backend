@@ -8,6 +8,7 @@ const createCommonUser = require("../../createCommonUser.js").createCommonUser;
 const {
   newUserRequestNoOauth,
   newExerciseRequest,
+  UUIDRegex,
 } = require("../testCommon.js");
 const actions = require("../../utils/test_utils/actions.js");
 
@@ -38,6 +39,23 @@ const createNewTemplateRequest = (userId, name, description) => {
 
 const newUserReq = {
   ...newUserRequestNoOauth,
+};
+
+const assertTemplateSwaggerSpec = (template) => {
+  expect(template).toHaveProperty("id");
+  expect(template.id).toMatch(UUIDRegex);
+  expect(template).toHaveProperty("name");
+  expect(template).toHaveProperty("description");
+  expect(template).toHaveProperty("exercises");
+  expect(template.exercises).toBeInstanceOf(Array);
+
+  for (const exercise of template.exercises) {
+    expect(exercise).toHaveProperty("id");
+    expect(exercise.id).toMatch(UUIDRegex);
+    expect(exercise).toHaveProperty("name");
+    expect(exercise).toHaveProperty("order");
+    expect(exercise).toHaveProperty("sets");
+  }
 };
 
 const setUp = async () => {
@@ -131,4 +149,5 @@ module.exports = {
   mandatoryTemplatePropertiesInRequest,
   createNewTemplateRequest,
   setUp,
+  assertTemplateSwaggerSpec,
 };

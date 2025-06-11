@@ -3,11 +3,12 @@ const {
   OTHER_USER_ALIAS,
   request,
   newUserReq,
+  assertTemplateSwaggerSpec,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
 
-const { sequelize } = require("../../models");
+const { sequelize, User, WorkoutTemplate } = require("../../models");
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();
@@ -52,17 +53,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         );
         const workoutTemplateObject = getResponse.body;
 
-        expect(workoutTemplateObject).toHaveProperty("id");
-        expect(workoutTemplateObject).toHaveProperty("name");
-        expect(workoutTemplateObject).toHaveProperty("description");
-        expect(workoutTemplateObject).toHaveProperty("exercises");
-        expect(workoutTemplateObject.exercises.length).toBeGreaterThan(0);
-
-        const exercise = workoutTemplateObject.exercises[0];
-        expect(exercise).toHaveProperty("id");
-        expect(exercise).toHaveProperty("name");
-        expect(exercise).toHaveProperty("order");
-        expect(exercise).toHaveProperty("sets");
+        assertTemplateSwaggerSpec(workoutTemplateObject);
       });
 
       it("returns template object when it has NO exercises", async () => {
@@ -76,12 +67,24 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         );
         const workoutTemplateObject = response.body;
 
-        expect(workoutTemplateObject).toHaveProperty("id");
-        expect(workoutTemplateObject).toHaveProperty("name");
-        expect(workoutTemplateObject).toHaveProperty("description");
-        expect(workoutTemplateObject).toHaveProperty("exercises");
+        assertTemplateSwaggerSpec(workoutTemplateObject);
+      });
 
-        expect(workoutTemplateObject.exercises.length).toStrictEqual(0);
+      it("can read common user's templates", async () => {
+        const commonUser = await User.findOne({
+          where: { email: process.env.DB_COMMON_USER_EMAIL },
+        });
+        const commonTemplate = await WorkoutTemplate.findOne({
+          where: { user_id: commonUser.id },
+        });
+
+        const response = await request.get(
+          BASE_ENDPOINT + `/${commonTemplate.id}`
+        );
+        const workoutTemplateObject = response.body;
+        assertTemplateSwaggerSpec(workoutTemplateObject);
+
+        expect(response.statusCode).toStrictEqual(200);
       });
     });
 

@@ -2124,19 +2124,19 @@ components:
 
     WorkoutTemplate:
       value:
-        id: 2
+        id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
         name: Pull
         description: "Pull training routine"
         exercises:
-          - id: 4
+          - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
             name: Pull up
             order: 1
             sets: 3
-          - id: 5
+          - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
             name: Barbell rows
             order: 2
             sets: 3
-          - id: 5
+          - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
             name: Biceps curl
             order: 3
             sets: 3

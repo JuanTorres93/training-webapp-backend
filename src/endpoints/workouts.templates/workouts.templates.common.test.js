@@ -2,6 +2,7 @@ const {
   BASE_ENDPOINT,
   request,
   newUserReq,
+  assertTemplateSwaggerSpec,
   setUp,
 } = require("./testsSetup.js");
 const actions = require("../../utils/test_utils/actions.js");
@@ -49,20 +50,7 @@ describe(`${BASE_ENDPOINT}/common`, () => {
         const workoutTemplates = response.body;
 
         for (const template of workoutTemplates) {
-          expect(template).toHaveProperty("id");
-          expect(template.id).toMatch(UUIDRegex);
-          expect(template).toHaveProperty("name");
-          expect(template).toHaveProperty("description");
-          expect(template).toHaveProperty("exercises");
-          expect(template.exercises).toBeInstanceOf(Array);
-
-          for (const exercise of template.exercises) {
-            expect(exercise).toHaveProperty("id");
-            expect(exercise.id).toMatch(UUIDRegex);
-            expect(exercise).toHaveProperty("name");
-            expect(exercise).toHaveProperty("order");
-            expect(exercise).toHaveProperty("sets");
-          }
+          assertTemplateSwaggerSpec(template);
         }
       });
     });
