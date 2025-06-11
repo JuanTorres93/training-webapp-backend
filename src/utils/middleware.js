@@ -80,6 +80,7 @@ const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
   if (exerciseBelongsToCommonUser) {
     return next();
   }
+
   return res.status(403).json({ msg: "Not authorized" });
 };
 

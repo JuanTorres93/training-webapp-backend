@@ -4,14 +4,13 @@ const {
   BASE_ENDPOINT,
   newUserReq,
   successfulPostRequest,
+  expectedExerciseProperties,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
 const { UUIDRegex } = require("../testCommon.js");
 
-const expectedExerciseProperties = ["id", "name", "description"];
-
-const { sequelize, Exercise } = require("../../models");
+const { sequelize } = require("../../models");
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();

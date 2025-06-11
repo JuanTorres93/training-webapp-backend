@@ -9,6 +9,7 @@ const {
   newExerciseRequest,
 } = require("../testCommon.js");
 const actions = require("../../utils/test_utils/actions.js");
+const createCommonUser = require("../../createCommonUser.js").createCommonUser;
 
 const app = createApp();
 const BASE_ENDPOINT = "/exercises";
@@ -32,6 +33,8 @@ const newUserReq = {
   ...newUserRequestNoOauth,
 };
 
+const expectedExerciseProperties = ["id", "name", "description"];
+
 const setUp = async () => {
   await request.get(BASE_ENDPOINT + "/truncate");
   await request.get("/users/truncate");
@@ -45,6 +48,9 @@ const setUp = async () => {
     username: OTHER_USER_ALIAS,
     email: "other@user.com",
   });
+
+  // Create common user and his resources
+  await createCommonUser("", request);
 
   // login user
   await actions.loginUser(request, newUserReq);
@@ -71,5 +77,6 @@ module.exports = {
   BASE_ENDPOINT,
   newUserReq,
   successfulPostRequest,
+  expectedExerciseProperties,
   setUp,
 };

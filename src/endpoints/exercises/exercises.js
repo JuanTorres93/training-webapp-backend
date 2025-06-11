@@ -27,7 +27,6 @@ router.get(
 );
 
 // Get exercise by id
-// TODO TEST 401 response case
 router.get(
   "/:exerciseId",
   validateUUIDParameter("exerciseId"),
