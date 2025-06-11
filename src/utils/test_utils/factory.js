@@ -47,7 +47,12 @@ exports.checkUnhappyRequest = (
   };
 };
 
-exports.checkURLParamIsNotUUID = (requestAgent, endpoint) => {
+exports.checkURLParamIsNotUUID = (
+  requestAgent,
+  endpoint,
+  method = "get",
+  body = {}
+) => {
   // NOTE: endpoint must contain the placeholder TEST_PARAM for the UUID
   return async () => {
     const wrongIds = [
@@ -71,7 +76,20 @@ exports.checkURLParamIsNotUUID = (requestAgent, endpoint) => {
 
     for (const wrongId of wrongIds) {
       const ep = endpoint.replace("TEST_PARAM", wrongId);
-      const response = await requestAgent.get(ep);
+      let response;
+
+      if (method.toLowerCase() === "get") {
+        response = await requestAgent.get(ep);
+      } else if (method.toLowerCase() === "post") {
+        response = await requestAgent.post(ep).send(body);
+      } else if (method.toLowerCase() === "put") {
+        response = await requestAgent.put(ep).send(body);
+      } else if (method.toLowerCase() === "delete") {
+        response = await requestAgent.delete(ep);
+      } else {
+        throw new Error(`Unsupported method: ${method}`);
+      }
+
       expect(response.statusCode).toStrictEqual(400);
     }
   };

@@ -112,7 +112,11 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       describe("400 response when", () => {
         it(
           "exerciseId is not UUID",
-          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "get"
+          )
         );
       });
 
@@ -196,6 +200,54 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       it("returns 200 status code", () => {
         expect(response.statusCode).toStrictEqual(200);
       });
+
+      it("exercise is updated in DB", async () => {
+        const updatedExercise = await Exercise.findByPk(newExercise.id);
+
+        expect(updatedExercise.id).toStrictEqual(newExercise.id);
+        expect(updatedExercise.name).toStrictEqual(putBodyRequest.name);
+        expect(updatedExercise.description).toStrictEqual(
+          putBodyRequest.description
+        );
+      });
+
+      it("updates only name", async () => {
+        await actions.loginUser(request, newUserReq);
+
+        const currentExercise = await Exercise.findByPk(newExercise.id);
+
+        const newName = "updated ONLY NAME";
+        const response = await request
+          .put(BASE_ENDPOINT + `/${newExercise.id}`)
+          .send({ name: newName });
+
+        await actions.logoutUser(request);
+
+        const updatedExercise = response.body;
+        expect(updatedExercise.id).toStrictEqual(currentExercise.id);
+        expect(updatedExercise.name).toStrictEqual(newName);
+        expect(updatedExercise.description).toStrictEqual(
+          currentExercise.description
+        );
+      });
+
+      it("updates only description", async () => {
+        await actions.loginUser(request, newUserReq);
+
+        const currentExercise = await Exercise.findByPk(newExercise.id);
+
+        const newDescription = "updated ONLY DESCRIPTION";
+        const response = await request
+          .put(BASE_ENDPOINT + `/${newExercise.id}`)
+          .send({ description: newDescription });
+
+        await actions.logoutUser(request);
+
+        const updatedExercise = response.body;
+        expect(updatedExercise.id).toStrictEqual(currentExercise.id);
+        expect(updatedExercise.name).toStrictEqual(currentExercise.name);
+        expect(updatedExercise.description).toStrictEqual(newDescription);
+      });
     });
 
     describe("unhappy path", () => {
@@ -210,26 +262,15 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("exerciseid is string", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/wrongId")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is boolean", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/true")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is not positive", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/-23")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "exerciseId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "put",
+            putBodyRequest
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -254,6 +295,29 @@ describe(`${BASE_ENDPOINT}` + "/{exerciseId}", () => {
             .send(putBodyRequest);
 
           // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to update common user exercise", async () => {
+          const commonUserExercise = await Exercise.findOne({
+            include: [
+              {
+                model: User,
+                as: "users",
+                where: {
+                  email: process.env.DB_COMMON_USER_EMAIL,
+                },
+              },
+            ],
+          });
+
+          await actions.loginUser(request, newUserReq);
+
+          const response = await request
+            .put(BASE_ENDPOINT + `/${commonUserExercise.id}`)
+            .send(putBodyRequest);
+
           await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });

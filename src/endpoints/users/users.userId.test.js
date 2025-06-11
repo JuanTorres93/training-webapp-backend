@@ -61,7 +61,11 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
       describe("400 response when", () => {
         it(
           "userid is not UUID",
-          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "get"
+          )
         );
       });
 
@@ -204,7 +208,12 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
       describe("400 response when", () => {
         it(
           "userid is not UUID",
-          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "put",
+            putBodyRequest
+          )
         );
       });
 
@@ -270,7 +279,11 @@ describe(`${BASE_ENDPOINT}/{id}`, () => {
       describe("400 error code when", () => {
         it(
           "userid is not UUID",
-          factory.checkURLParamIsNotUUID(request, BASE_ENDPOINT + "/TEST_PARAM")
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "delete"
+          )
         );
       });
 
