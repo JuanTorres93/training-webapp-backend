@@ -15,6 +15,8 @@ const app = createApp();
 const BASE_ENDPOINT = "/workouts/templates";
 const OTHER_USER_ALIAS = "other user";
 const TEMPLATE_AND_WORKOUT_NAME = "test_workout";
+const expectedTemplateProperties = ["id", "userId", "name", "description"];
+const mandatoryTemplatePropertiesInRequest = ["userId", "name"];
 
 function logErrors(err, req, res, next) {
   console.error(err.stack);
@@ -125,6 +127,8 @@ module.exports = {
   TEMPLATE_AND_WORKOUT_NAME,
   request,
   newUserReq,
+  expectedTemplateProperties,
+  mandatoryTemplatePropertiesInRequest,
   createNewTemplateRequest,
   setUp,
 };

@@ -854,25 +854,6 @@ paths:
           $ref: "#/components/responses/404"
 
   /workouts/templates:
-    get:
-      tags:
-        - Workouts
-      description: Returns all templates
-      operationId: getWorkoutAllTemplates
-      responses:
-        "200":
-          description: Returns all templates
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseAllWorkoutTemplates"
-              examples:
-                Workout:
-                  $ref: "#/components/examples/AllWorkoutTemplates"
-
-        "401":
-          $ref: "#/components/responses/401"
-
     post:
       tags:
         - Workouts
@@ -2209,7 +2190,7 @@ components:
 
     CreateWorkoutTemplate:
       value:
-        userId: 2
+        userId: 9876234-1234-1234-1234-123456789012
         name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 
@@ -2220,8 +2201,8 @@ components:
 
     NewWorkoutTemplate:
       value:
-        id: 1
-        userId: 2
+        id: 9876234-1234-1234-1234-123456789012
+        userId: 9876234-1234-1234-1234-123456789012
         name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 

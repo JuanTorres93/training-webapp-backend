@@ -1,13 +1,16 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   request,
   BASE_ENDPOINT,
   newUserReq,
+  expectedTemplateProperties,
+  mandatoryTemplatePropertiesInRequest,
   createNewTemplateRequest,
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
 
-const { sequelize } = require("../../models");
+const { sequelize, WorkoutTemplate } = require("../../models");
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();
@@ -45,7 +48,7 @@ describe(BASE_ENDPOINT, () => {
         expect(response.statusCode).toStrictEqual(201);
       });
 
-      it("returns workout template object", async () => {
+      it("returns template object as specified in Swagger documentation", async () => {
         const req = createNewTemplateRequest(
           user.id,
           "template test",
@@ -53,11 +56,23 @@ describe(BASE_ENDPOINT, () => {
         );
         const response = await request.post(BASE_ENDPOINT).send(req);
         const workoutTemplate = response.body;
+        for (const property of expectedTemplateProperties) {
+          expect(workoutTemplate).toHaveProperty(property);
+        }
+      });
 
-        expect(workoutTemplate).toHaveProperty("id");
-        expect(workoutTemplate).toHaveProperty("userId");
-        expect(workoutTemplate).toHaveProperty("name");
-        expect(workoutTemplate).toHaveProperty("description");
+      it("template is created in DB", async () => {
+        const template = await WorkoutTemplate.findOne({
+          where: {
+            user_id: user.id,
+            name: "template test",
+            description: "template description",
+          },
+        });
+        expect(template).toBeDefined();
+        expect(template.user_id).toBe(user.id);
+        expect(template.name).toBe("template test");
+        expect(template.description).toBe("template description");
       });
     });
 
@@ -70,25 +85,19 @@ describe(BASE_ENDPOINT, () => {
 
       describe("400 response when", () => {
         it("mandatory parameter is missing", async () => {
-          // Missing userId
-          const reqMissingUserId = {
-            name: "test",
-          };
+          for (const property of mandatoryTemplatePropertiesInRequest) {
+            // Create a request object with the mandatory property missing
+            const req = createNewTemplateRequest(
+              user.id,
+              "template test",
+              "template description"
+            );
+            delete req[property];
 
-          let response = await request
-            .post(BASE_ENDPOINT)
-            .send(reqMissingUserId);
+            const response = await request.post(BASE_ENDPOINT).send(req);
 
-          expect(response.statusCode).toStrictEqual(400);
-
-          // Missing name
-          const reqMissingAlias = {
-            userId: 1,
-          };
-
-          response = await request.post(BASE_ENDPOINT).send(reqMissingAlias);
-
-          expect(response.statusCode).toStrictEqual(400);
+            expect(response.statusCode).toStrictEqual(400);
+          }
         });
       });
 
