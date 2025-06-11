@@ -909,6 +909,9 @@ paths:
                 Workout:
                   $ref: "#/components/examples/AllWorkoutTemplates"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 
@@ -2147,35 +2150,35 @@ components:
 
     AllWorkoutTemplates:
       value:
-        - id: 1
+        - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
           name: Push
           description: "Push training routine"
           exercises:
-            - id: 1
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Bench press
               order: 1
               sets: 3
-            - id: 2
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Military press
               order: 2
               sets: 3
-            - id: 3
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Dips
               order: 3
               sets: 3
-        - id: 2
+        - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
           name: Pull
           description: "Pull training routine"
           exercises:
-            - id: 4
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Pull up
               order: 1
               sets: 3
-            - id: 5
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Barbell rows
               order: 2
               sets: 3
-            - id: 5
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Biceps curl
               order: 3
               sets: 3

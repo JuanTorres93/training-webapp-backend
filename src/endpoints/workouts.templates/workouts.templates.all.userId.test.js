@@ -1,3 +1,4 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
@@ -6,8 +7,10 @@ const {
   setUp,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
+const { UUIDRegex } = require("../testCommon.js");
 
-const { sequelize } = require("../../models");
+const { sequelize, User } = require("../../models");
+
 afterAll(async () => {
   // Close the database connection after all tests
   await sequelize.close();
@@ -61,6 +64,28 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
         expect(workoutTemplateObject).toHaveProperty("description");
         expect(workoutTemplateObject).toHaveProperty("exercises");
       });
+
+      it("list contains template object as specified in Swagger documentation", async () => {
+        const response = await request.get(BASE_ENDPOINT + `/all/${user.id}`);
+        const workoutTemplates = response.body;
+
+        for (const template of workoutTemplates) {
+          expect(template).toHaveProperty("id");
+          expect(template.id).toMatch(UUIDRegex);
+          expect(template).toHaveProperty("name");
+          expect(template).toHaveProperty("description");
+          expect(template).toHaveProperty("exercises");
+          expect(template.exercises).toBeInstanceOf(Array);
+
+          for (const exercise of template.exercises) {
+            expect(exercise).toHaveProperty("id");
+            expect(exercise.id).toMatch(UUIDRegex);
+            expect(exercise).toHaveProperty("name");
+            expect(exercise).toHaveProperty("order");
+            expect(exercise).toHaveProperty("sets");
+          }
+        }
+      });
     });
 
     describe("unhappy path", () => {
@@ -68,6 +93,17 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
         // Ensure user is logged out
         await actions.loginUser(request, newUserReq);
         await actions.logoutUser(request);
+      });
+
+      describe("400 response when", () => {
+        it(
+          "exerciseId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/all/TEST_PARAM",
+            "get"
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -89,6 +125,19 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
 
           // logout user
           await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to read common user's templates", async () => {
+          const commonUser = await User.findOne({
+            where: { email: process.env.DB_COMMON_USER_EMAIL },
+          });
+
+          await actions.loginUser(request, newUserReq);
+
+          const response = await request.get(
+            BASE_ENDPOINT + `/all/${commonUser.id}`
+          );
           expect(response.statusCode).toStrictEqual(403);
         });
       });
