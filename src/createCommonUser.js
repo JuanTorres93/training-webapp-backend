@@ -130,26 +130,36 @@ const createCommonUser = async (host, testRequestInterface = null) => {
       },
     ];
 
-    const common_exercises_promises = common_exercises.map(async (exercise) => {
-      if (!appIsBeingTested) {
-        return fetch(`${host}/exercises`, {
-          method: "POST",
-          body: JSON.stringify(exercise),
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: cookie,
-          },
-          credentials: "include",
-        });
-      } else {
-        return testRequestInterface.post("/exercises").send(exercise);
-      }
-    });
+    let exercises = [];
+    if (!appIsBeingTested) {
+      // TODO IMPORTANT! Check if this still works in dev and prod environments
+      // (It should, but better to be sure)
+      const common_exercises_promises = common_exercises.map(
+        async (exercise) => {
+          return fetch(`${host}/exercises`, {
+            method: "POST",
+            body: JSON.stringify(exercise),
+            headers: {
+              "Content-Type": "application/json",
+              Cookie: cookie,
+            },
+            credentials: "include",
+          });
+        }
+      );
 
-    const exercisesResponses = await Promise.all(common_exercises_promises);
-    const exercises = await Promise.all(
-      exercisesResponses.map((response) => response.json())
-    );
+      const exercisesResponses = await Promise.all(common_exercises_promises);
+      exercises = await Promise.all(
+        exercisesResponses.map((response) => response.json())
+      );
+    } else {
+      for (const exercise of common_exercises) {
+        const response = await testRequestInterface
+          .post("/exercises")
+          .send(exercise);
+        exercises.push(response.body);
+      }
+    }
 
     const common_workouts_templates = [
       {

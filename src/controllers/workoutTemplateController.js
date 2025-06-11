@@ -1,6 +1,5 @@
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const dbWorkoutsTemplates = require("../db/workoutsTemplates");
 
 const {
   sequelize,
@@ -12,17 +11,6 @@ const {
   User,
   UserWorkouts,
 } = require("../models");
-const { where } = require("../models/sequelizeConfig");
-
-////////////////////
-// READ OPERATIONS
-exports.getCommonTemplates = catchAsync(async (req, res, next) => {
-  // TODO TEST
-  const commonTemplates =
-    await dbWorkoutsTemplates.selectCommonWorkoutTemplates();
-
-  res.status(200).json(commonTemplates);
-});
 
 const _processTemplateToSpec_HardModificationSequelize = (workoutTemplate) => {
   workoutTemplate.exercises.forEach((exercise) => {
@@ -45,6 +33,34 @@ const _processTemplateToSpec_HardModificationSequelize = (workoutTemplate) => {
 
   return workoutTemplate;
 };
+
+////////////////////
+// READ OPERATIONS
+exports.getCommonTemplates = catchAsync(async (req, res, next) => {
+  const commonUser = await User.findOne({
+    where: { email: process.env.DB_COMMON_USER_EMAIL },
+  });
+
+  const commonTemplates = await WorkoutTemplate.findAll({
+    where: { user_id: commonUser.id },
+    include: [
+      {
+        model: Exercise,
+        as: "exercises",
+        through: {
+          model: WorkoutTemplateExercises,
+          attributes: ["exercise_order", "exercise_sets"],
+        },
+      },
+    ],
+  });
+
+  const processedTemplates = commonTemplates.map(
+    _processTemplateToSpec_HardModificationSequelize
+  );
+
+  res.status(200).json(processedTemplates);
+});
 
 const _getTemplateById = async (templateId) => {
   const workoutTemplate = await WorkoutTemplate.findByPk(templateId, {

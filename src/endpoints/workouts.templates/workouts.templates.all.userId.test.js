@@ -55,8 +55,9 @@ describe(`${BASE_ENDPOINT}/all/{userId}`, () => {
         expect(templatesList).toBeInstanceOf(Array);
       });
 
-      it("List contains workouts", async () => {
+      it("List contains templates", async () => {
         const response = await request.get(BASE_ENDPOINT + `/all/${user.id}`);
+        expect(response.body.length).toBeGreaterThan(0);
         const workoutTemplateObject = response.body[0];
 
         expect(workoutTemplateObject).toHaveProperty("id");
