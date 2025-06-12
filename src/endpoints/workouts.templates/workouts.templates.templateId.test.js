@@ -70,6 +70,8 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
         const workoutTemplateObject = response.body;
 
         assertTemplateSwaggerSpec(workoutTemplateObject);
+
+        expect(workoutTemplateObject.exercises.length).toStrictEqual(0);
       });
 
       it("can read common user's templates", async () => {
@@ -303,6 +305,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
   describe("put requests", () => {
     let newTemplate;
     let newExercise;
+    let user;
 
     beforeAll(async () => {
       const setUpInfo = await setUp();
@@ -344,17 +347,37 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
           .send(req);
         const workoutTemplate = response.body;
 
-        expect(workoutTemplate).toHaveProperty("id");
-        expect(workoutTemplate).toHaveProperty("name");
-        expect(workoutTemplate).toHaveProperty("description");
-        expect(workoutTemplate).toHaveProperty("exercises");
-        expect(workoutTemplate.exercises.length).toBeGreaterThan(0);
+        assertTemplateSwaggerSpec(workoutTemplate);
+      });
 
-        const exercise = workoutTemplate.exercises[0];
-        expect(exercise).toHaveProperty("id");
-        expect(exercise).toHaveProperty("name");
-        expect(exercise).toHaveProperty("order");
-        expect(exercise).toHaveProperty("sets");
+      it("changes data in DB", async () => {
+        const template = await WorkoutTemplate.findByPk(newTemplate.id);
+        expect(template.name).toStrictEqual("test with exercises");
+        expect(template.description).toStrictEqual(
+          "new description with exercises"
+        );
+      });
+
+      it("updates single parameter at a time", async () => {
+        const paramsToUpdate = [
+          { name: "only name" },
+          { description: "only description" },
+        ];
+
+        for (const param of paramsToUpdate) {
+          const response = await request
+            .put(BASE_ENDPOINT + `/${newTemplate.id}`)
+            .send(param);
+          expect(response.statusCode).toStrictEqual(200);
+
+          const updatedTemplate = response.body;
+          assertTemplateSwaggerSpec(updatedTemplate);
+
+          // Check that the updated parameter is correct
+          for (const key in param) {
+            expect(updatedTemplate[key]).toStrictEqual(param[key]);
+          }
+        }
       });
 
       it("returns updated template with NO exercises", async () => {
@@ -372,11 +395,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
           .send(req);
         const workoutTemplate = response.body;
 
-        expect(workoutTemplate).toHaveProperty("id");
-        expect(workoutTemplate).toHaveProperty("name");
-        expect(workoutTemplate).toHaveProperty("description");
-        expect(workoutTemplate).toHaveProperty("exercises");
-
+        assertTemplateSwaggerSpec(workoutTemplate);
         expect(workoutTemplate.exercises.length).toStrictEqual(0);
       });
     });
@@ -398,22 +417,17 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("templateId is string", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/wrongId")
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "templateId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "put",
+            req
+          )
+        );
 
-        it("templateId is boolean", async () => {
-          const response = await request.put(BASE_ENDPOINT + "/true").send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("templateId is not positive", async () => {
-          const response = await request.put(BASE_ENDPOINT + "/-23").send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        // TODO test body parameters
       });
 
       describe("401 response when", () => {
@@ -438,8 +452,8 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
           });
 
           const req = {
-            name: "test 200 code",
-            description: "new description for 200 code",
+            name: "tasty",
+            description: "cle",
           };
           const response = await request
             .put(BASE_ENDPOINT + `/${newTemplate.id}`)
@@ -447,6 +461,29 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
 
           // logout user
           await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to update common user's workout template", async () => {
+          const commonUser = await User.findOne({
+            where: { email: process.env.DB_COMMON_USER_EMAIL },
+          });
+          const commonTemplate = await WorkoutTemplate.findOne({
+            where: { user_id: commonUser.id },
+          });
+          const req = {
+            name: "tasty",
+            description: "cle",
+          };
+
+          await actions.loginUser(request, newUserReq);
+
+          const response = await request
+            .put(BASE_ENDPOINT + `/${commonTemplate.id}`)
+            .send(req);
+
+          await actions.logoutUser(request);
+
           expect(response.statusCode).toStrictEqual(403);
         });
       });
