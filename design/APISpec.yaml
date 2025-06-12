@@ -1105,11 +1105,17 @@ paths:
                 items:
                   $ref: "#/components/schemas/ResponseCarouselInfo"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 
         "403":
           $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
 
   /workouts/templates/{templateId}/exercises/{exerciseId}/{exerciseOrder}:
     parameters:
@@ -1554,7 +1560,6 @@ components:
           type: string
           description: Exercise email
       example:
-        # UUID id
         id: 9876234-1234-1234-1234-123456789012
         name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
@@ -1763,13 +1768,17 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         date:
           type: string
           description: start date
         name:
           type: string
           description: Name of the template
+      example:
+        id: "9876234-1234-1234-1234-123456789012"
+        date: "2021-06-01T00:00:00.000Z"
+        name: "Pull"
 
     ReqBodyCreateWorkout:
       type: object
