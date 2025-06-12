@@ -97,7 +97,7 @@ exports.checkURLParamIsNotUUID = (
 
 exports.checkURLParamIsNotInteger = (
   requestAgent,
-  endpointFn,
+  endpoint,
   method = "get",
   body = {}
 ) => {
@@ -117,7 +117,7 @@ exports.checkURLParamIsNotInteger = (
     ];
 
     for (const wrongId of wrongIds) {
-      const ep = endpointFn().replace("TEST_PARAM", wrongId);
+      const ep = endpoint.replace("TEST_PARAM", wrongId);
       let response;
 
       if (method.toLowerCase() === "get") {

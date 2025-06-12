@@ -146,14 +146,15 @@ describe(BASE_ENDPOINT + "/last/user/{userId}/{numberOfWorkouts}", () => {
           )
         );
 
-        it(
-          "numberOfWorkouts is not integer",
-          factory.checkURLParamIsNotInteger(
+        it("numberOfWorkouts is not integer", async () => {
+          const checkNotInteger = factory.checkURLParamIsNotInteger(
             request,
-            () => BASE_ENDPOINT + `/last/user/${user.id}/TEST_PARAM`,
+            BASE_ENDPOINT + `/last/user/${user.id}/TEST_PARAM`,
             "get"
-          )
-        );
+          );
+
+          await checkNotInteger();
+        });
 
         it("numberOfWorkouts is lesser than 1", async () => {
           let response;

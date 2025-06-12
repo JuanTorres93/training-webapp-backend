@@ -244,6 +244,7 @@ exports.addExerciseToTemplate = catchAsync(async (req, res, next) => {
   if (!template) {
     return next(new AppError(`Template with ID ${templateId} not found`, 404));
   }
+
   await template.addExercise(exerciseToAdd, {
     through: {
       exercise_order: exerciseOrder,

@@ -1,3 +1,4 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   request,
   BASE_ENDPOINT,
@@ -6,6 +7,7 @@ const {
   createNewTemplateRequest,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
+const { User } = require("../../models");
 
 const setUp = async () => {
   await request.get(BASE_ENDPOINT + "/truncate");
@@ -203,103 +205,40 @@ describe(
         });
 
         describe("returns 400 error code when", () => {
-          it("templateid is string", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  "/wrongId" +
-                  `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
+          it("templateId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
+              BASE_ENDPOINT +
+                "/TEST_PARAM" +
+                `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`,
+              "put",
+              req
+            );
+            await checkURLParamIsNotUUID();
           });
 
-          it("templateid is boolean", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  "/true" +
-                  `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
+          it("exerciseId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
+              BASE_ENDPOINT +
+                `/${newTemplate.id}` +
+                `/exercises/TEST_PARAM/${newExerciseInTemplate.exerciseOrder}`,
+              "put",
+              req
+            );
+            await checkURLParamIsNotUUID();
           });
 
-          it("templateid is not positive", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  "/-23" +
-                  `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseid is string", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  `/${newTemplate.id}` +
-                  `/exercises/wrongId/${newExerciseInTemplate.exerciseOrder}`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseid is boolean", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  `/${newTemplate.id}` +
-                  `/exercises/true/${newExerciseInTemplate.exerciseOrder}`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseid is not positive", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  `/${newTemplate.id}` +
-                  `/exercises/-23/${newExerciseInTemplate.exerciseOrder}`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseOrder is string", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  `/${newTemplate.id}` +
-                  `/exercises/${newExerciseInTemplate.exerciseOrder}/wrongId`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseOrder is boolean", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  `/${newTemplate.id}` +
-                  `/exercises/${newExerciseInTemplate.exerciseOrder}/true`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseOrder is not positive", async () => {
-            const response = await request
-              .put(
-                BASE_ENDPOINT +
-                  `/${newTemplate.id}` +
-                  `/exercises/${newExerciseInTemplate.exerciseOrder}/-23`
-              )
-              .send(req);
-            expect(response.statusCode).toStrictEqual(400);
+          it("exerciseOrder is not positive integer", async () => {
+            const checkURLParamIsNotInteger = factory.checkURLParamIsNotInteger(
+              request,
+              BASE_ENDPOINT +
+                `/${newTemplate.id}` +
+                `/exercises/${newExercise.id}/TEST_PARAM`,
+              "put",
+              req
+            );
+            await checkURLParamIsNotInteger();
           });
         });
 
@@ -322,16 +261,15 @@ describe(
 
         describe("403 response when", () => {
           it("trying to update exercise in another user's workout template", async () => {
-            // login other user
-            await actions.loginUser(request, {
-              username: OTHER_USER_ALIAS,
-              password: newUserReq.password,
-            });
-
             const req = {
               exerciseOrder: 9,
               exerciseSets: 8,
             };
+
+            await actions.loginUser(request, {
+              username: OTHER_USER_ALIAS,
+              password: newUserReq.password,
+            });
 
             const response = await request
               .put(
@@ -341,6 +279,29 @@ describe(
               .send(req);
 
             // logout user
+            await actions.logoutUser(request);
+            expect(response.statusCode).toStrictEqual(403);
+          });
+
+          it("trying to update exercise in common user's template", async () => {
+            const commonUser = await User.findOne({
+              where: { email: process.env.DB_COMMON_USER_EMAIL },
+            });
+
+            const req = {
+              exerciseOrder: 9,
+              exerciseSets: 8,
+            };
+            await actions.loginUser(request, {
+              username: OTHER_USER_ALIAS,
+              password: newUserReq.password,
+            });
+            const response = await request
+              .put(
+                BASE_ENDPOINT +
+                  `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
+              )
+              .send(req);
             await actions.logoutUser(request);
             expect(response.statusCode).toStrictEqual(403);
           });
@@ -357,6 +318,16 @@ describe(
           it("exerciseId is valid but exercise with that id does not exist", async () => {
             const response = await request
               .put(BASE_ENDPOINT + `/${newTemplate.id}` + `/exercises/1`)
+              .send(req);
+            expect(response.statusCode).toStrictEqual(404);
+          });
+
+          it("exerciseOrder is valid but exercise with that order does not exist", async () => {
+            const response = await request
+              .put(
+                BASE_ENDPOINT +
+                  `/${newTemplate.id}/exercises/${newExercise.id}/999`
+              )
               .send(req);
             expect(response.statusCode).toStrictEqual(404);
           });
