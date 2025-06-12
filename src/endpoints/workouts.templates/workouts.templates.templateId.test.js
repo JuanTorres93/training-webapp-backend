@@ -522,20 +522,14 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("templateId is string", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("templateId is boolean", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("templateId is not positive", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/-23");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "templateId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "delete"
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -560,6 +554,21 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
           );
 
           // logout user
+          await actions.logoutUser(request);
+          expect(response.statusCode).toStrictEqual(403);
+        });
+
+        it("trying to delete common user's template", async () => {
+          const commonUser = await User.findOne({
+            where: { email: process.env.DB_COMMON_USER_EMAIL },
+          });
+          const commonTemplate = await WorkoutTemplate.findOne({
+            where: { user_id: commonUser.id },
+          });
+          await actions.loginUser(request, newUserReq);
+          const response = await request.delete(
+            BASE_ENDPOINT + `/${commonTemplate.id}`
+          );
           await actions.logoutUser(request);
           expect(response.statusCode).toStrictEqual(403);
         });
@@ -618,17 +627,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
 
         const workoutTemplate = response.body;
 
-        expect(workoutTemplate).toHaveProperty("id");
-        expect(workoutTemplate).toHaveProperty("name");
-        expect(workoutTemplate).toHaveProperty("description");
-        expect(workoutTemplate).toHaveProperty("exercises");
-        expect(workoutTemplate.exercises.length).toBeGreaterThan(0);
-
-        const exercise = workoutTemplate.exercises[0];
-        expect(exercise).toHaveProperty("id");
-        expect(exercise).toHaveProperty("name");
-        expect(exercise).toHaveProperty("order");
-        expect(exercise).toHaveProperty("sets");
+        assertTemplateSwaggerSpec(workoutTemplate);
       });
 
       it("returns deleted template with NO exercises", async () => {
@@ -651,11 +650,7 @@ describe(BASE_ENDPOINT + "/{templateId}", () => {
 
         const workoutTemplate = response.body;
 
-        expect(workoutTemplate).toHaveProperty("id");
-        expect(workoutTemplate).toHaveProperty("name");
-        expect(workoutTemplate).toHaveProperty("description");
-        expect(workoutTemplate).toHaveProperty("exercises");
-
+        assertTemplateSwaggerSpec(workoutTemplate);
         expect(workoutTemplate.exercises.length).toStrictEqual(0);
       });
     });
