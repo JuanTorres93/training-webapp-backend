@@ -182,9 +182,12 @@ const createCommonUser = async (host, testRequestInterface = null) => {
       },
     ];
 
-    const common_workouts_templates_promises = common_workouts_templates.map(
-      async (workout) => {
-        if (!appIsBeingTested) {
+    let workoutsTemplates = [];
+    if (!appIsBeingTested) {
+      // TODO IMPORTANT! Check if this still works in dev and prod environments
+      // (It should, but better to be sure)
+      const common_workouts_templates_promises = common_workouts_templates.map(
+        async (workout) => {
           return fetch(`${host}/workouts/templates`, {
             method: "POST",
             body: JSON.stringify(workout),
@@ -194,20 +197,26 @@ const createCommonUser = async (host, testRequestInterface = null) => {
             },
             credentials: "include",
           });
-        } else {
-          return testRequestInterface.post("/workouts/templates").send(workout);
         }
+      );
+
+      const workoutsTemplatesResponses = await Promise.all(
+        common_workouts_templates_promises
+      );
+
+      workoutsTemplates = await Promise.all(
+        workoutsTemplatesResponses.map((response) => response.json())
+      );
+    } else {
+      for (const template of common_workouts_templates) {
+        const response = await testRequestInterface
+          .post("/workouts/templates")
+          .send(template);
+
+        workoutsTemplates.push(response.body);
       }
-    );
+    }
 
-    const workoutsTemplatesResponses = await Promise.all(
-      common_workouts_templates_promises
-    );
-    const workoutsTemplates = await Promise.all(
-      workoutsTemplatesResponses.map((response) => response.json())
-    );
-
-    let exercisesToAddPromises;
     // Iterate over the workouts templates
     workoutsTemplates.map(async (workoutTemplate) => {
       let exercisesToAdd = [];

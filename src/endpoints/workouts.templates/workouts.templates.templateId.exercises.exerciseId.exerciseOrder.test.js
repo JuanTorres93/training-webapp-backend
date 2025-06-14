@@ -7,7 +7,13 @@ const {
   createNewTemplateRequest,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
-const { User } = require("../../models");
+const {
+  User,
+  WorkoutTemplate,
+  WorkoutTemplateExercises,
+  Exercise,
+} = require("../../models");
+const createCommonUser = require("../../createCommonUser.js").createCommonUser;
 
 const setUp = async () => {
   await request.get(BASE_ENDPOINT + "/truncate");
@@ -25,6 +31,7 @@ const setUp = async () => {
     email: "other@user.com",
   });
   const otherUser = otherUserResponse.body;
+  await createCommonUser("", request);
 
   // login user
   await actions.loginUser(request, newUserReq);
@@ -288,6 +295,19 @@ describe(
               where: { email: process.env.DB_COMMON_USER_EMAIL },
             });
 
+            const commonUserTemplate = await WorkoutTemplate.findOne({
+              where: { user_id: commonUser.id },
+              include: [
+                {
+                  model: Exercise,
+                  as: "exercises",
+                },
+              ],
+            });
+            const commonUserExercise = await WorkoutTemplateExercises.findOne({
+              where: { workout_template_id: commonUserTemplate.id },
+            });
+
             const req = {
               exerciseOrder: 9,
               exerciseSets: 8,
@@ -299,9 +319,10 @@ describe(
             const response = await request
               .put(
                 BASE_ENDPOINT +
-                  `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`
+                  `/${commonUserTemplate.id}/exercises/${commonUserExercise.exercise_id}/${commonUserExercise.exercise_order}`
               )
               .send(req);
+
             await actions.logoutUser(request);
             expect(response.statusCode).toStrictEqual(403);
           });
