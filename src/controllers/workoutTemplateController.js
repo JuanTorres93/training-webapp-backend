@@ -366,7 +366,6 @@ exports.deleteExerciseFromTemplate = catchAsync(async (req, res, next) => {
     exerciseSets: exercise.exercise_sets,
   };
 
-  // Delete the exercise from the template
   await WorkoutTemplateExercises.destroy({
     where: {
       workout_template_id: templateId,

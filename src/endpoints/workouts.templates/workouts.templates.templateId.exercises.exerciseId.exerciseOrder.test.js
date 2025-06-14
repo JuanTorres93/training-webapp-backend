@@ -297,12 +297,6 @@ describe(
 
             const commonUserTemplate = await WorkoutTemplate.findOne({
               where: { user_id: commonUser.id },
-              include: [
-                {
-                  model: Exercise,
-                  as: "exercises",
-                },
-              ],
             });
             const commonUserExercise = await WorkoutTemplateExercises.findOne({
               where: { workout_template_id: commonUserTemplate.id },
@@ -377,85 +371,37 @@ describe(
         });
 
         describe("returns 400 error code when", () => {
-          it("templateid is string", async () => {
-            const response = await request.delete(
+          it("templateId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
               BASE_ENDPOINT +
-                "/wrongId" +
-                `/exercises/${newExerciseInTemplate.id}/${newExerciseInTemplate.order}`
+                "/TEST_PARAM" +
+                `/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`,
+              "delete"
             );
-            expect(response.statusCode).toStrictEqual(400);
+            await checkURLParamIsNotUUID();
           });
 
-          it("templateid is boolean", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                "/true" +
-                `/exercises/${newExerciseInTemplate.id}/${newExerciseInTemplate.order}`
-            );
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("templateid is not positive", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                "/-23" +
-                `/exercises/${newExerciseInTemplate.id}/${newExerciseInTemplate.order}`
-            );
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseid is string", async () => {
-            const response = await request.delete(
+          it("exerciseId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
               BASE_ENDPOINT +
                 `/${newTemplate.id}` +
-                `/exercises/wrongId/${newExerciseInTemplate.order}`
+                `/exercises/TEST_PARAM/${newExerciseInTemplate.exerciseOrder}`,
+              "delete"
             );
-            expect(response.statusCode).toStrictEqual(400);
+            await checkURLParamIsNotUUID();
           });
 
-          it("exerciseid is boolean", async () => {
-            const response = await request.delete(
+          it("exerciseOrder is not positive integer", async () => {
+            const checkURLParamIsNotInteger = factory.checkURLParamIsNotInteger(
+              request,
               BASE_ENDPOINT +
                 `/${newTemplate.id}` +
-                `/exercises/true/${newExerciseInTemplate.order}`
+                `/exercises/${newExercise.id}/TEST_PARAM`,
+              "delete"
             );
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseid is not positive", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                `/${newTemplate.id}` +
-                `/exercises/-23/${newExerciseInTemplate.order}`
-            );
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseOrder is string", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                `/${newTemplate.id}` +
-                `/exercises/${newExerciseInTemplate.exerciseOrder}/wrongId`
-            );
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseOrder is boolean", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                `/${newTemplate.id}` +
-                `/exercises/${newExerciseInTemplate.exerciseOrder}/true`
-            );
-            expect(response.statusCode).toStrictEqual(400);
-          });
-
-          it("exerciseOrder is not positive", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                `/${newTemplate.id}` +
-                `/exercises/${newExerciseInTemplate.exerciseOrder}/-23`
-            );
-            expect(response.statusCode).toStrictEqual(400);
+            await checkURLParamIsNotInteger();
           });
         });
 
@@ -486,10 +432,38 @@ describe(
             await actions.logoutUser(request);
             expect(response.statusCode).toStrictEqual(403);
           });
+
+          it("trying to delete exercise in common user's template", async () => {
+            const commonUser = await User.findOne({
+              where: { email: process.env.DB_COMMON_USER_EMAIL },
+            });
+
+            const commonUserTemplate = await WorkoutTemplate.findOne({
+              where: { user_id: commonUser.id },
+            });
+            const commonUserExercise = await WorkoutTemplateExercises.findOne({
+              where: { workout_template_id: commonUserTemplate.id },
+            });
+
+            // login other user
+            await actions.loginUser(request, {
+              username: OTHER_USER_ALIAS,
+              password: newUserReq.password,
+            });
+
+            const endpoint =
+              BASE_ENDPOINT +
+              `/${commonUserTemplate.id}/exercises/${commonUserExercise.exercise_id}/${commonUserExercise.exercise_order}`;
+            const response = await request.delete(endpoint);
+
+            // logout user
+            await actions.logoutUser(request);
+            expect(response.statusCode).toStrictEqual(403);
+          });
         });
 
         describe("404 response when", () => {
-          it("templateid is valid but template with that id does not exist", async () => {
+          it("templateId is valid but template with that id does not exist", async () => {
             // valid UUID that is unlikely to be in the db
             const uuid = "00000000-0000-0000-0000-000000000000";
             const endpoint =
@@ -508,6 +482,14 @@ describe(
               BASE_ENDPOINT +
                 `/${newTemplate.id}` +
                 `/exercises/${uuid}/${newExerciseInTemplate.exerciseOrder}`
+            );
+            expect(response.statusCode).toStrictEqual(404);
+          });
+
+          it("exerciseOrder is valid but exercise with that order does not exist", async () => {
+            const response = await request.delete(
+              BASE_ENDPOINT +
+                `/${newTemplate.id}/exercises/${newExerciseInTemplate.exerciseId}/999`
             );
             expect(response.statusCode).toStrictEqual(404);
           });
@@ -570,6 +552,32 @@ describe(
           expect(deletedExercise.exerciseOrder).toStrictEqual(
             newExerciseInTemplate.exerciseOrder
           );
+        });
+
+        it("deletes exercise from database", async () => {
+          const endpoint =
+            BASE_ENDPOINT +
+            `/${newTemplate.id}/exercises/${newExercise.id}/${newExerciseInTemplate.exerciseOrder}`;
+
+          // login user. HERE CAUSE setUp ends loggin out
+          await actions.loginUser(request, newUserReq);
+
+          const response = await request.delete(endpoint);
+
+          // logout user
+          await actions.logoutUser(request);
+
+          expect(response.statusCode).toStrictEqual(200);
+
+          const exerciseInDb = await WorkoutTemplateExercises.findOne({
+            where: {
+              workout_template_id: newTemplate.id,
+              exercise_id: newExercise.id,
+              exercise_order: newExerciseInTemplate.exerciseOrder,
+            },
+          });
+
+          expect(exerciseInDb).toBeNull();
         });
       });
     });
