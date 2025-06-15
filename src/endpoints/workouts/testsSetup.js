@@ -48,6 +48,7 @@ const createWorkoutRequest = {
 };
 
 const mandatoryWorkoutFields = ["template_id"];
+const mandatoryAddExerciseFields = ["exerciseId", "exerciseSet"];
 
 const assertWorkoutSwaggerSpec = (workout) => {
   expect(workout).toHaveProperty("id");
@@ -342,6 +343,7 @@ module.exports = {
   createWorkoutRequest,
   request,
   mandatoryWorkoutFields,
+  mandatoryAddExerciseFields,
   addWorkoutsAndExercises,
   getExercisesIds,
   setUp,

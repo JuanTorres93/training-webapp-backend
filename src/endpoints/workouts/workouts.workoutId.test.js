@@ -1,11 +1,13 @@
 const factory = require("../../utils/test_utils/factory.js");
 const { sequelize } = require("../../models");
+const { UUIDRegex } = require("../testCommon.js");
 const {
   request,
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
   newUserReq,
   exercises,
+  mandatoryAddExerciseFields,
   addWorkoutsAndExercises,
   assertWorkoutSwaggerSpec,
   getExercisesIds,
@@ -99,6 +101,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
 
       it("returns exercise", () => {
         expect(response.body).toHaveProperty("exerciseId");
+        expect(response.body.exerciseId).toMatch(UUIDRegex);
         expect(response.body).toHaveProperty("exerciseSet");
         expect(response.body).toHaveProperty("reps");
         expect(response.body).toHaveProperty("weight");
@@ -118,47 +121,25 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       });
 
       describe("400 response when", () => {
-        it("workoutId is string", async () => {
-          const response = await request
-            .post(BASE_ENDPOINT + "/wrongId")
-            .send(addExerciseRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutId is boolean", async () => {
-          const response = await request
-            .post(BASE_ENDPOINT + "/true")
-            .send(addExerciseRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutId is not positive", async () => {
-          const response = await request
-            .post(BASE_ENDPOINT + "/-34")
-            .send(addExerciseRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "workoutId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "post",
+            addExerciseRequest
+          )
+        );
 
         it("mandatory body parameter is missing", async () => {
-          // exerciseId is missing
-          let res = await request.post(BASE_ENDPOINT + `/${id}`).send({
-            exerciseSet: 1,
-            reps: 1,
-            weight: 1,
-            time_in_seconds: 1,
-          });
-
-          expect(res.statusCode).toStrictEqual(400);
-
-          // exerciseSet is missing
-          res = await request.post(BASE_ENDPOINT + `/${id}`).send({
-            exerciseId: 1,
-            reps: 1,
-            weight: 1,
-            time_in_seconds: 1,
-          });
-
-          expect(res.statusCode).toStrictEqual(400);
+          for (const field of mandatoryAddExerciseFields) {
+            const requestBody = { ...addExerciseRequest };
+            delete requestBody[field];
+            const res = await request
+              .post(BASE_ENDPOINT + `/${id}`)
+              .send(requestBody);
+            expect(res.statusCode).toStrictEqual(400);
+          }
         });
       });
 
