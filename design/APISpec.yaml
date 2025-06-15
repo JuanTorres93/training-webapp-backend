@@ -397,21 +397,6 @@ paths:
           $ref: "#/components/responses/401"
 
   /workouts:
-    get:
-      tags:
-        - Workouts
-      description: Returns all workouts
-      operationId: getAllWorkouts
-      responses:
-        "200":
-          description: List of all workouts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResponseWorkout"
-
     post:
       tags:
         - Workouts
@@ -433,6 +418,12 @@ paths:
 
         "401":
           $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
 
       requestBody:
         content:
@@ -2194,7 +2185,7 @@ components:
 
     CreateWorkout:
       value:
-        id: 6
+        id: 9876234-1234-1234-1234-123456789012
         template_id: "9876234-1234-1234-1234-123456789012"
         name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"

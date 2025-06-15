@@ -4,10 +4,8 @@ const workoutController = require("../../controllers/workoutController.js");
 const workoutsValidators = require("../../validators/workouts.js");
 const {
   validateIntegerParameter,
-  validateStringParameter,
   validateUUIDParameter,
 } = require("../../validators/generalPurpose.js");
-const dbWorkouts = require("../../db/workouts.js");
 const mw = require("../../utils/middleware.js");
 
 const router = express.Router();
@@ -15,10 +13,6 @@ const router = express.Router();
 // ==================================
 // ========== GET requests ==========
 // ==================================
-
-// Get all workouts
-// TODO later PROTECT THIS ROUTE IF THE ENDPOINT IS NEEDED
-//router.get('/', workoutController.getAllWorkouts);
 
 // Truncate test table
 router.get("/truncate", workoutController.truncateTestTable);
@@ -88,6 +82,8 @@ router.post(
   "/",
   workoutsValidators.validateCreateWorkoutParams,
   mw.authenticatedUser,
+  mw.checkWorkoutTemplateExistsById,
+  mw.workoutTemplateBelongsToLoggedInORCommonUser,
   workoutController.createWorkout
 );
 

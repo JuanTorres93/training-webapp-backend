@@ -137,7 +137,9 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
 
   const templateId = req.params.templateId
     ? req.params.templateId
-    : req.body.templateId;
+    : req.body.templateId
+    ? req.body.templateId
+    : req.body.template_id;
 
   const workoutTemplateBelongsToUser =
     await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
@@ -364,7 +366,9 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
   // IMPORTANT: This middleware must be called after validating templateId parameter
   const templateId = req.params.templateId
     ? req.params.templateId
-    : req.body.templateId;
+    : req.body.templateId
+    ? req.body.templateId
+    : req.body.template_id;
 
   const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(
     templateId

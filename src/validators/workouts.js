@@ -23,8 +23,8 @@ const validateCreateWorkoutParams = [
     .not()
     .isEmpty()
     .withMessage(msgs.parameterEmptyMsg(template_id))
-    .isString()
-    .withMessage(msgs.parameterMustBeTypeMsg("string"))
+    .isUUID()
+    .withMessage(msgs.parameterMustBeTypeMsg("UUID"))
     .trim()
     .escape(),
   check(description)

@@ -4,6 +4,7 @@
 require("dotenv").config();
 const supertest = require("supertest");
 const createApp = require("../../app.js");
+const createCommonUser = require("../../createCommonUser.js").createCommonUser;
 
 const actions = require("../../utils/test_utils/actions.js");
 const app = createApp();
@@ -19,6 +20,7 @@ const {
   dip,
   deadLift,
   squat,
+  UUIDRegex,
 } = require("../testCommon.js");
 
 function logErrors(err, req, res, next) {
@@ -43,6 +45,29 @@ const newUserReq = {
 const createWorkoutRequest = {
   name: "workout_with_exercises",
   description: "This is the description for a workout with exercises",
+};
+
+const mandatoryWorkoutFields = ["template_id"];
+
+const assertWorkoutSwaggerSpec = (workout) => {
+  expect(workout).toHaveProperty("id");
+  expect(workout.id).toMatch(UUIDRegex);
+  expect(workout).toHaveProperty("template_id");
+  expect(workout.template_id).toMatch(UUIDRegex);
+  expect(workout).toHaveProperty("name");
+  expect(workout).toHaveProperty("description");
+  expect(workout).toHaveProperty("exercises");
+  expect(workout.exercises).toBeInstanceOf(Array);
+
+  for (const exercise of workout.exercises) {
+    expect(exercise).toHaveProperty("id");
+    expect(exercise.id).toMatch(UUIDRegex);
+    expect(exercise).toHaveProperty("name");
+    expect(exercise).toHaveProperty("set");
+    expect(exercise).toHaveProperty("reps");
+    expect(exercise).toHaveProperty("weight");
+    expect(exercise).toHaveProperty("time_in_seconds");
+  }
 };
 
 const exercises = [benchPress, barbellRow, pullUp, dip, deadLift, squat];
@@ -297,6 +322,8 @@ const setUp = async () => {
   });
   const otherUser = otherUserResponse.body;
 
+  await createCommonUser("", request);
+
   // login user
   await actions.loginUser(request, newUserReq);
 
@@ -314,7 +341,9 @@ module.exports = {
   successfulPostRequest,
   createWorkoutRequest,
   request,
+  mandatoryWorkoutFields,
   addWorkoutsAndExercises,
   getExercisesIds,
   setUp,
+  assertWorkoutSwaggerSpec,
 };

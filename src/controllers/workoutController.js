@@ -5,12 +5,6 @@ const dbWorkouts = require("../db/workouts");
 //////////////////////
 // READ OPERATIONS
 
-exports.getAllWorkouts = catchAsync(async (req, res, next) => {
-  const workouts = await dbWorkouts.selectAllWorkouts();
-
-  res.status(200).send(workouts);
-});
-
 exports.getWorkoutById = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
