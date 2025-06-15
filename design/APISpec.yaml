@@ -2085,37 +2085,37 @@ components:
         name: Pull
         description: "Pull training routine"
         exercises:
-          - id: 4
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Pull up
             set: 1
             reps: 9
             weight: 7.5
             time_in_seconds: Null
-          - id: 4
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Pull up
             set: 2
             reps: 9
             weight: 7.5
             time_in_seconds: Null
-          - id: 4
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Pull up
             set: 3
             reps: 8
             weight: 7.5
             time_in_seconds: Null
-          - id: 5
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Barbell row
             set: 1
             reps: 8
             weight: 75
             time_in_seconds: Null
-          - id: 5
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Barbell row
             set: 2
             reps: 8
             weight: 75
             time_in_seconds: Null
-          - id: 5
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Barbell row
             set: 3
             reps: 7

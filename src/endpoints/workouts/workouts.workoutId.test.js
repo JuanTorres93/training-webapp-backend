@@ -1,3 +1,4 @@
+const factory = require("../../utils/test_utils/factory.js");
 const { sequelize } = require("../../models");
 const {
   request,
@@ -6,6 +7,7 @@ const {
   newUserReq,
   exercises,
   addWorkoutsAndExercises,
+  assertWorkoutSwaggerSpec,
   getExercisesIds,
   setUp,
 } = require("./testsSetup");
@@ -254,10 +256,8 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       it("workout object has id, name, exercises and description properties", () => {
         const workoutObject = response.body;
 
-        expect(workoutObject).toHaveProperty("id");
-        expect(workoutObject).toHaveProperty("name");
-        expect(workoutObject).toHaveProperty("description");
-        expect(workoutObject).toHaveProperty("exercises");
+        assertWorkoutSwaggerSpec(workoutObject);
+        expect(workoutObject.exercises.length).toBeGreaterThan(0);
       });
     });
 
@@ -269,20 +269,14 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       });
 
       describe("400 response when", () => {
-        it("workoutId is string", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutId is boolean", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutId is not positive", async () => {
-          const response = await request.get(BASE_ENDPOINT + "/-34");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "workoutId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "get"
+          )
+        );
       });
 
       describe("401 response when", () => {
