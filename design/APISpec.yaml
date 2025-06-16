@@ -539,7 +539,7 @@ paths:
               $ref: "#/components/schemas/ReqBodyUpdateWorkout"
             examples:
               UpdateWorkout:
-                $ref: "#/components/examples/CreateWorkout"
+                $ref: "#/components/examples/ReqBodyUpdateWorkoutExample"
 
     delete:
       tags:
@@ -1810,9 +1810,6 @@ components:
     ReqBodyUpdateWorkout:
       type: object
       properties:
-        name:
-          type: string
-          description: Workout name
         description:
           type: string
           description: Workout description
@@ -2270,3 +2267,7 @@ components:
       value:
         newExerciseOrder: 6
         exerciseSets: 4
+
+    ReqBodyUpdateWorkoutExample:
+      value:
+        description: New description

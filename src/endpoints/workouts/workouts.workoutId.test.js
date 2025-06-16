@@ -341,11 +341,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       it("returns updated workout", () => {
         const updatedworkout = response.body;
 
-        expect(updatedworkout.id).toStrictEqual(workoutId);
-        expect(updatedworkout.description).toStrictEqual(
-          putBodyRequest.description
-        );
-        expect(updatedworkout).toHaveProperty("exercises");
+        assertWorkoutSwaggerSpec(updatedworkout);
       });
 
       it("returns 200 status code", () => {
@@ -361,26 +357,15 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("workoutid is string", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/wrongId")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutid is boolean", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/true")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutid is not positive", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/-23")
-            .send(putBodyRequest);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "workoutId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "put",
+            putBodyRequest
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -459,20 +444,14 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("workoutid is string", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/wrongId");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutid is boolean", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/true");
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("workoutid is not positive", async () => {
-          const response = await request.delete(BASE_ENDPOINT + "/-23");
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it(
+          "workoutId is not UUID",
+          factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM",
+            "delete"
+          )
+        );
       });
 
       describe("401 response when", () => {
@@ -534,12 +513,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}", () => {
       it("returns deleted workout", () => {
         const deletedworkout = response.body;
 
-        expect(deletedworkout.id).toStrictEqual(workoutId);
-        expect(deletedworkout.name).toStrictEqual(pushWorkout.name);
-        expect(deletedworkout.description).toStrictEqual(
-          pushWorkout.description
-        );
-        expect(deletedworkout).toHaveProperty("exercises");
+        assertWorkoutSwaggerSpec(deletedworkout);
       });
     });
   });
