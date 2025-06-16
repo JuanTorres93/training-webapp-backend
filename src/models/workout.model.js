@@ -7,6 +7,7 @@ module.exports = (sequelize, { WorkoutTemplateModel }) => {
       id: {
         primaryKey: true, // NOTE Shared with the date field
         type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4, // Automatically generate a UUID
         allowNull: false,
       },
       template_id: {

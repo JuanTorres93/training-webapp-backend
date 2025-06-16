@@ -140,12 +140,14 @@ Workout.belongsTo(WorkoutTemplate, {
 // Workouts - Exercises
 Workout.belongsToMany(Exercise, {
   through: WorkoutExercises,
-  foreignKey: "workout_id",
+  foreignKey: "workout_id", // workoutExercises to workout
+  otherKey: "exercise_id", // workoutExercises to exercise
   as: "exercises", // Alias for the association
 });
 Exercise.belongsToMany(Workout, {
   through: WorkoutExercises,
   foreignKey: "exercise_id",
+  otherKey: "workout_id",
   as: "workouts", // Alias for the association
 });
 
