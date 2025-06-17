@@ -222,9 +222,6 @@ exports.webhookCheckout = async (req, res, next) => {
   }
 
   if (event.type === "invoice.payment_succeeded") {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("INVOICE PAYMENT SUCCEEDED");
-
     // This if runs when the payment is successful. Either on subscription creation
     // or on subscription renewal
     const payment = event.data.object;
@@ -240,12 +237,6 @@ exports.webhookCheckout = async (req, res, next) => {
     const amountInEur = payment.amount_paid / 100;
 
     const user = await usersDb.selectUserById(userId);
-
-    //const user = {
-    //  email: payment.subscription_details.metadata.userEmail,
-    //  username: payment.subscription_details.metadata.username,
-    //  language: payment.subscription_details.metadata.userLanguage,
-    //};
 
     try {
       await createPayment(
