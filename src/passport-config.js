@@ -80,6 +80,7 @@ const localStrategy = new LocalStrategy((username, password, done) => {
       last_name: userObject.last_name,
       img: userObject.img,
       second_last_name: userObject.second_last_name,
+      language: userObject.language,
       is_premium: userObject.is_premium,
       is_early_adopter: userObject.is_early_adopter,
       created_at: userObject.created_at,

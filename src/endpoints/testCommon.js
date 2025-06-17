@@ -39,6 +39,7 @@ exports.expectedUserProperties = [
   "last_name",
   "img",
   "second_last_name",
+  "language",
   "is_premium",
   "is_early_adopter",
   "created_at",

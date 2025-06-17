@@ -48,10 +48,6 @@ const _loginUnsuccessfull = (err, req, res, next) => {
 
 // Used for retrieving user info after login WITH OAuth
 loginRouter.get("/success", (req, res) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("Redirecting to ");
-  console.log(`${process.env.CLIENT_URL}/app?login=oauth`);
-
   res.redirect(`${process.env.CLIENT_URL}/app?login=oauth`);
 });
 
@@ -65,9 +61,6 @@ loginRouter.get("/auth/me", mw.authenticatedUser, (req, res) => {
 
 // End point for failed (OAuth) login requests
 loginRouter.get("/failed", (req, res, next) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("login failed");
-
   const infoForClient = {
     msg: "Login failed",
   };

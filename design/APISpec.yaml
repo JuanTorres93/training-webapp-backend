@@ -1442,6 +1442,9 @@ components:
         second_last_name:
           type: string
           description: User second last name
+        language:
+          type: string
+          description: User language
         is_premium:
           type: boolean
           description: User premium status
@@ -1459,6 +1462,7 @@ components:
         last_name: "Doe"
         img: "Link to img"
         second_last_name: "Smith"
+        language: "en"
         is_premium: false
         is_early_adopter: true
         created_at: "2021-06-01T00:00:00.000Z"
