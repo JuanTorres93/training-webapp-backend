@@ -163,6 +163,9 @@ const getSubscriptionNextPaymentDate = async (subscriptionId) => {
 };
 
 exports.webhookCheckout = async (req, res, next) => {
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("RECEIVED STRIPE EVENT");
+
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
   const signature = req.headers["stripe-signature"];
@@ -221,6 +224,9 @@ exports.webhookCheckout = async (req, res, next) => {
   }
 
   if (event.type === "invoice.payment_succeeded") {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("INVOICE PAYMENT SUCCEEDED");
+
     // This if runs when the payment is successful. Either on subscription creation
     // or on subscription renewal
     const payment = event.data.object;
