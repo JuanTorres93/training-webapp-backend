@@ -8,7 +8,7 @@ const { getPoolClient } = require("./index.js");
 
 const TABLE_NAME = "users";
 const SELECT_USER_FIELDS =
-  "id, username, email, subscription_id, last_name, img, second_last_name, is_premium, is_early_adopter, created_at";
+  "id, username, email, subscription_id, last_name, img, second_last_name, language, is_premium, is_early_adopter, created_at";
 
 const createPasswordResetToken = () => {
   // Create a reset token that will be sent to the user

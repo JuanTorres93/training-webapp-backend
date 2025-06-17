@@ -2,6 +2,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const subscriptionsDb = require("../db/subscriptions.js");
 const paymentsDb = require("../db/payments.js");
+const usersDb = require("../db/users.js");
 const { langSeparator } = require("../config.js");
 
 const Email = require("../utils/email.js");
@@ -163,9 +164,6 @@ const getSubscriptionNextPaymentDate = async (subscriptionId) => {
 };
 
 exports.webhookCheckout = async (req, res, next) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("RECEIVED STRIPE EVENT");
-
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
   const signature = req.headers["stripe-signature"];
@@ -241,18 +239,13 @@ exports.webhookCheckout = async (req, res, next) => {
     );
     const amountInEur = payment.amount_paid / 100;
 
-    // TODO DELETE THESE DEBUG LOGS
-    console.log("payment");
-    console.log(payment);
+    const user = await usersDb.selectUserById(userId);
 
-    const user = {
-      email: payment.subscription_details.metadata.userEmail,
-      username: payment.subscription_details.metadata.username,
-      language: payment.subscription_details.metadata.userLanguage,
-    };
-
-    // Send email to user
-    new Email(user).sendPaymentReceived();
+    //const user = {
+    //  email: payment.subscription_details.metadata.userEmail,
+    //  username: payment.subscription_details.metadata.username,
+    //  language: payment.subscription_details.metadata.userLanguage,
+    //};
 
     try {
       await createPayment(
@@ -270,6 +263,9 @@ exports.webhookCheckout = async (req, res, next) => {
         message: "Error creating payment",
       });
     }
+
+    // Send email to user
+    new Email(user).sendPaymentReceived();
   }
 
   if (event.type === "customer.subscription.updated") {
