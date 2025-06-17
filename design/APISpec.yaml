@@ -588,6 +588,11 @@ paths:
                 type: array
                 items:
                   type: integer
+              examples:
+                WorkoutIds:
+                  value:
+                    - workout_id: "a763f7b7-5038-4c85-8d32-5cb6936f80de"
+                    - workout_id: "80c5a5e6-a0c5-4117-87f6-d03c2c0aff8a"
 
         "400":
           $ref: "#/components/responses/400"

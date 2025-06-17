@@ -135,6 +135,11 @@ exports.getAllWorkoutsFromTemplate = catchAsync(async (req, res, next) => {
     user.id
   );
 
+  // TODO DELETE THESE DEBUG LOGS
+  console.log("TESTING");
+  console.log("workoutsIds:");
+  console.log(workoutsIds);
+
   res.status(200).json(workoutsIds);
 });
 
