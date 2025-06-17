@@ -1,7 +1,14 @@
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const dbWorkouts = require("../db/workouts");
-const { sequelize, Workout, User, WorkoutTemplate } = require("../models");
+const {
+  sequelize,
+  Workout,
+  WorkoutExercises,
+  User,
+  UserWorkouts,
+  WorkoutTemplate,
+} = require("../models");
 
 const workoutsWithExercisesQuery =
   "SELECT  " +
@@ -67,12 +74,7 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
   return workoutSpec;
 };
 
-//////////////////////
-// READ OPERATIONS
-
-exports.getWorkoutById = catchAsync(async (req, res, next) => {
-  const { workoutId } = req.params;
-
+const _getWorkoutById = async (workoutId) => {
   const q = workoutsWithExercisesQuery.replace(
     "WHERE TRUE",
     "WHERE wk.id = :workoutId"
@@ -84,7 +86,16 @@ exports.getWorkoutById = catchAsync(async (req, res, next) => {
 
   const workout = results[0];
 
-  const processedWorkout = _compactWorkoutInfo(workout);
+  return _compactWorkoutInfo(workout);
+};
+
+//////////////////////
+// READ OPERATIONS
+
+exports.getWorkoutById = catchAsync(async (req, res, next) => {
+  const { workoutId } = req.params;
+
+  processedWorkout = await _getWorkoutById(workoutId);
 
   res.status(200).json(processedWorkout);
 });
@@ -171,16 +182,17 @@ exports.updateWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
   const { description } = req.body;
 
-  const updateWorkoutInfo = {
-    description,
-  };
-
-  const updatedWorkout = await dbWorkouts.updateWorkout(
-    workoutId,
-    updateWorkoutInfo
+  // Update workout
+  await Workout.update(
+    { description },
+    {
+      where: { id: workoutId },
+    }
   );
 
-  res.status(200).json(updatedWorkout);
+  const processedWorkout = await _getWorkoutById(workoutId);
+
+  res.status(200).json(processedWorkout);
 });
 
 exports.updateExerciseInWorkout = catchAsync(async (req, res, next) => {
@@ -220,26 +232,25 @@ exports.updateExerciseInWorkout = catchAsync(async (req, res, next) => {
 exports.addExerciseToWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
-  const exerciseData = {
-    ...req.body,
-    timeInSeconds: req.body.time_in_seconds,
-    exerciseId: req.body.exerciseId,
-    exerciseSet: req.body.exerciseSet,
-    workoutId,
+  // New implementation using Sequelize associations
+  const exerciseInfo = await WorkoutExercises.create({
+    workout_id: workoutId,
+    exercise_id: req.body.exerciseId,
+    exercise_set: req.body.exerciseSet,
+    exercise_reps: req.body.reps,
+    exercise_weight: req.body.weight,
+    exercise_time_in_seconds: req.body.time_in_seconds,
+  });
+
+  const exerciseSpec = {
+    exerciseId: exerciseInfo.exercise_id,
+    exerciseSet: exerciseInfo.exercise_set,
+    reps: exerciseInfo.exercise_reps,
+    weight: exerciseInfo.exercise_weight,
+    time_in_seconds: exerciseInfo.exercise_time_in_seconds,
   };
 
-  // TODO CHECK primary key is not duplicated?
-  const addedExercise = await dbWorkouts.addExerciseToWorkout(exerciseData);
-
-  const capitalizedAddedExercise = {
-    exerciseId: addedExercise.exerciseid,
-    exerciseSet: addedExercise.exerciseset,
-    reps: addedExercise.reps,
-    weight: addedExercise.weight,
-    time_in_seconds: addedExercise.time_in_seconds,
-  };
-
-  return res.status(201).json(capitalizedAddedExercise);
+  return res.status(201).json(exerciseSpec);
 });
 
 //////////////////////
@@ -248,7 +259,27 @@ exports.addExerciseToWorkout = catchAsync(async (req, res, next) => {
 exports.deleteWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
-  const deletedWorkout = await dbWorkouts.deleteWorkout(workoutId);
+  let deletedWorkout;
+
+  await sequelize.transaction(async (t) => {
+    // Get workout info to return to the client
+    deletedWorkout = await _getWorkoutById(workoutId);
+
+    await UserWorkouts.destroy({
+      where: { workout_id: workoutId },
+      transaction: t,
+    });
+
+    await WorkoutExercises.destroy({
+      where: { workout_id: workoutId },
+      transaction: t,
+    });
+
+    await Workout.destroy({
+      where: { id: workoutId },
+      transaction: t,
+    });
+  });
 
   res.status(200).json(deletedWorkout);
 });
