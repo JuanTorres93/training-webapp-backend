@@ -241,6 +241,10 @@ exports.webhookCheckout = async (req, res, next) => {
     );
     const amountInEur = payment.amount_paid / 100;
 
+    // TODO DELETE THESE DEBUG LOGS
+    console.log("payment");
+    console.log(payment);
+
     const user = {
       email: payment.subscription_details.metadata.userEmail,
       username: payment.subscription_details.metadata.username,
