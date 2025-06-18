@@ -63,7 +63,6 @@ router.get(
 );
 
 // Get all workouts from a template
-// TODO test EP
 router.get(
   "/all/:templateId",
   validateUUIDParameter("templateId"),

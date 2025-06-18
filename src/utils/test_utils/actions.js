@@ -20,6 +20,7 @@ exports.createNewUser = async (request, userInfo) => {
 };
 
 exports.createNewExercise = async (request, exerciseInfo) => {
+  // NOTE: exerciseInfo should contain name and description
   const newExercisesResponse = await request
     .post("/exercises")
     .send(exerciseInfo);

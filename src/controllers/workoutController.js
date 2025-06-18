@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const dbWorkouts = require("../db/workouts");
@@ -128,17 +129,31 @@ exports.getLastSingleWorkoutFromTemplateByUserId = catchAsync(
 
 exports.getAllWorkoutsFromTemplate = catchAsync(async (req, res, next) => {
   const { templateId } = req.params;
+
   const user = req.session.passport.user;
+  const commonUser = await User.findOne({
+    where: { email: process.env.DB_COMMON_USER_EMAIL },
+  });
 
-  const workoutsIds = await dbWorkouts.getAllWorkoutsIdsFromTemplateId(
-    templateId,
-    user.id
-  );
-
-  // TODO DELETE THESE DEBUG LOGS
-  console.log("TESTING");
-  console.log("workoutsIds:");
-  console.log(workoutsIds);
+  const workoutsIds = await Workout.findAll({
+    where: { template_id: templateId },
+    attributes: [["id", "workout_id"]],
+    include: [
+      {
+        model: WorkoutTemplate,
+        as: "workoutTemplate",
+      },
+      {
+        model: User,
+        as: "users",
+        where: {
+          id: {
+            [Op.or]: [user.id, commonUser.id],
+          },
+        },
+      },
+    ],
+  });
 
   res.status(200).json(workoutsIds);
 });
