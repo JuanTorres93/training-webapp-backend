@@ -207,7 +207,6 @@ describe(`${BASE_ENDPOINT}` + "/all/{templateId}", () => {
     });
 
     describe("uphappy paths", () => {
-      // TODO IMPORTANT: Mirar estos tests. No los he modificado desde que copié el archivo
       beforeAll(async () => {
         // Ensure user is logged out
         await actions.loginUser(request, newUserReq);

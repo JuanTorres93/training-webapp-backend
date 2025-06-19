@@ -193,9 +193,14 @@ exports.createWorkout = catchAsync(async (req, res, next) => {
 exports.updateEndDateOfWorkout = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
-  const workout = await dbWorkouts.addFinishDateToWorkout(workoutId);
+  const q = `UPDATE users_workouts 
+             SET 
+             end_date = NOW() AT TIME ZONE 'UTC' 
+             WHERE workout_id = :workoutId;`;
 
-  res.status(200).json(workout);
+  const processedWorkout = await _getWorkoutById(workoutId);
+
+  res.status(200).json(processedWorkout);
 });
 
 exports.updateWorkout = catchAsync(async (req, res, next) => {
