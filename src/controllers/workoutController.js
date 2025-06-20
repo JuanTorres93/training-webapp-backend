@@ -55,6 +55,8 @@ const _compactWorkoutInfo = (workoutInfoDb) => {
   }
 
   workoutInfoDb.forEach((row) => {
+    if (!row.exercise_id) return;
+
     const exerciseSet = {
       id: row.exercise_id,
       name: row.exercise_name,
@@ -90,6 +92,44 @@ const _getWorkoutById = async (workoutId) => {
   return _compactWorkoutInfo(workout);
 };
 
+const _selectLastWorkoutsIdsInCronologicalOrder = async (
+  templateId,
+  userId,
+  numberOfWorkouts
+) => {
+  const commonUser = await User.findOne({
+    where: { email: process.env.DB_COMMON_USER_EMAIL },
+  });
+
+  const findFunction =
+    numberOfWorkouts === 1
+      ? (...args) => UserWorkouts.findOne(...args)
+      : (...args) => UserWorkouts.findAll(...args);
+
+  const findOptions = {
+    attributes: [["workout_id", "workout_id"]],
+    where: {
+      user_id: { [Op.in]: [userId, commonUser.id] },
+    },
+    include: [
+      {
+        model: Workout,
+        where: { template_id: templateId },
+        include: [{ model: WorkoutTemplate, as: "workoutTemplate" }],
+      },
+    ],
+    order: [["start_date", "DESC"]],
+  };
+
+  if (numberOfWorkouts > 1) {
+    findOptions.limit = numberOfWorkouts;
+  }
+
+  const workoutIds = await findFunction(findOptions);
+
+  return workoutIds;
+};
+
 //////////////////////
 // READ OPERATIONS
 
@@ -103,15 +143,32 @@ exports.getWorkoutById = catchAsync(async (req, res, next) => {
 
 exports.getLastWorkoutsFromATemplateByUserId = catchAsync(
   async (req, res, next) => {
-    const { templateId, userId, numberOfWorkouts } = req.params;
+    const { templateId, userId } = req.params;
 
-    const workout = await dbWorkouts.selectLastNWorkoutsFromUser(
+    const numberOfWorkouts =
+      parseInt(req.params.numberOfWorkouts) > 10
+        ? 10
+        : parseInt(req.params.numberOfWorkouts);
+
+    const workoutsIds = await _selectLastWorkoutsIdsInCronologicalOrder(
       templateId,
       userId,
       numberOfWorkouts
     );
 
-    res.status(200).json(workout);
+    let idsArray = workoutsIds;
+
+    if (!Array.isArray(workoutsIds)) {
+      idsArray = [workoutsIds];
+    }
+
+    const workoutsPromises = idsArray.map((workoutInfo) =>
+      _getWorkoutById(workoutInfo.workout_id)
+    );
+
+    const workouts = await Promise.all(workoutsPromises);
+
+    res.status(200).json(workouts);
   }
 );
 
@@ -119,23 +176,11 @@ exports.getLastSingleWorkoutFromTemplateByUserId = catchAsync(
   async (req, res, next) => {
     const { templateId, userId } = req.params;
 
-    const commonUser = await User.findOne({
-      where: { email: process.env.DB_COMMON_USER_EMAIL },
-    });
-
-    const workoutId = await UserWorkouts.findOne({
-      where: {
-        user_id: { [Op.in]: [userId, commonUser.id] },
-      },
-      include: [
-        {
-          model: Workout,
-          where: { template_id: templateId },
-          include: [{ model: WorkoutTemplate, as: "workoutTemplate" }],
-        },
-      ],
-      order: [["start_date", "DESC"]],
-    });
+    const workoutId = await _selectLastWorkoutsIdsInCronologicalOrder(
+      templateId,
+      userId,
+      1
+    );
 
     const workout = await _getWorkoutById(workoutId.workout_id);
 
