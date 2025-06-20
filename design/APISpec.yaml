@@ -672,6 +672,9 @@ paths:
                 Workout:
                   $ref: "#/components/examples/Workout"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 
@@ -715,6 +718,9 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResponseWorkout"
+
+        "400":
+          $ref: "#/components/responses/400"
 
         "401":
           $ref: "#/components/responses/401"

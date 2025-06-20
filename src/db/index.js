@@ -7,6 +7,16 @@ const commonPoolInfo = {
   password: process.env.DB_USER_PASSWORD,
 };
 
+if (process.env.NODE_ENV === "test") {
+  // For testing purposes, we set max connections to 1
+  // It allows to avoid the error:
+  //thrown: Object {
+  //  "error": [error: sorry, too many clients already],
+  //  "exists": null,
+  //}
+  commonPoolInfo.max = 1;
+}
+
 const notContainerizedPoolInfo = {
   ...commonPoolInfo,
   port: process.env.DB_PORT,

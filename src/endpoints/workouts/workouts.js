@@ -41,14 +41,15 @@ router.get(
 );
 
 // Get last workout of a template by user
-// TODO HACER TESTS. SE USA EN REACT, PERO NO ESTÁ TESTEADO
 router.get(
   "/last/:templateId/user/:userId",
   validateUUIDParameter("templateId"),
   validateUUIDParameter("userId"),
   mw.checkWorkoutTemplateExistsById,
+  mw.checkUserExistsById,
   mw.authenticatedUser,
   mw.loggedUserIdEqualsUserIdInRequest,
+  mw.workoutTemplateBelongsToLoggedInORCommonUser,
   workoutController.getLastSingleWorkoutFromTemplateByUserId
 );
 

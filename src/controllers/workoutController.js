@@ -118,10 +118,26 @@ exports.getLastWorkoutsFromATemplateByUserId = catchAsync(
 exports.getLastSingleWorkoutFromTemplateByUserId = catchAsync(
   async (req, res, next) => {
     const { templateId, userId } = req.params;
-    const workout = await dbWorkouts.selectLastWorkoutFromUser(
-      templateId,
-      userId
-    );
+
+    const commonUser = await User.findOne({
+      where: { email: process.env.DB_COMMON_USER_EMAIL },
+    });
+
+    const workoutId = await UserWorkouts.findOne({
+      where: {
+        user_id: { [Op.in]: [userId, commonUser.id] },
+      },
+      include: [
+        {
+          model: Workout,
+          where: { template_id: templateId },
+          include: [{ model: WorkoutTemplate, as: "workoutTemplate" }],
+        },
+      ],
+      order: [["start_date", "DESC"]],
+    });
+
+    const workout = await _getWorkoutById(workoutId.workout_id);
 
     res.status(200).json(workout);
   }
@@ -255,6 +271,9 @@ exports.updateExerciseInWorkout = catchAsync(async (req, res, next) => {
 });
 
 exports.addExerciseToWorkout = catchAsync(async (req, res, next) => {
+  // TODO EFFICIENCY: Make the body an array of exercises to add multiple at once.
+  // This will reduce the number of requests to the database and to the server.
+
   const { workoutId } = req.params;
 
   // New implementation using Sequelize associations

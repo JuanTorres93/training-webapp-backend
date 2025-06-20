@@ -460,6 +460,7 @@ const selectLastWorkoutFromUser = (templateId, userId) => {
         
         SELECT
             w.id AS workout_id,
+            wt.id AS template_id,
             wt.name AS workout_name,
             w.description AS workout_description,
             uw.start_date,

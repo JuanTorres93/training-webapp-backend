@@ -105,6 +105,10 @@ Workout.belongsToMany(User, {
   as: "users", // Alias for the association
 });
 
+// To be able to query from UserWorkouts
+UserWorkouts.belongsTo(Workout, { foreignKey: "workout_id" });
+UserWorkouts.belongsTo(User, { foreignKey: "user_id" });
+
 // Subscriptions - Payments
 Subscription.hasMany(Payment, {
   foreignKey: "subscription_id",

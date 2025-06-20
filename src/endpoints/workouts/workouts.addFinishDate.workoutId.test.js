@@ -9,12 +9,7 @@ const {
 } = require("./testsSetup.js");
 const actions = require("../../utils/test_utils/actions.js");
 
-const {
-  sequelize,
-  User,
-  UserWorkouts,
-  WorkoutTemplate,
-} = require("../../models/index.js");
+const { sequelize, UserWorkouts } = require("../../models/index.js");
 
 afterAll(async () => {
   // Close the database connection after all tests
