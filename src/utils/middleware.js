@@ -1,4 +1,4 @@
-// const AppError = require("../utils/appError");
+const AppError = require("../utils/appError");
 const dbUsers = require("../db/users");
 const dbSubscriptions = require("../db/subscriptions");
 const utils = require("./utils");
@@ -36,7 +36,9 @@ const authenticatedUser = (req, res, next) => {
     const user = req.session.passport.user;
     next();
   } catch (error) {
-    return res.status(401).json({ msg: "Not logged in." });
+    return next(
+      new AppError("You must be logged in to access this resource.", 401)
+    );
   }
 };
 
@@ -55,7 +57,9 @@ const loggedUserIdEqualsUserIdInRequest = (req, res, next) => {
   ) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -75,7 +79,9 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
   if (exerciseBelongsToUser) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -107,7 +113,9 @@ const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
     return next();
   }
 
-  return res.status(403).json({ msg: "Not authorized" });
+  return next(
+    new AppError("You are not authorized to access this resource.", 403)
+  );
 };
 
 const workoutBelongsToLoggedInUser = async (req, res, next) => {
@@ -134,7 +142,9 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
   if (workoutBelongsToUser) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -156,7 +166,9 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
   if (workoutTemplateBelongsToUser) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -198,7 +210,9 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
     return next();
   }
 
-  return res.status(403).json({ msg: "Not authorized" });
+  return next(
+    new AppError("You are not authorized to access this resource.", 403)
+  );
 };
 
 // This function is an example of how authorization can be implemented.
@@ -227,11 +241,11 @@ const processIntegerURLParameter = (category) => {
       intId = parseInt(id);
     } catch (error) {
       console.log(error);
-      return res.status(400).json({ msg: "Invalid id" });
+      return next(new AppError("Invalid id", 400));
     }
 
     if (Number.isNaN(intId)) {
-      return res.status(400).json({ msg: "Invalid id" });
+      return next(new AppError("Invalid id", 400));
     }
 
     req[`${category}Id`] = intId;
@@ -280,6 +294,8 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
 
   const emailInUse = (await dbUsers.checkEmailInUse(email)) === true;
 
+  // TODO Refactor these two to use AppError. Do it when testing front too. I think
+  // I used the msg property in the response to show the error
   if (emailInUse) {
     return res.status(409).json({
       msg: "Email already in use",
@@ -306,9 +322,7 @@ const checkUserExistsById = async (req, res, next) => {
   const user = await dbUsers.selectUserById(userId);
 
   if (!user) {
-    return res.status(404).json({
-      msg: "User not found",
-    });
+    return next(new AppError("User not found", 404));
   }
 
   next();
@@ -327,9 +341,7 @@ const checkExerciseExistsById = async (req, res, next) => {
   });
 
   if (!exercise) {
-    return res.status(404).json({
-      msg: "Exercise not found",
-    });
+    return next(new AppError("Exercise not found", 404));
   }
 
   next();
@@ -348,9 +360,7 @@ const checkWorkoutExistsById = async (req, res, next) => {
   });
 
   if (!workout) {
-    return res.status(404).json({
-      msg: "Workout not found",
-    });
+    return next(new AppError("Workout not found", 404));
   }
 
   next();
@@ -365,9 +375,7 @@ const checkSubscriptionExistsById = async (req, res, next) => {
     subscriptionId
   );
   if (!subscription) {
-    return res.status(404).json({
-      msg: "Subscription not found",
-    });
+    return next(new AppError("Subscription not found", 404));
   }
   next();
 };
@@ -393,9 +401,12 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     }).length > 0;
 
   if (!setExists) {
-    return res.status(404).json({
-      msg: `Exercise with id ${exerciseId} does not contain set ${exerciseSet}`,
-    });
+    return next(
+      new AppError(
+        `Exercise with id ${exerciseId} does not contain set ${exerciseSet}`,
+        404
+      )
+    );
   }
 
   next();
@@ -416,9 +427,7 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
   });
 
   if (!template) {
-    return res.status(404).json({
-      msg: "Template not found",
-    });
+    return next(new AppError("Template not found", 404));
   }
 
   next();
@@ -446,9 +455,12 @@ const checkExerciseOrderExistsInWorkoutTemplate = async (req, res, next) => {
     });
 
   if (!exerciseInWorkoutTemplateExists) {
-    return res.status(404).json({
-      msg: `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId} in the order ${exerciseOrder}`,
-    });
+    return next(
+      new AppError(
+        `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId} in the order ${exerciseOrder}`,
+        404
+      )
+    );
   }
 
   next();
@@ -470,10 +482,9 @@ const passwordEqualsPasswordConfirm = (req, res, next) => {
   const { password, passwordConfirm } = req.body;
 
   if (password !== passwordConfirm) {
-    return res.status(400).json({
-      status: "fail",
-      message: "Password and password confirm do not match",
-    });
+    return next(
+      new AppError("Password and password confirm do not match", 400)
+    );
   }
 
   next();
