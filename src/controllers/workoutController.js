@@ -1,7 +1,6 @@
 const { Op } = require("sequelize");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const dbWorkouts = require("../db/workouts");
 const {
   sequelize,
   Workout,
@@ -424,17 +423,39 @@ exports.deleteExerciseFromWorkout = catchAsync(async (req, res, next) => {
 exports.deleteExerciseSetFromWorkout = catchAsync(async (req, res, next) => {
   const { workoutId, exerciseId, exerciseSet } = req.params;
 
-  const deletedExercise = await dbWorkouts.deleteSetFromExercise(
-    workoutId,
-    exerciseId,
-    exerciseSet
-  );
+  const deletedExercise = await WorkoutExercises.findOne({
+    where: {
+      workout_id: workoutId,
+      exercise_id: exerciseId,
+      exercise_set: exerciseSet,
+    },
+  });
 
-  res.status(200).json(deletedExercise);
+  await deletedExercise.destroy();
+
+  const deletedExerciseSpec = {
+    exerciseId: deletedExercise.exercise_id,
+    exerciseSet: deletedExercise.exercise_set,
+    reps: deletedExercise.exercise_reps,
+    weight: deletedExercise.exercise_weight,
+    time_in_seconds: deletedExercise.exercise_time_in_seconds,
+  };
+
+  res.status(200).json(deletedExerciseSpec);
 });
 
 exports.truncateTestTable = catchAsync(async (req, res, next) => {
-  const truncatedTable = await dbWorkouts.truncateTableTest();
+  const appIsBeingTested = process.env.NODE_ENV === "test";
 
-  res.status(200).send(truncatedTable);
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Truncated workouts.",
+    });
+  }
+
+  await sequelize.query("TRUNCATE TABLE workouts RESTART IDENTITY CASCADE");
+
+  res.status(200).send("Table workouts truncated in test db.");
 });

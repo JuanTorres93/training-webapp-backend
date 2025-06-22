@@ -1,3 +1,4 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
@@ -5,6 +6,7 @@ const {
   newUserReq,
   exercises,
   addWorkoutsAndExercises,
+  assertExerciseInWorkoutSwaggerSpec,
   getExercisesIds,
   setUp,
 } = require("./testsSetup");
@@ -22,7 +24,7 @@ describe(
     describe("delete requests", () => {
       let user;
       let workout;
-      let initialExercise;
+      let exerciseToDelete;
       let exercisesIds = {};
 
       beforeAll(async () => {
@@ -48,7 +50,7 @@ describe(
 
         workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
         workout = workout.body;
-        initialExercise = workout.exercises[0];
+        exerciseToDelete = workout.exercises[0];
 
         // logout user
         await actions.logoutUser(request);
@@ -62,38 +64,47 @@ describe(
         });
 
         describe("returns 400 error code when", () => {
-          it("exerciseset is string", async () => {
-            const response = await request.delete(
+          it("workoutId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
               BASE_ENDPOINT +
-                `/${workout.id}` +
-                `/exercises/${initialExercise.id}/wrongId`
+                `/TEST_PARAM` +
+                `/exercises/${exerciseToDelete.id}/1`,
+              "delete"
             );
-            expect(response.statusCode).toStrictEqual(400);
+
+            await checkURLParamIsNotUUID();
           });
 
-          it("exerciseset is boolean", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                `/${workout.id}` +
-                `/exercises/${initialExercise.id}/true`
+          it("exerciseId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
+              BASE_ENDPOINT + `/${workout.id}` + `/exercises/TEST_PARAM/1`,
+              "delete"
             );
-            expect(response.statusCode).toStrictEqual(400);
+
+            await checkURLParamIsNotUUID();
           });
 
-          it("exerciseset is not positive", async () => {
-            const response = await request.delete(
-              BASE_ENDPOINT +
-                `/${workout.id}` +
-                `/exercises/${initialExercise.id}/-23`
-            );
-            expect(response.statusCode).toStrictEqual(400);
+          it("exerciseSet is not positive integer", async () => {
+            const checkURLParamIsNotPositiveInteger =
+              factory.checkURLParamIsNotInteger(
+                request,
+                BASE_ENDPOINT +
+                  `/${workout.id}` +
+                  `/exercises/${exerciseToDelete.id}/TEST_PARAM`,
+                "delete"
+              );
+
+            await checkURLParamIsNotPositiveInteger();
           });
         });
 
         describe("401 response when", () => {
           it("user is not logged in", async () => {
             const response = await request.delete(
-              BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
+              BASE_ENDPOINT +
+                `/${workout.id}/exercises/${exerciseToDelete.id}/1`
             );
             expect(response.statusCode).toStrictEqual(401);
           });
@@ -108,7 +119,8 @@ describe(
             });
 
             const response = await request.delete(
-              BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
+              BASE_ENDPOINT +
+                `/${workout.id}/exercises/${exerciseToDelete.id}/1`
             );
 
             // logout user
@@ -122,7 +134,7 @@ describe(
             // valid UUID that is unlikely to be in the db
             const uuid = "00000000-0000-0000-0000-000000000000";
             const response = await request.delete(
-              BASE_ENDPOINT + "/" + uuid + `/exercises/${initialExercise.id}/1`
+              BASE_ENDPOINT + "/" + uuid + `/exercises/${exerciseToDelete.id}/1`
             );
             expect(response.statusCode).toStrictEqual(404);
           });
@@ -140,7 +152,7 @@ describe(
             const response = await request.delete(
               BASE_ENDPOINT +
                 `/${workout.id}` +
-                `/exercises/${initialExercise.id}/1111`
+                `/exercises/${exerciseToDelete.id}/1111`
             );
 
             expect(response.statusCode).toStrictEqual(404);
@@ -156,7 +168,7 @@ describe(
           await actions.loginUser(request, newUserReq);
 
           response = await request.delete(
-            BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
+            BASE_ENDPOINT + `/${workout.id}/exercises/${exerciseToDelete.id}/1`
           );
         });
 
@@ -172,14 +184,16 @@ describe(
         it("returns deleted exercise", () => {
           const deletedExercise = response.body;
 
-          expect(deletedExercise.exerciseId).toStrictEqual(initialExercise.id);
+          assertExerciseInWorkoutSwaggerSpec(deletedExercise);
+
+          expect(deletedExercise.exerciseId).toStrictEqual(exerciseToDelete.id);
           expect(deletedExercise.exerciseSet).toStrictEqual(
-            initialExercise.set
+            exerciseToDelete.set
           );
-          expect(deletedExercise.reps).toStrictEqual(initialExercise.reps);
-          expect(deletedExercise.weight).toStrictEqual(initialExercise.weight);
+          expect(deletedExercise.reps).toStrictEqual(exerciseToDelete.reps);
+          expect(deletedExercise.weight).toStrictEqual(exerciseToDelete.weight);
           expect(deletedExercise.time_in_seconds).toStrictEqual(
-            initialExercise.time_in_seconds
+            exerciseToDelete.time_in_seconds
           );
         });
       });
