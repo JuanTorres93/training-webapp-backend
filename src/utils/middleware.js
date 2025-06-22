@@ -1,15 +1,35 @@
+// const AppError = require("../utils/appError");
 const dbUsers = require("../db/users");
-const dbExercises = require("../db/exercises");
 const dbSubscriptions = require("../db/subscriptions");
 const utils = require("./utils");
 const { validationResult } = require("express-validator");
 const hash = require("../hashing");
 const {
+  User,
+  Exercise,
   Workout,
   UserWorkouts,
   WorkoutTemplate,
   WorkoutTemplateExercises,
 } = require("../models");
+
+const _exerciseBelongsToUser = async (exerciseId, userId) => {
+  const exercise = await Exercise.findOne({
+    where: {
+      id: exerciseId,
+    },
+  });
+
+  const user = await User.findOne({
+    where: {
+      id: userId,
+    },
+  });
+
+  const exerciseBelongsToUser = await user.hasExercise(exercise);
+
+  return exerciseBelongsToUser;
+};
 
 const authenticatedUser = (req, res, next) => {
   try {
@@ -47,7 +67,7 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
     ? req.params.exerciseId
     : req.body.exerciseId;
 
-  const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
+  const exerciseBelongsToUser = await _exerciseBelongsToUser(
     exerciseId,
     loggedUserId
   );
@@ -65,10 +85,12 @@ const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
   const exerciseId = req.params.exerciseId
     ? req.params.exerciseId
     : req.body.exerciseId;
-  const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
+
+  const exerciseBelongsToUser = await _exerciseBelongsToUser(
     exerciseId,
     loggedUserId
   );
+
   if (exerciseBelongsToUser) {
     return next();
   }
@@ -77,7 +99,7 @@ const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
     process.env.DB_COMMON_USER_EMAIL
   );
   const commonUserId = commonUser.id;
-  const exerciseBelongsToCommonUser = await dbExercises.exerciseBelongsToUser(
+  const exerciseBelongsToCommonUser = await _exerciseBelongsToUser(
     exerciseId,
     commonUserId
   );
@@ -298,7 +320,11 @@ const checkExerciseExistsById = async (req, res, next) => {
     ? req.params.exerciseId
     : req.body.exerciseId;
 
-  const exercise = await dbExercises.selectExerciseById(exerciseId);
+  const exercise = await Exercise.findOne({
+    where: {
+      id: exerciseId,
+    },
+  });
 
   if (!exercise) {
     return res.status(404).json({

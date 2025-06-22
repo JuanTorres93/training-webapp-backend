@@ -23,5 +23,6 @@ module.exports = (sequelize) => {
       timestamps: false, // Disable timestamps if not needed
     }
   );
+
   return Exercise;
 };

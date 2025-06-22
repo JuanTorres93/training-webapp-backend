@@ -10,7 +10,7 @@ const actions = require("../../utils/test_utils/actions.js");
 const app = createApp();
 const BASE_ENDPOINT = "/workouts";
 const { OTHER_USER_ALIAS } = require("../exercises/testsSetup.js");
-const dbExercises = require("../../db/exercises.js");
+const { Exercise } = require("../../models");
 const {
   newUserRequestNoOauth,
   newWorkoutRequest,
@@ -303,7 +303,12 @@ const getExercisesIds = async () => {
     let id;
 
     try {
-      id = await dbExercises.selectIdForExerciseName(name, true);
+      const exercise = await Exercise.findOne({
+        attributes: ["id"],
+        where: { name },
+      });
+
+      id = exercise.id;
     } catch (error) {
       throw error;
     }
