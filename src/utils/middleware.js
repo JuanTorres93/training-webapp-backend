@@ -1,5 +1,4 @@
 const AppError = require("../utils/appError");
-const dbUsers = require("../db/users");
 const dbSubscriptions = require("../db/subscriptions");
 const utils = require("./utils");
 const { validationResult } = require("express-validator");
@@ -100,10 +99,13 @@ const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
   if (exerciseBelongsToUser) {
     return next();
   }
+
   // Two steps to avoid unnecessary queries to the database if the logged in user owns the exercise
-  const commonUser = await dbUsers.selectUserByEmail(
-    process.env.DB_COMMON_USER_EMAIL
-  );
+  const commonUser = await User.findOne({
+    where: {
+      email: process.env.DB_COMMON_USER_EMAIL,
+    },
+  });
   const commonUserId = commonUser.id;
   const exerciseBelongsToCommonUser = await _exerciseBelongsToUser(
     exerciseId,
@@ -194,9 +196,11 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
   }
 
   // Two steps to avoid unnecessary queries to the database if the logged in user owns the template
-  const commonUser = await dbUsers.selectUserByEmail(
-    process.env.DB_COMMON_USER_EMAIL
-  );
+  const commonUser = await User.findOne({
+    where: {
+      email: process.env.DB_COMMON_USER_EMAIL,
+    },
+  });
   const commonUserId = commonUser.id;
 
   const workoutTemplateBelongsToCommonUser = await WorkoutTemplate.findOne({
@@ -292,17 +296,15 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
   // IMPORTANT: This middleware must be called after validating user parameter
   const { username, email } = req.body;
 
-  const emailInUse = (await dbUsers.checkEmailInUse(email)) === true;
-
   // TODO Refactor these two to use AppError. Do it when testing front too. I think
   // I used the msg property in the response to show the error
-  if (emailInUse) {
+  if (await User.checkEmailInUse(email)) {
     return res.status(409).json({
       msg: "Email already in use",
     });
   }
 
-  if ((await dbUsers.checkAliasInUse(username)) === true) {
+  if ((await User.checkUsernameInUse(username)) === true) {
     return res.status(409).json({
       msg: "Alias already in use",
     });
@@ -319,7 +321,11 @@ const checkUserExistsById = async (req, res, next) => {
     ? req.body.userId
     : req.session.passport.user.id;
 
-  const user = await dbUsers.selectUserById(userId);
+  const user = await User.findOne({
+    where: {
+      id: userId,
+    },
+  });
 
   if (!user) {
     return next(new AppError("User not found", 404));

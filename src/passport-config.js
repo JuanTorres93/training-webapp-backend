@@ -8,8 +8,8 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const oautCodes = require("./oauthCodes");
 const { query } = require("./db/index");
 const hashing = require("./hashing");
-const dbUser = require("./db/users");
 const Email = require("./utils/email");
+const { User } = require("./models");
 
 const localStrategy = new LocalStrategy((username, password, done) => {
   // username and password are the credentials sent in the body of a POST request
@@ -42,9 +42,15 @@ const localStrategy = new LocalStrategy((username, password, done) => {
 
     if (userObject) {
       const email = userObject.email;
-      const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(
-        email
-      );
+      // TODO IMPORTANT check if OAuth registration and login still works
+      const userWasCreatedWithOAuth = (
+        await User.findOne({
+          attributes: ["oauth_registration"],
+          where: {
+            email,
+          },
+        })
+      ).oauth_registration;
 
       if (userWasCreatedWithOAuth) {
         return done(error, false, {
@@ -102,11 +108,22 @@ const googleStrategy = new GoogleStrategy(
     try {
       const email = profile.emails[0].value;
 
-      const user = await dbUser.selectUserByEmail(email);
+      const user = await User.findOne({
+        where: {
+          email,
+        },
+      });
 
       if (user) {
-        const userWasCreatedWithOAuth =
-          await dbUser.selectUserRegisteredByOAuth(email);
+        const userWasCreatedWithOAuth = (
+          await User.findOne({
+            attributes: ["oauth_registration"],
+            where: {
+              email,
+            },
+          })
+        ).oauth_registration;
+
         if (userWasCreatedWithOAuth) {
           return done(null, user);
         } else {
@@ -115,7 +132,7 @@ const googleStrategy = new GoogleStrategy(
       }
 
       // I think this is not needed
-      const emailInUse = await dbUser.checkEmailInUse(email);
+      const emailInUse = await User.checkEmailInUse(email);
 
       if (emailInUse) {
         return done(null, false, { msg: "Email already in use" });
@@ -131,7 +148,7 @@ const googleStrategy = new GoogleStrategy(
         const state = req.query.state; // Ej: "lang:es"
         const lang = state?.split(":")[1] || "es";
 
-        const newUser = await dbUser.registerNewUser({
+        const newUser = await User.create({
           username,
           email,
           password,
@@ -141,9 +158,6 @@ const googleStrategy = new GoogleStrategy(
           language: lang,
           created_at: new Date().toISOString(),
         });
-
-        // TODO DELETE THESE DEBUG LOGS
-        console.log("USER CREATED");
 
         // Send welcome email
         if (

@@ -1,4 +1,5 @@
-const { DataTypes } = require("sequelize");
+const crypto = require("crypto");
+const { DataTypes, fn, col, where } = require("sequelize");
 
 module.exports = (sequelize, { SubscriptionModel }) => {
   const User = sequelize.define(
@@ -115,6 +116,70 @@ module.exports = (sequelize, { SubscriptionModel }) => {
     //alter: true, // DOC: Use 'true' to update the table structure if it changes
     // force: false, // DOC: Use 'true' to drop the table and recreate it
   });
+
+  // Methods
+  User.checkEmailInUse = async function (email) {
+    const user = await User.findOne({
+      where: where(fn("LOWER", col("email")), email.toLowerCase()),
+    });
+    return user !== null; // Returns true if email is in use, false otherwise
+  };
+
+  User.checkUsernameInUse = async function (username) {
+    const user = await User.findOne({
+      where: where(fn("LOWER", col("username")), username.toLowerCase()),
+    });
+    return user !== null; // Returns true if username is in use, false otherwise
+  };
+
+  User.createPasswordResetToken = () => {
+    // Create a reset token that will be sent to the user
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // Save the hashed token to the database
+    // This is done to prevent the token from being exposed in the database.
+    // In this way, even if someone gets access to the database,
+    // they won't be able to use the token to reset the password.
+    const resetTokenForDB = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // Give the token an expiration date of 10 minutes
+    // This is done to prevent the token from being used after a certain time.
+    const passwordResetExpires = new Date(
+      Date.now() + 10 * 60 * 1000
+    ).toISOString();
+
+    return {
+      resetToken,
+      resetTokenForDB,
+      passwordResetExpires,
+    };
+  };
+
+  User.updateResetPasswordToken = async (userId, resetToken, expires) => {
+    const user = await User.findByPk(userId);
+
+    await user.update({
+      password_reset_token: resetToken,
+      password_reset_expires: expires,
+    });
+  };
+
+  User.updateUserPassword = async (id, password) => {
+    // NOTE: this function must be called after the middleware that checks
+    // if the password and passwordConfirm are the same
+
+    // TODO IMPORTANT check what happens if user does not exist
+    const user = await User.findByPk(id);
+
+    await user.update({
+      password: password,
+      password_reset_token: null,
+      password_reset_expires: null,
+    });
+  };
 
   return User;
 };

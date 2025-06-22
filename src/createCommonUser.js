@@ -1,4 +1,4 @@
-const usersDB = require("./db/users");
+const { User } = require("./models");
 
 const createCommonUser = async (host, testRequestInterface = null) => {
   const appIsBeingTested = process.env.NODE_ENV === "test";
@@ -15,7 +15,11 @@ const createCommonUser = async (host, testRequestInterface = null) => {
   };
 
   try {
-    const user = await usersDB.selectUserByEmail(common_user.email);
+    const user = await User.findOne({
+      where: {
+        email: common_user.email,
+      },
+    });
 
     if (user) {
       return;
@@ -39,8 +43,6 @@ const createCommonUser = async (host, testRequestInterface = null) => {
         .send(common_user);
       createUserData = createUserData.body;
     }
-
-    // console.log('Common user created');
 
     let loginData;
     let cookie;

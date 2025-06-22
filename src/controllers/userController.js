@@ -1,10 +1,10 @@
 const crypto = require("crypto");
 
+const { Op } = require("sequelize");
 const { sequelize, User, Subscription, Payment } = require("../models");
 
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const dbUsers = require("../db/users");
 const Email = require("../utils/email");
 const hash = require("../hashing");
 
@@ -198,11 +198,13 @@ exports.truncateTestTable = catchAsync(async (req, res, next) => {
 // FORGOT PASSWORD
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  // TODO IMPORTANT: Use model and check from FRONTEND
+  // TODO IMPORTANT: Check from FRONTEND all of password reset flow
 
   // 1) Get user based on POSTed email
   const { email } = req.body;
-  const user = await dbUsers.selectUserByEmail(email);
+  const user = await User.findOne({
+    where: { email: email },
+  });
 
   if (!user) {
     return next(new AppError("There is no user with email address.", 404));
@@ -211,9 +213,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 2) Generate the random reset token
 
   const { resetToken, resetTokenForDB, passwordResetExpires } =
-    dbUsers.createPasswordResetToken();
+    User.createPasswordResetToken();
 
-  await dbUsers.updateResetPasswordToken(
+  await User.updateResetPasswordToken(
     user.id,
     resetTokenForDB,
     passwordResetExpires
@@ -227,7 +229,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       language
     );
   } catch (error) {
-    await dbUsers.updateResetPasswordToken(user.id, null, null);
+    await User.updateResetPasswordToken(user.id, null, null);
+
     return next(
       new AppError(
         "There was an error sending the reset password email. Try again later!",
@@ -249,7 +252,14 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-  const user = await dbUsers.selectUserByResetToken(hashedToken);
+  const user = await User.findOne({
+    where: {
+      password_reset_token: hashedToken,
+      password_reset_expires: {
+        [sequelize.Op.gt]: new Date(), // Check if the token has not expired
+      },
+    },
+  });
 
   // 2) If token has not expired, and there is a user,
   // set the new password
@@ -258,7 +268,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   const newPassword = req.body.password;
   const hashedNewPassword = await hash.plainTextHash(newPassword);
 
-  await dbUsers.updateUserPassword(user.id, hashedNewPassword);
+  await User.updateUserPassword(user.id, hashedNewPassword);
 
   // 3) TODO Update changedPasswordAt property for the user
 
