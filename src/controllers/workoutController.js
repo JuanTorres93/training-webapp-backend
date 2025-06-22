@@ -285,12 +285,29 @@ exports.updateExerciseInWorkout = catchAsync(async (req, res, next) => {
   const { workoutId, exerciseId } = req.params;
   const { exerciseSet, reps, weight, time_in_seconds } = req.body;
 
-  const exerciseInWorkoutExists = await dbWorkouts.checkExerciseInWorkoutExists(
-    workoutId,
-    exerciseId
-  );
+  // exerciseSet is required and must be a positive integer
+  if (!exerciseSet || !Number.isInteger(exerciseSet * 1) || exerciseSet < 1) {
+    return next(new AppError("Exercise set must be a positive integer", 400));
+  }
 
-  if (!exerciseInWorkoutExists) {
+  // If reps is present and is NOT positive integer
+  if (reps && (!Number.isInteger(reps * 1) || reps < 0)) {
+    return next(new AppError("Reps must be an integer", 400));
+  }
+
+  // If weight is present and is NOT positive number
+  if (weight && (!Number.isFinite(weight * 1) || weight < 0)) {
+    return next(new AppError("Weight must be a positive number", 400));
+  }
+
+  const exerciseInWorkout = await WorkoutExercises.findOne({
+    where: {
+      workout_id: workoutId,
+      exercise_id: exerciseId,
+    },
+  });
+
+  if (!exerciseInWorkout) {
     return next(
       new AppError(
         `Exercise with id ${exerciseId} does not exist in workout with id ${workoutId}`,
@@ -299,20 +316,22 @@ exports.updateExerciseInWorkout = catchAsync(async (req, res, next) => {
     );
   }
 
-  const updateExerciseInfo = {
-    exerciseId,
-    exerciseSet,
-    reps,
-    weight,
-    time_in_seconds,
+  const updatedExercise = await exerciseInWorkout.update({
+    exercise_set: exerciseSet,
+    exercise_reps: reps,
+    exercise_weight: weight,
+    exercise_time_in_seconds: time_in_seconds,
+  });
+
+  const exerciseSpec = {
+    exerciseId: updatedExercise.exercise_id,
+    exerciseSet: updatedExercise.exercise_set,
+    reps: parseInt(updatedExercise.exercise_reps),
+    weight: parseInt(updatedExercise.exercise_weight),
+    time_in_seconds: parseInt(updatedExercise.exercise_time_in_seconds),
   };
 
-  const updatedExercise = await dbWorkouts.updateExerciseFromWorkout(
-    workoutId,
-    updateExerciseInfo
-  );
-
-  res.status(200).json(updatedExercise);
+  res.status(200).json(exerciseSpec);
 });
 
 exports.addExerciseToWorkout = catchAsync(async (req, res, next) => {

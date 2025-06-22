@@ -71,6 +71,15 @@ const assertWorkoutSwaggerSpec = (workout) => {
   }
 };
 
+const assertExerciseInWorkoutSwaggerSpec = (exercise) => {
+  expect(exercise).toHaveProperty("exerciseId");
+  expect(exercise.exerciseId).toMatch(UUIDRegex);
+  expect(exercise).toHaveProperty("exerciseSet");
+  expect(exercise).toHaveProperty("reps");
+  expect(exercise).toHaveProperty("weight");
+  expect(exercise).toHaveProperty("time_in_seconds");
+};
+
 const exercises = [benchPress, barbellRow, pullUp, dip, deadLift, squat];
 
 const addWorkoutsAndExercises = async (userId, exercisesIds) => {
@@ -348,4 +357,5 @@ module.exports = {
   getExercisesIds,
   setUp,
   assertWorkoutSwaggerSpec,
+  assertExerciseInWorkoutSwaggerSpec,
 };

@@ -1,3 +1,4 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
   BASE_ENDPOINT,
   OTHER_USER_ALIAS,
@@ -7,6 +8,7 @@ const {
   addWorkoutsAndExercises,
   getExercisesIds,
   setUp,
+  assertExerciseInWorkoutSwaggerSpec,
 } = require("./testsSetup");
 const actions = require("../../utils/test_utils/actions.js");
 
@@ -81,92 +83,33 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
 
         // logout user
         await actions.logoutUser(request);
-
-        // login user. HERE BECAUSE PREVIOUS CALLS LOGOUT THE USER
-        await actions.loginUser(request, newUserReq);
       });
 
-      afterAll(async () => {
-        // logout user
-        await actions.logoutUser(request);
-      });
-
-      it("updates only reps", async () => {
-        const req = {
-          exerciseSet: 1,
-          reps: 88,
-        };
-
-        // login user
+      it("updates params individually", async () => {
+        const params = ["reps", "weight", "time_in_seconds"];
         await actions.loginUser(request, newUserReq);
 
-        const response = await request
-          .put(BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`)
-          .send(req);
+        params.forEach(async (p) => {
+          // Random integer
+          const randomValue = Math.floor(Math.random() * 100) + 1;
 
-        // logout user
+          const body = {
+            exerciseSet: 1, // Required field
+            [p]: randomValue,
+          };
+
+          const response = await request
+            .put(
+              BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+            )
+            .send(body);
+
+          assertExerciseInWorkoutSwaggerSpec(response.body);
+          expect(response.statusCode).toStrictEqual(200);
+          expect(response.body[p]).toStrictEqual(randomValue);
+        });
+
         await actions.logoutUser(request);
-
-        const updatedWorkout = response.body;
-        expect(updatedWorkout.exerciseId).toStrictEqual(initialExercise.id);
-        expect(updatedWorkout.exerciseSet).toStrictEqual(initialExercise.set);
-        expect(updatedWorkout.reps).not.toEqual(initialExercise.reps);
-        expect(updatedWorkout.weight).toStrictEqual(initialExercise.weight);
-        expect(updatedWorkout.time_in_seconds).toStrictEqual(
-          initialExercise.time_in_seconds
-        );
-      });
-
-      it("updates only weight", async () => {
-        const req = {
-          exerciseSet: 1,
-          weight: 88,
-        };
-
-        // login user
-        await actions.loginUser(request, newUserReq);
-
-        const response = await request
-          .put(BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`)
-          .send(req);
-
-        // logout user
-        await actions.logoutUser(request);
-
-        const updatedWorkout = response.body;
-        expect(updatedWorkout.exerciseId).toStrictEqual(initialExercise.id);
-        expect(updatedWorkout.exerciseSet).toStrictEqual(initialExercise.set);
-        expect(updatedWorkout.reps).toStrictEqual(initialExercise.reps);
-        expect(updatedWorkout.weight).not.toEqual(initialExercise.weight);
-        expect(updatedWorkout.time_in_seconds).toStrictEqual(
-          initialExercise.time_in_seconds
-        );
-      });
-
-      it("updates only time_in_seconds", async () => {
-        const req = {
-          exerciseSet: 1,
-          time_in_seconds: 88,
-        };
-
-        // login user
-        await actions.loginUser(request, newUserReq);
-
-        const response = await request
-          .put(BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`)
-          .send(req);
-
-        // logout user
-        await actions.logoutUser(request);
-
-        const updatedWorkout = response.body;
-        expect(updatedWorkout.exerciseId).toStrictEqual(initialExercise.id);
-        expect(updatedWorkout.exerciseSet).toStrictEqual(initialExercise.set);
-        expect(updatedWorkout.reps).toStrictEqual(initialExercise.reps);
-        expect(updatedWorkout.weight).toStrictEqual(initialExercise.weight);
-        expect(updatedWorkout.time_in_seconds).not.toEqual(
-          initialExercise.time_in_seconds
-        );
       });
     });
 
@@ -183,48 +126,152 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("workoutid is string", async () => {
+        it("workoutId is not UUID", async () => {
+          const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM" + `/exercises/${initialExercise.id}`,
+            "put",
+            req
+          );
+
+          await checkURLParamIsNotUUID();
+        });
+
+        it("exerciseId is not UUID", async () => {
+          const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + `/${workout.id}` + `/exercises/TEST_PARAM`,
+            "put",
+            req
+          );
+
+          await checkURLParamIsNotUUID();
+        });
+
+        it("exerciseSet is missing in body request", async () => {
+          const wrongBody = {
+            reps: 34,
+            weight: 50,
+            time_in_seconds: 60,
+          };
+
           const response = await request
             .put(
-              BASE_ENDPOINT + "/wrongId" + `/exercises/${initialExercise.id}`
+              BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
             )
-            .send(req);
+            .send(wrongBody);
           expect(response.statusCode).toStrictEqual(400);
         });
 
-        it("workoutid is boolean", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/true" + `/exercises/${initialExercise.id}`)
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
+        it("exerciseSet is not integer greater than 0", async () => {
+          const wrongExerciseSet = [
+            "notAnInteger",
+            1.5,
+            -1,
+            true,
+            false,
+            null,
+            // undefined, // NOTE: it can be undefined if it's missing since it is not required
+            "123abc",
+            "123; DROP TABLE users;",
+            "123,456", // float with comma
+            "123.456", // float with decimal
+            "123.456abc", // alphanumeric
+          ];
+
+          for (const wrongValue of wrongExerciseSet) {
+            const wrongBody = {
+              exerciseSet: wrongValue,
+              reps: 10,
+              weight: 50,
+              time_in_seconds: 60,
+            };
+
+            await actions.loginUser(request, newUserReq);
+
+            const response = await request
+              .put(
+                BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+              )
+              .send(wrongBody);
+
+            await actions.logoutUser(request);
+
+            expect(response.statusCode).toStrictEqual(400);
+          }
         });
 
-        it("workoutid is not positive", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + "/-23" + `/exercises/${initialExercise.id}`)
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
+        it("reps is not integer", async () => {
+          const wrongReps = [
+            "notAnInteger",
+            1.5,
+            -1,
+            true,
+            false,
+            null,
+            // undefined, // NOTE: it can be undefined if it's missing since it is not required
+            "123abc",
+            "123; DROP TABLE users;",
+            "123,456", // float with comma
+            "123.456", // float with decimal
+            "123.456abc", // alphanumeric
+          ];
+
+          for (const wrongValue of wrongReps) {
+            const wrongBody = {
+              exerciseSet: 1,
+              reps: wrongValue,
+              weight: 50,
+              time_in_seconds: 60,
+            };
+
+            await actions.loginUser(request, newUserReq);
+
+            const response = await request
+              .put(
+                BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+              )
+              .send(wrongBody);
+
+            await actions.logoutUser(request);
+
+            expect(response.statusCode).toStrictEqual(400);
+          }
         });
 
-        it("exerciseid is string", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + `/${workout.id}` + `/exercises/wrongId`)
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+        it("weight is not a positive number", async () => {
+          const wrongWeight = [
+            "notAPositiveNumber",
+            -1,
+            true,
+            false,
+            null,
+            // undefined, // NOTE: it can be undefined if it's missing since it is not required
+            "123abc",
+            "123; DROP TABLE users;",
+            "123,456", // float with comma
+            "123.456abc", // alphanumeric
+          ];
+          for (const wrongValue of wrongWeight) {
+            const wrongBody = {
+              exerciseSet: 1,
+              reps: 10,
+              weight: wrongValue,
+              time_in_seconds: 60,
+            };
 
-        it("exerciseid is boolean", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + `/${workout.id}` + `/exercises/true`)
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
-        });
+            await actions.loginUser(request, newUserReq);
 
-        it("exerciseid is not positive", async () => {
-          const response = await request
-            .put(BASE_ENDPOINT + `/${workout.id}` + `/exercises/-23`)
-            .send(req);
-          expect(response.statusCode).toStrictEqual(400);
+            const response = await request
+              .put(
+                BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+              )
+              .send(wrongBody);
+
+            await actions.logoutUser(request);
+
+            expect(response.statusCode).toStrictEqual(400);
+          }
         });
       });
 
