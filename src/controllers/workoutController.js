@@ -10,87 +10,7 @@ const {
   WorkoutTemplate,
 } = require("../models");
 
-const workoutsWithExercisesQuery =
-  "SELECT  " +
-  "   wk.id AS workout_id,	" +
-  "   wkt.id AS workout_template_id,	" +
-  "   wkt.name AS workout_name,	" +
-  "   wk.description AS workout_description, 	" +
-  "   e.id AS exercise_id, 	" +
-  "   e.name AS exercise_name, 	" +
-  "   w_e.exercise_set AS exercise_set, 	" +
-  "   w_e.exercise_reps AS exercise_reps, 	" +
-  "   w_e.exercise_weight AS exercise_weight, 	" +
-  "   w_e.exercise_time_in_seconds AS exercise_time_in_seconds 	" +
-  "FROM workouts " +
-  " AS wk " +
-  "LEFT JOIN workout_template as wkt ON wk.template_id = wkt.id   " +
-  "LEFT JOIN workouts_exercises AS w_e ON wk.id = w_e.workout_id " +
-  "LEFT JOIN exercises AS e ON w_e.exercise_id = e.id " +
-  "WHERE TRUE " + // This condition is here for DRYING the code replacing it where necessary
-  "ORDER BY workout_id, exercise_id, exercise_set " +
-  "; ";
-
-const _compactWorkoutInfo = (workoutInfoDb) => {
-  // workoutInfoDb represents all rows in the table modeling a workout
-  const firstRow = workoutInfoDb[0];
-
-  const workoutSpec = {
-    id: firstRow.workout_id,
-    template_id: firstRow.workout_template_id,
-    name: firstRow.workout_name,
-    description: firstRow.workout_description,
-    exercises: [],
-  };
-
-  // Add date only if it exists
-  if (firstRow.start_date !== undefined) {
-    workoutSpec.startDate = firstRow.start_date;
-  }
-
-  // Add template_id only if it exists
-  if (firstRow.template_id !== undefined) {
-    workoutSpec.template_id = firstRow.template_id;
-  }
-
-  workoutInfoDb.forEach((row) => {
-    if (!row.exercise_id) return;
-
-    const exerciseSet = {
-      id: row.exercise_id,
-      name: row.exercise_name,
-      set: row.exercise_set,
-      reps: row.exercise_reps,
-      weight: row.exercise_weight,
-      time_in_seconds: row.exercise_time_in_seconds,
-    };
-
-    // Add exercise_order only if it exists
-    if (row.exercise_order !== undefined) {
-      exerciseSet.order = row.exercise_order;
-    }
-
-    workoutSpec.exercises.push(exerciseSet);
-  });
-
-  return workoutSpec;
-};
-
-const _getWorkoutById = async (workoutId) => {
-  const q = workoutsWithExercisesQuery.replace(
-    "WHERE TRUE",
-    "WHERE wk.id = :workoutId"
-  );
-
-  const results = await sequelize.query(q, {
-    replacements: { workoutId },
-  });
-
-  const workout = results[0];
-
-  return _compactWorkoutInfo(workout);
-};
-
+// TODO Move this function to the model
 const _selectLastWorkoutsIdsInCronologicalOrder = async (
   templateId,
   userId,
@@ -135,7 +55,7 @@ const _selectLastWorkoutsIdsInCronologicalOrder = async (
 exports.getWorkoutById = catchAsync(async (req, res, next) => {
   const { workoutId } = req.params;
 
-  processedWorkout = await _getWorkoutById(workoutId);
+  processedWorkout = await Workout.getWorkoutByIdSpec(workoutId);
 
   res.status(200).json(processedWorkout);
 });
@@ -162,7 +82,7 @@ exports.getLastWorkoutsFromATemplateByUserId = catchAsync(
     }
 
     const workoutsPromises = idsArray.map((workoutInfo) =>
-      _getWorkoutById(workoutInfo.workout_id)
+      Workout.getWorkoutByIdSpec(workoutInfo.workout_id)
     );
 
     const workouts = await Promise.all(workoutsPromises);
@@ -181,7 +101,7 @@ exports.getLastSingleWorkoutFromTemplateByUserId = catchAsync(
       1
     );
 
-    const workout = await _getWorkoutById(workoutId.workout_id);
+    const workout = await Workout.getWorkoutByIdSpec(workoutId.workout_id);
 
     res.status(200).json(workout);
   }
@@ -258,7 +178,7 @@ exports.updateEndDateOfWorkout = catchAsync(async (req, res, next) => {
              end_date = NOW() AT TIME ZONE 'UTC' 
              WHERE workout_id = :workoutId;`;
 
-  const processedWorkout = await _getWorkoutById(workoutId);
+  const processedWorkout = await Workout.getWorkoutByIdSpec(workoutId);
 
   res.status(200).json(processedWorkout);
 });
@@ -275,7 +195,7 @@ exports.updateWorkout = catchAsync(async (req, res, next) => {
     }
   );
 
-  const processedWorkout = await _getWorkoutById(workoutId);
+  const processedWorkout = await Workout.getWorkoutByIdSpec(workoutId);
 
   res.status(200).json(processedWorkout);
 });
@@ -370,7 +290,7 @@ exports.deleteWorkout = catchAsync(async (req, res, next) => {
 
   await sequelize.transaction(async (t) => {
     // Get workout info to return to the client
-    deletedWorkout = await _getWorkoutById(workoutId);
+    deletedWorkout = await Workout.getWorkoutByIdSpec(workoutId);
 
     await UserWorkouts.destroy({
       where: { workout_id: workoutId },

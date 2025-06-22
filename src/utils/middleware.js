@@ -1,11 +1,15 @@
 const dbUsers = require("../db/users");
 const dbExercises = require("../db/exercises");
-const dbWorkouts = require("../db/workouts");
-const dbWorkoutsTemplates = require("../db/workoutsTemplates");
 const dbSubscriptions = require("../db/subscriptions");
 const utils = require("./utils");
 const { validationResult } = require("express-validator");
 const hash = require("../hashing");
+const {
+  Workout,
+  UserWorkouts,
+  WorkoutTemplate,
+  WorkoutTemplateExercises,
+} = require("../models");
 
 const authenticatedUser = (req, res, next) => {
   try {
@@ -95,10 +99,12 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
   let workoutBelongsToUser;
 
   try {
-    workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
-      workoutId,
-      loggedUserId
-    );
+    workoutBelongsToUser = await UserWorkouts.findOne({
+      where: {
+        user_id: loggedUserId,
+        workout_id: workoutId,
+      },
+    });
   } catch (error) {
     console.log(error);
   }
@@ -118,11 +124,12 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
     ? req.params.templateId
     : req.body.templateId;
 
-  const workoutTemplateBelongsToUser =
-    await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-      templateId,
-      loggedUserId
-    );
+  const workoutTemplateBelongsToUser = await WorkoutTemplate.findOne({
+    where: {
+      user_id: loggedUserId,
+      id: templateId,
+    },
+  });
 
   if (workoutTemplateBelongsToUser) {
     next();
@@ -141,11 +148,12 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
     ? req.body.templateId
     : req.body.template_id;
 
-  const workoutTemplateBelongsToUser =
-    await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-      templateId,
-      loggedUserId
-    );
+  const workoutTemplateBelongsToUser = await WorkoutTemplate.findOne({
+    where: {
+      user_id: loggedUserId,
+      id: templateId,
+    },
+  });
 
   if (workoutTemplateBelongsToUser) {
     return next();
@@ -157,11 +165,12 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
   );
   const commonUserId = commonUser.id;
 
-  const workoutTemplateBelongsToCommonUser =
-    await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-      templateId,
-      commonUserId
-    );
+  const workoutTemplateBelongsToCommonUser = await WorkoutTemplate.findOne({
+    where: {
+      user_id: commonUserId,
+      id: templateId,
+    },
+  });
 
   if (workoutTemplateBelongsToCommonUser) {
     return next();
@@ -306,7 +315,11 @@ const checkWorkoutExistsById = async (req, res, next) => {
     ? req.params.workoutId
     : req.body.workoutId;
 
-  const workout = await dbWorkouts.selectworkoutById(workoutId);
+  const workout = await Workout.findOne({
+    where: {
+      id: workoutId,
+    },
+  });
 
   if (!workout) {
     return res.status(404).json({
@@ -345,7 +358,7 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     ? req.params.exerciseSet
     : req.body.exerciseSet;
 
-  const workout = await dbWorkouts.selectworkoutById(workoutId);
+  const workout = await Workout.getWorkoutByIdSpec(workoutId);
   const exercises = workout.exercises;
 
   const setExists =
@@ -370,9 +383,11 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
     ? req.body.templateId
     : req.body.template_id;
 
-  const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(
-    templateId
-  );
+  const template = await WorkoutTemplate.findOne({
+    where: {
+      id: templateId,
+    },
+  });
 
   if (!template) {
     return res.status(404).json({
@@ -396,11 +411,13 @@ const checkExerciseOrderExistsInWorkoutTemplate = async (req, res, next) => {
     : req.body.exerciseOrder;
 
   const exerciseInWorkoutTemplateExists =
-    await dbWorkoutsTemplates.checkExerciseInWorkoutTemplateExists(
-      templateId,
-      exerciseId,
-      exerciseOrder
-    );
+    await WorkoutTemplateExercises.findOne({
+      where: {
+        workout_template_id: templateId,
+        exercise_id: exerciseId,
+        exercise_order: exerciseOrder,
+      },
+    });
 
   if (!exerciseInWorkoutTemplateExists) {
     return res.status(404).json({
