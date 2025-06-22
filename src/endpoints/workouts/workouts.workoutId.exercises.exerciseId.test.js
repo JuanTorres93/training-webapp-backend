@@ -339,7 +339,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
   describe("delete requests", () => {
     let user;
     let workout;
-    let initialExercise;
+    let exerciseToDelete;
     let exercisesIds = {};
 
     beforeAll(async () => {
@@ -365,7 +365,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
 
       workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
       workout = workout.body;
-      initialExercise = workout.exercises[0];
+      exerciseToDelete = workout.exercises[0];
 
       // logout user
       await actions.logoutUser(request);
@@ -379,53 +379,31 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
       });
 
       describe("returns 400 error code when", () => {
-        it("workoutid is string", async () => {
-          const response = await request.delete(
-            BASE_ENDPOINT + "/wrongId" + `/exercises/${initialExercise.id}`
+        it("workoutId is not UUID", async () => {
+          const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + "/TEST_PARAM" + `/exercises/${exerciseToDelete.id}`,
+            "delete"
           );
-          expect(response.statusCode).toStrictEqual(400);
+
+          await checkURLParamIsNotUUID();
         });
 
-        it("workoutid is boolean", async () => {
-          const response = await request.delete(
-            BASE_ENDPOINT + "/true" + `/exercises/${initialExercise.id}`
+        it("exerciseId is not UUID", async () => {
+          const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+            request,
+            BASE_ENDPOINT + `/${workout.id}` + `/exercises/TEST_PARAM`,
+            "delete"
           );
-          expect(response.statusCode).toStrictEqual(400);
-        });
 
-        it("workoutid is not positive", async () => {
-          const response = await request.delete(
-            BASE_ENDPOINT + "/-23" + `/exercises/${initialExercise.id}`
-          );
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is string", async () => {
-          const response = await request.delete(
-            BASE_ENDPOINT + `/${workout.id}` + `/exercises/wrongId`
-          );
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is boolean", async () => {
-          const response = await request.delete(
-            BASE_ENDPOINT + `/${workout.id}` + `/exercises/true`
-          );
-          expect(response.statusCode).toStrictEqual(400);
-        });
-
-        it("exerciseid is not positive", async () => {
-          const response = await request.delete(
-            BASE_ENDPOINT + `/${workout.id}` + `/exercises/-23`
-          );
-          expect(response.statusCode).toStrictEqual(400);
+          await checkURLParamIsNotUUID();
         });
       });
 
       describe("401 response when", () => {
         it("user is not logged in", async () => {
           const response = await request.delete(
-            BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+            BASE_ENDPOINT + `/${workout.id}/exercises/${exerciseToDelete.id}`
           );
           expect(response.statusCode).toStrictEqual(401);
         });
@@ -440,7 +418,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
           });
 
           const response = await request.delete(
-            BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+            BASE_ENDPOINT + `/${workout.id}/exercises/${exerciseToDelete.id}`
           );
 
           // logout user
@@ -454,7 +432,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
         const uuid = "00000000-0000-0000-0000-000000000000";
         it("workoutid is valid but workout with that id does not exist", async () => {
           const response = await request.delete(
-            BASE_ENDPOINT + "/" + uuid + `/exercises/${initialExercise.id}`
+            BASE_ENDPOINT + "/" + uuid + `/exercises/${exerciseToDelete.id}`
           );
           expect(response.statusCode).toStrictEqual(404);
         });
@@ -478,7 +456,7 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
         await actions.loginUser(request, newUserReq);
 
         response = await request.delete(
-          BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}`
+          BASE_ENDPOINT + `/${workout.id}/exercises/${exerciseToDelete.id}`
         );
       });
 
@@ -491,16 +469,63 @@ describe(`${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}", () => {
         expect(response.statusCode).toStrictEqual(200);
       });
 
+      it("returns array of exercises", async () => {
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body.length).toBeGreaterThan(1);
+
+        for (const exercise of response.body) {
+          assertExerciseInWorkoutSwaggerSpec(exercise);
+        }
+      });
+
       it("returns deleted exercise", () => {
         const deletedExercise = response.body[0];
 
-        expect(deletedExercise.exerciseId).toStrictEqual(initialExercise.id);
-        expect(deletedExercise.exerciseSet).toStrictEqual(initialExercise.set);
-        expect(deletedExercise.reps).toStrictEqual(initialExercise.reps);
-        expect(deletedExercise.weight).toStrictEqual(initialExercise.weight);
+        expect(deletedExercise.exerciseId).toStrictEqual(exerciseToDelete.id);
+        expect(deletedExercise.exerciseSet).toStrictEqual(exerciseToDelete.set);
+        expect(deletedExercise.reps).toStrictEqual(exerciseToDelete.reps);
+        expect(deletedExercise.weight).toStrictEqual(exerciseToDelete.weight);
         expect(deletedExercise.time_in_seconds).toStrictEqual(
-          initialExercise.time_in_seconds
+          exerciseToDelete.time_in_seconds
         );
+      });
+
+      it("returns array when only one set exists", async () => {
+        await actions.loginUser(request, newUserReq);
+
+        // previous delete should have deleted the exercise
+        const workoutResponse = await request.get(
+          BASE_ENDPOINT + `/${workout.id}`
+        );
+        workout = workoutResponse.body;
+        const existingExercisesIds = workout.exercises.map(
+          (exercise) => exercise.id
+        );
+        expect(existingExercisesIds).not.toContain(exerciseToDelete.id);
+
+        await actions.addExerciseToWorkout(request, workout.id, {
+          exerciseId: exerciseToDelete.id,
+          exerciseSet: 1,
+          reps: 5,
+          weight: 85,
+          time_in_seconds: 0,
+        });
+
+        const response = await request.delete(
+          BASE_ENDPOINT + `/${workout.id}/exercises/${exerciseToDelete.id}`
+        );
+
+        await actions.logoutUser(request);
+
+        expect(response.statusCode).toStrictEqual(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body.length).toBe(1);
+        assertExerciseInWorkoutSwaggerSpec(response.body[0]);
+        expect(response.body[0].exerciseId).toStrictEqual(exerciseToDelete.id);
+        expect(response.body[0].exerciseSet).toStrictEqual(1);
+        expect(response.body[0].reps).toStrictEqual(5);
+        expect(response.body[0].weight).toStrictEqual(85);
+        expect(response.body[0].time_in_seconds).toStrictEqual(0);
       });
     });
   });

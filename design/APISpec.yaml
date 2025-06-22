@@ -800,6 +800,9 @@ paths:
                   type: array
                   $ref: "#/components/examples/ExerciseWithMultipleSets"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 

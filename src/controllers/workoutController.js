@@ -395,12 +395,30 @@ exports.deleteWorkout = catchAsync(async (req, res, next) => {
 exports.deleteExerciseFromWorkout = catchAsync(async (req, res, next) => {
   const { workoutId, exerciseId } = req.params;
 
-  const deletedExercise = await dbWorkouts.deleteExerciseFromWorkout(
-    workoutId,
-    exerciseId
-  );
+  // find exercises to return to the client
+  const deletedExercises = await WorkoutExercises.findAll({
+    where: {
+      workout_id: workoutId,
+      exercise_id: exerciseId,
+    },
+  });
 
-  res.status(200).json(deletedExercise);
+  await WorkoutExercises.destroy({
+    where: {
+      workout_id: workoutId,
+      exercise_id: exerciseId,
+    },
+  });
+
+  const deletedExercisesSpec = deletedExercises.map((exercise) => ({
+    exerciseId: exercise.exercise_id,
+    exerciseSet: exercise.exercise_set,
+    reps: exercise.exercise_reps,
+    weight: exercise.exercise_weight,
+    time_in_seconds: exercise.exercise_time_in_seconds,
+  }));
+
+  res.status(200).json(deletedExercisesSpec);
 });
 
 exports.deleteExerciseSetFromWorkout = catchAsync(async (req, res, next) => {
