@@ -1,17 +1,17 @@
 -- IMPORTANT: EVERY TIME A NEW SUBSCRIPTION TYPE IS ADDED, IT MUST BE INSERTED ALSO IN THE
 -- truncateTable in subscriptions.js db file and initializeDefaultValuesDatabase.js
-INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
-VALUES ('FREE', 'Free subscription%$Suscripción gratuita', 0, 'Free%$Gratis', 'Free subscription for selected people')
+INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal, is_public)
+VALUES ('FREE', 'Free subscription%$Suscripción gratuita', 0, 'Free%$Gratis', 'Free subscription for selected people', true)
 ON CONFLICT (type) DO NOTHING;
 
-INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
-VALUES ('FREE_TRIAL', 'Free trial subscription. Includes everything during a limited time%$Prueba gratuita. Incluye todo durante un tiempo limitado.', 0, 'Free trial%$Prueba gratuita', 'First subscription that an account is attached to. This is the lead magnet.')
+INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal, is_public)
+VALUES ('FREE_TRIAL', 'Free trial subscription. Includes everything during a limited time%$Prueba gratuita. Incluye todo durante un tiempo limitado.', 0, 'Free trial%$Prueba gratuita', 'First subscription that an account is attached to. This is the lead magnet.', true)
 ON CONFLICT (type) DO NOTHING;
 
-INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
-VALUES ('PAID', 'Paid subscription. Includes everything.%$Suscripción de pago. Incluye todo.', 100, 'Paid%$Pagada', 'Normal, paid subscription.') -- 1 euro
+INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal, is_public)
+VALUES ('PAID', 'Paid subscription. Includes everything.%$Suscripción de pago. Incluye todo.', 100, 'Paid%$Pagada', 'Normal, paid subscription.', true) -- 1 euro
 ON CONFLICT (type) DO NOTHING;
 
-INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal)
-VALUES ('EXPIRED', 'Expired subscription%$Suscripción caducada', 0, 'Expired%$Caducada', 'Expired subscription') 
+INSERT INTO subscriptions (type, description, base_price_in_eur_cents, name, description_internal, is_public)
+VALUES ('EXPIRED', 'Expired subscription%$Suscripción caducada', 0, 'Expired%$Caducada', 'Expired subscription', true) 
 ON CONFLICT (type) DO NOTHING;

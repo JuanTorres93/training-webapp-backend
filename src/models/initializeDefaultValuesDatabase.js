@@ -8,6 +8,7 @@ exports.initSubscriptions = async (SubscriptionModel) => {
       base_price_in_eur_cents: 0,
       name: "Free%$Gratis",
       description_internal: "Free subscription for selected people",
+      is_public: true,
     },
     {
       type: "FREE_TRIAL",
@@ -17,6 +18,7 @@ exports.initSubscriptions = async (SubscriptionModel) => {
       name: "Free trial%$Prueba gratuita",
       description_internal:
         "First subscription that an account is attached to. This is the lead magnet.",
+      is_public: true,
     },
     {
       type: "PAID",
@@ -25,6 +27,7 @@ exports.initSubscriptions = async (SubscriptionModel) => {
       base_price_in_eur_cents: 100,
       name: "Paid%$Pagada",
       description_internal: "Normal, paid subscription.",
+      is_public: true,
     }, // 1 euro
     {
       type: "EXPIRED",
@@ -32,6 +35,7 @@ exports.initSubscriptions = async (SubscriptionModel) => {
       base_price_in_eur_cents: 0,
       name: "Expired%$Caducada",
       description_internal: "Expired subscription",
+      is_public: true,
     },
   ];
 

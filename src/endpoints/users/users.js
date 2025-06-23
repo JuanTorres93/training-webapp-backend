@@ -75,6 +75,7 @@ router.post(
 
 // update user by id
 router.put(
+  // TODO IMPORTANT: prevent updating subscription_id and test functionality
   "/:userId",
   validateUpdateUserParams,
   validateUUIDParameter("userId"),

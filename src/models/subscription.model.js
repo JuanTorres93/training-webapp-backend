@@ -29,12 +29,27 @@ module.exports = (sequelize) => {
       description_internal: {
         type: DataTypes.TEXT,
       },
+      // TODO IMPORTANT! Add this field to the PRODUCTION and dev databases
+      is_public: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false, // Default to public
+      },
     },
     {
       tableName: "subscriptions", // Explicitly specify the table name
       timestamps: false, // Disable timestamps if not needed
     }
   );
+
+  Subscription.prototype.toJSON = function () {
+    // Exclude sensitive fields from the JSON representation
+    // For example, when creating a user. In that case the defaultScope seems not to be applied
+    const values = { ...this.get() };
+    delete values.is_public;
+    delete values.description_internal;
+    return values;
+  };
 
   return Subscription;
 };
