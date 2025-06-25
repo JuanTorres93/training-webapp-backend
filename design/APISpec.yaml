@@ -1392,12 +1392,18 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /payments/checkout-session/{subscriptionId}:
+  /payments/checkout-session/{subscriptionId}/{lang}:
     parameters:
       - name: subscriptionId
         in: path
         required: true
         description: Subscription id
+        schema:
+          type: string
+      - name: lang
+        in: path
+        required: true
+        description: Language to be used in checkout session
         schema:
           type: string
     get:
@@ -1418,6 +1424,9 @@ paths:
 
         "401":
           $ref: "#/components/responses/401"
+
+        "404":
+          $ref: "#/components/responses/404"
 
 components:
   schemas:
