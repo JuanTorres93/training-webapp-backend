@@ -1,5 +1,4 @@
 const AppError = require("../utils/appError");
-const dbSubscriptions = require("../db/subscriptions");
 const utils = require("./utils");
 const { validationResult } = require("express-validator");
 const hash = require("../hashing");
@@ -7,6 +6,7 @@ const {
   User,
   Exercise,
   Workout,
+  Subscription,
   UserWorkouts,
   WorkoutTemplate,
   WorkoutTemplateExercises,
@@ -377,9 +377,13 @@ const checkSubscriptionExistsById = async (req, res, next) => {
   const subscriptionId = req.params.subscriptionId
     ? req.params.subscriptionId
     : req.body.subscriptionId;
-  const subscription = await dbSubscriptions.selectSuscriptionById(
-    subscriptionId
-  );
+
+  const subscription = await Subscription.findOne({
+    where: {
+      id: subscriptionId,
+    },
+  });
+
   if (!subscription) {
     return next(new AppError("Subscription not found", 404));
   }

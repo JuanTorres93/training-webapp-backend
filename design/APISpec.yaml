@@ -1368,12 +1368,6 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-        "403":
-          $ref: "#/components/responses/403"
-
-        "404":
-          $ref: "#/components/responses/404"
-
   /payments/cancel-subscription:
     get:
       tags:
@@ -1985,6 +1979,12 @@ components:
         next_payment_date:
           type: string
           description: Next payment date
+        stripe_subscription_id:
+          type: string
+          description: Stripe subscription id
+        marked_for_cancel:
+          type: boolean
+          description: Whether the subscription is marked for cancellation
         created_at:
           type: string
           description: Payment creation date
@@ -1994,6 +1994,8 @@ components:
         subscription_id: "7847b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
         amount_in_eur: 2
         next_payment_date: "2021-06-01T00:00:00.000Z"
+        stripe_subscription_id: "sub_1234567890abcdef"
+        marked_for_cancel: false
         created_at: "2021-06-01T00:00:00.000Z"
 
     ReqBodyCreateNewWeight:

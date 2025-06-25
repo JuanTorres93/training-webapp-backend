@@ -1,5 +1,8 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
+const catchAsync = require("../utils/catchAsync.js");
+const AppError = require("../utils/appError.js");
+const { Payment } = require("../models");
 const subscriptionsDb = require("../db/subscriptions.js");
 const paymentsDb = require("../db/payments.js");
 const { langSeparator } = require("../config.js");
@@ -354,31 +357,25 @@ exports.webhookCheckout = async (req, res, next) => {
   res.status(200).json({ received: true });
 };
 
-exports.getLastPaymentForLoggedUser = async (req, res, next) => {
+exports.getLastPaymentForLoggedUser = catchAsync(async (req, res, next) => {
   const userId = req.session.passport.user.id;
 
-  try {
-    const payment = await paymentsDb.getUserLastPayment(userId);
+  const payment = await Payment.findOne({
+    where: { user_id: userId },
+    order: [["created_at", "DESC"]],
+  });
 
-    if (!payment) {
-      return res.status(404).json({
-        status: "fail",
-        message: "No payment found for this user",
-      });
-    }
-
-    res.status(200).json(payment);
-  } catch (error) {
-    console.log("error");
-    console.log(error);
-    return res.status(400).json({
+  if (!payment) {
+    return res.status(404).json({
       status: "fail",
-      message: error.message,
+      message: "No payment found for this user",
     });
   }
-};
 
-exports.cancelSubscription = async (req, res, next) => {
+  res.status(200).json(payment);
+});
+
+exports.cancelSubscription = catchAsync(async (req, res, next) => {
   const userId = req.session.passport.user.id;
 
   // Get the subscription for the user
@@ -411,9 +408,9 @@ exports.cancelSubscription = async (req, res, next) => {
       message: error.message,
     });
   }
-};
+});
 
-exports.resumeSubscription = async (req, res, next) => {
+exports.resumeSubscription = catchAsync(async (req, res, next) => {
   const userId = req.session.passport.user.id;
 
   // Get the subscription for the user
@@ -446,4 +443,4 @@ exports.resumeSubscription = async (req, res, next) => {
       message: error.message,
     });
   }
-};
+});

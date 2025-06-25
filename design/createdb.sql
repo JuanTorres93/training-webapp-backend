@@ -94,7 +94,7 @@ CREATE TABLE payments (
   subscription_id UUID NOT NULL REFERENCES subscriptions(id),
   amount_in_eur REAL NOT NULL,
   stripe_subscription_id TEXT,
-  next_payment_date DATE,
+  next_payment_date TIMESTAMP,
   marked_for_cancel BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL
 );
