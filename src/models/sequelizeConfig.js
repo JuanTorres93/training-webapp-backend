@@ -1,5 +1,6 @@
 const { Sequelize } = require("sequelize");
 
+// IMPORTANT! Changes in connection should also be reflected in db/index.js Dockerfile
 let config = {
   dialect: "postgres",
   host: process.env.DB_HOST,

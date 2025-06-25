@@ -1,10 +1,12 @@
 const { Pool } = require("pg");
 
+// IMPORTANT! Changes in connection should also be reflected in models/sequelizeConfig.js
 const commonPoolInfo = {
-  user: process.env.DB_USER,
   host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
   password: process.env.DB_USER_PASSWORD,
+  database: process.env.DB_NAME,
 };
 
 if (process.env.NODE_ENV === "test") {
@@ -51,29 +53,10 @@ if (process.env.NODE_ENV === "test") {
   );
 }
 
-const query = (text, params, callback) => {
-  // Example of using params. This is done instead of concatenating strings to prevent SQL injection
-  // query("INSERT INTO customers (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)" ,
-  //          [first_name, last_name, email, password],   // Values stored in variables
-  //          (error, results) => {
-  //              if (error) {
-  //                  throw error
-  //              }
-  //          })
-  return pool.query(text, params, callback);
-};
-
-const getPoolClient = async () => {
-  // DOCS for transactions: https://node-postgres.com/features/transactions
-  return await pool.connect();
-};
-
 const getPool = () => {
   return pool;
 };
 
 module.exports = {
-  query,
   getPool,
-  getPoolClient,
 };

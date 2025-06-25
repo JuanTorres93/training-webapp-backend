@@ -26,7 +26,7 @@ const _loginSuccessful = (req, res, next) => {
   // res.redirect("profile");
 
   const user = {
-    ...req.user,
+    ...req.user.toJSON(),
     expirationDate: _computeExpirationDate(),
   };
 

@@ -14,10 +14,10 @@ const rateLimit = require("express-rate-limit");
 const AppError = require("./utils/appError.js");
 const globalErrorHandler = require("./controllers/errorController.js");
 // TODO Borrar cuando se pase a Sequelize
-const { getPool, getPoolClient } = require("./db/index.js");
+const { getPool } = require("./db/index.js");
 const config = require("./config.js");
 
-const { sequelize, Subscription } = require("./models/index.js");
+const { sequelize, Subscription } = require("./models");
 const {
   initSubscriptions,
 } = require("./models/initializeDefaultValuesDatabase.js");
@@ -233,31 +233,27 @@ const createApp = () => {
         .filter((query) => query.length > 0);
 
     try {
-      const client = await getPoolClient(); // Get a client from the pool
-      try {
-        await client.query("BEGIN"); // Start transaction
-
-        const resultsWorkoutsIds = await client.query(
+      await sequelize.transaction(async (t) => {
+        // TODO IMPORTANT: Check that this periodic query still works
+        const resultsWorkoutsIds = await sequelize.query(
           deleteFromUsersWorkoutsQuery,
-          []
-        ); // Execute query within transaction
-        const workoutsIds = resultsWorkoutsIds.rows.map(
-          (row) => row.workout_id
+          {
+            transaction: t,
+          }
         );
 
+        const workoutsIds = resultsWorkoutsIds.map((row) => row.workout_id);
+
+        // Execute the second query for each workout ID
         for (const workoutId of workoutsIds) {
-          await client.query(deleteFromWorkoutsQuery, [workoutId]);
+          await sequelize.query(deleteFromWorkoutsQuery, {
+            replacements: [workoutId],
+            transaction: t,
+          });
         }
 
-        await client.query("COMMIT"); // Commit transaction
-
         console.log("Periodic query executed: remove empty workouts");
-      } catch (error) {
-        await client.query("ROLLBACK"); // Rollback transaction on error
-        throw error;
-      } finally {
-        client.release(); // Release client back to the pool
-      }
+      });
     } catch (err) {
       console.error("Error executing query:", err);
     }
