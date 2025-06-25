@@ -1392,6 +1392,33 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
+  /payments/resume-subscription:
+    get:
+      tags:
+        - Payments
+      description: Resumes subscription for logged in user
+      operationId: resumeUserSubscription
+      responses:
+        "200":
+          description: Resume subscription
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
+
   /payments/checkout-session/{subscriptionId}/{lang}:
     parameters:
       - name: subscriptionId
