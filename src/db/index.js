@@ -1,6 +1,8 @@
 const { Pool } = require("pg");
 
 // IMPORTANT! Changes in connection should also be reflected in models/sequelizeConfig.js
+// This connection is needed to create a store for the session. Sequelize cannot get the
+// needed pool in a robust way
 const commonPoolInfo = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
