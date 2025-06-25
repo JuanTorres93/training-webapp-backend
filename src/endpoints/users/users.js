@@ -35,10 +35,6 @@ router.patch(
 // ========== GET requests ==========
 // ==================================
 
-// Get all users
-// TODO IMPORTANT: ADD AUTHORIZATION AND AUTHENTICATION If this endpoint is wanted
-// router.get("/", userController.getAllUsers);
-
 // Truncate test table
 router.get("/truncate", userController.truncateTestTable);
 
@@ -79,6 +75,7 @@ router.post(
 
 // update user by id
 router.put(
+  // TODO IMPORTANT: prevent updating subscription_id and test functionality
   "/:userId",
   validateUpdateUserParams,
   validateUUIDParameter("userId"),

@@ -40,8 +40,8 @@ paths:
                     example: "logged in"
                   user:
                     $ref: "#/components/schemas/ResponseUser"
-        "401":
-          $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
 
   /login/auth/me:
     get:
@@ -88,20 +88,20 @@ paths:
           $ref: "#/components/responses/400"
 
   /users:
-    get:
-      tags:
-        - Users
-      description: Returns all registered users
-      operationId: getAllUsers
-      responses:
-        "200":
-          description: All the users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResponseUser"
+    #get:
+    #  tags:
+    #    - Users
+    #  description: Returns all registered users
+    #  operationId: getAllUsers
+    #  responses:
+    #    "200":
+    #      description: All the users
+    #      content:
+    #        application/json:
+    #          schema:
+    #            type: array
+    #            items:
+    #              $ref: "#/components/schemas/ResponseUser"
 
     post:
       tags:
@@ -151,6 +151,9 @@ paths:
 
         "400":
           $ref: "#/components/responses/400"
+
+        "401":
+          $ref: "#/components/responses/401"
 
         "403":
           $ref: "#/components/responses/403"
@@ -212,20 +215,20 @@ paths:
           $ref: "#/components/responses/404"
 
   /exercises:
-    get:
-      tags:
-        - Exercises
-      description: Returns all exercises
-      operationId: getAllExercises
-      responses:
-        "200":
-          description: List of all exercises
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResponseExercise"
+    #get:
+    #  tags:
+    #    - Exercises
+    #  description: Returns all exercises
+    #  operationId: getAllExercises
+    #  responses:
+    #    "200":
+    #      description: List of all exercises
+    #      content:
+    #        application/json:
+    #          schema:
+    #            type: array
+    #            items:
+    #              $ref: "#/components/schemas/ResponseExercise"
     post:
       tags:
         - Exercises
@@ -394,21 +397,6 @@ paths:
           $ref: "#/components/responses/401"
 
   /workouts:
-    get:
-      tags:
-        - Workouts
-      description: Returns all workouts
-      operationId: getAllWorkouts
-      responses:
-        "200":
-          description: List of all workouts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ResponseWorkout"
-
     post:
       tags:
         - Workouts
@@ -430,6 +418,12 @@ paths:
 
         "401":
           $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
 
       requestBody:
         content:
@@ -545,7 +539,7 @@ paths:
               $ref: "#/components/schemas/ReqBodyUpdateWorkout"
             examples:
               UpdateWorkout:
-                $ref: "#/components/examples/CreateWorkout"
+                $ref: "#/components/examples/ReqBodyUpdateWorkoutExample"
 
     delete:
       tags:
@@ -594,6 +588,11 @@ paths:
                 type: array
                 items:
                   type: integer
+              examples:
+                WorkoutIds:
+                  value:
+                    - workout_id: "a763f7b7-5038-4c85-8d32-5cb6936f80de"
+                    - workout_id: "80c5a5e6-a0c5-4117-87f6-d03c2c0aff8a"
 
         "400":
           $ref: "#/components/responses/400"
@@ -673,6 +672,9 @@ paths:
                 Workout:
                   $ref: "#/components/examples/Workout"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 
@@ -716,6 +718,9 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResponseWorkout"
+
+        "400":
+          $ref: "#/components/responses/400"
 
         "401":
           $ref: "#/components/responses/401"
@@ -795,6 +800,9 @@ paths:
                   type: array
                   $ref: "#/components/examples/ExerciseWithMultipleSets"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 
@@ -851,25 +859,6 @@ paths:
           $ref: "#/components/responses/404"
 
   /workouts/templates:
-    get:
-      tags:
-        - Workouts
-      description: Returns all templates
-      operationId: getWorkoutAllTemplates
-      responses:
-        "200":
-          description: Returns all templates
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseAllWorkoutTemplates"
-              examples:
-                Workout:
-                  $ref: "#/components/examples/AllWorkoutTemplates"
-
-        "401":
-          $ref: "#/components/responses/401"
-
     post:
       tags:
         - Workouts
@@ -924,6 +913,9 @@ paths:
               examples:
                 Workout:
                   $ref: "#/components/examples/AllWorkoutTemplates"
+
+        "400":
+          $ref: "#/components/responses/400"
 
         "401":
           $ref: "#/components/responses/401"
@@ -1118,11 +1110,17 @@ paths:
                 items:
                   $ref: "#/components/schemas/ResponseCarouselInfo"
 
+        "400":
+          $ref: "#/components/responses/400"
+
         "401":
           $ref: "#/components/responses/401"
 
         "403":
           $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
 
   /workouts/templates/{templateId}/exercises/{exerciseId}/{exerciseOrder}:
     parameters:
@@ -1370,12 +1368,6 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-        "403":
-          $ref: "#/components/responses/403"
-
-        "404":
-          $ref: "#/components/responses/404"
-
   /payments/cancel-subscription:
     get:
       tags:
@@ -1400,12 +1392,45 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /payments/checkout-session/{subscriptionId}:
+  /payments/resume-subscription:
+    get:
+      tags:
+        - Payments
+      description: Resumes subscription for logged in user
+      operationId: resumeUserSubscription
+      responses:
+        "200":
+          description: Resume subscription
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+
+        "401":
+          $ref: "#/components/responses/401"
+
+        "403":
+          $ref: "#/components/responses/403"
+
+        "404":
+          $ref: "#/components/responses/404"
+
+  /payments/checkout-session/{subscriptionId}/{lang}:
     parameters:
       - name: subscriptionId
         in: path
         required: true
         description: Subscription id
+        schema:
+          type: string
+      - name: lang
+        in: path
+        required: true
+        description: Language to be used in checkout session
         schema:
           type: string
     get:
@@ -1426,6 +1451,9 @@ paths:
 
         "401":
           $ref: "#/components/responses/401"
+
+        "404":
+          $ref: "#/components/responses/404"
 
 components:
   schemas:
@@ -1453,6 +1481,9 @@ components:
         second_last_name:
           type: string
           description: User second last name
+        language:
+          type: string
+          description: User language
         is_premium:
           type: boolean
           description: User premium status
@@ -1470,6 +1501,7 @@ components:
         last_name: "Doe"
         img: "Link to img"
         second_last_name: "Smith"
+        language: "en"
         is_premium: false
         is_early_adopter: true
         created_at: "2021-06-01T00:00:00.000Z"
@@ -1567,7 +1599,7 @@ components:
           type: string
           description: Exercise email
       example:
-        id: 3
+        id: 9876234-1234-1234-1234-123456789012
         name: "Bicep curl"
         description: "A staple in strength training, this exercise targets the biceps brachii muscle group. Executed with dumbbells or a barbell, the movement involves flexing the elbow to lift the weight towards the shoulders while keeping the upper arms stationary. Proper form is crucial to isolate the biceps and prevent swinging or momentum. It strengthens the biceps, improves arm aesthetics, and aids in functional movements like lifting."
       description: Exercise object
@@ -1775,13 +1807,17 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         date:
           type: string
           description: start date
         name:
           type: string
           description: Name of the template
+      example:
+        id: "9876234-1234-1234-1234-123456789012"
+        date: "2021-06-01T00:00:00.000Z"
+        name: "Pull"
 
     ReqBodyCreateWorkout:
       type: object
@@ -1822,9 +1858,6 @@ components:
     ReqBodyUpdateWorkout:
       type: object
       properties:
-        name:
-          type: string
-          description: Workout name
         description:
           type: string
           description: Workout description
@@ -1982,6 +2015,12 @@ components:
         next_payment_date:
           type: string
           description: Next payment date
+        stripe_subscription_id:
+          type: string
+          description: Stripe subscription id
+        marked_for_cancel:
+          type: boolean
+          description: Whether the subscription is marked for cancellation
         created_at:
           type: string
           description: Payment creation date
@@ -1991,6 +2030,8 @@ components:
         subscription_id: "7847b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
         amount_in_eur: 2
         next_payment_date: "2021-06-01T00:00:00.000Z"
+        stripe_subscription_id: "sub_1234567890abcdef"
+        marked_for_cancel: false
         created_at: "2021-06-01T00:00:00.000Z"
 
     ReqBodyCreateNewWeight:
@@ -2097,37 +2138,37 @@ components:
         name: Pull
         description: "Pull training routine"
         exercises:
-          - id: 4
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Pull up
             set: 1
             reps: 9
             weight: 7.5
             time_in_seconds: Null
-          - id: 4
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Pull up
             set: 2
             reps: 9
             weight: 7.5
             time_in_seconds: Null
-          - id: 4
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Pull up
             set: 3
             reps: 8
             weight: 7.5
             time_in_seconds: Null
-          - id: 5
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Barbell row
             set: 1
             reps: 8
             weight: 75
             time_in_seconds: Null
-          - id: 5
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Barbell row
             set: 2
             reps: 8
             weight: 75
             time_in_seconds: Null
-          - id: 5
+          - id: "8755b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b"
             name: Barbell row
             set: 3
             reps: 7
@@ -2136,68 +2177,68 @@ components:
 
     WorkoutTemplate:
       value:
-        id: 2
+        id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
         name: Pull
         description: "Pull training routine"
         exercises:
-          - id: 4
+          - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
             name: Pull up
             order: 1
             sets: 3
-          - id: 5
+          - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
             name: Barbell rows
             order: 2
             sets: 3
-          - id: 5
+          - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
             name: Biceps curl
             order: 3
             sets: 3
 
     WorkoutTemplateExercise:
       value:
-        workoutTemplateId: 2
-        exerciseId: 7
+        workoutTemplateId: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
+        exerciseId: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
         exerciseOrder: 2
         exerciseSets: 3
 
     AllWorkoutTemplates:
       value:
-        - id: 1
+        - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
           name: Push
           description: "Push training routine"
           exercises:
-            - id: 1
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Bench press
               order: 1
               sets: 3
-            - id: 2
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Military press
               order: 2
               sets: 3
-            - id: 3
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Dips
               order: 3
               sets: 3
-        - id: 2
+        - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
           name: Pull
           description: "Pull training routine"
           exercises:
-            - id: 4
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Pull up
               order: 1
               sets: 3
-            - id: 5
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Barbell rows
               order: 2
               sets: 3
-            - id: 5
+            - id: 09b1b3b0-7b3b-4b3b-8b3b-0b3b3b3b3b3b
               name: Biceps curl
               order: 3
               sets: 3
 
     CreateWorkout:
       value:
-        id: 6
+        id: 9876234-1234-1234-1234-123456789012
         template_id: "9876234-1234-1234-1234-123456789012"
         name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
@@ -2205,7 +2246,7 @@ components:
 
     CreateWorkoutTemplate:
       value:
-        userId: 2
+        userId: 9876234-1234-1234-1234-123456789012
         name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 
@@ -2216,14 +2257,14 @@ components:
 
     NewWorkoutTemplate:
       value:
-        id: 1
-        userId: 2
+        id: 9876234-1234-1234-1234-123456789012
+        userId: 9876234-1234-1234-1234-123456789012
         name: "Pull"
         description: "Pulling routine for back and bicep strenghtening"
 
     ExerciseFromWorkout:
       value:
-        exerciseId: 1
+        exerciseId: 9876234-1234-1234-1234-123456789012
         exerciseSet: 2
         reps: 7
         weight: 80
@@ -2231,17 +2272,17 @@ components:
 
     ExerciseWithMultipleSets:
       value:
-        - exerciseId: 1
+        - exerciseId: 9876234-1234-1234-1234-123456789012
           exerciseSet: 1
           reps: 7
           weight: 80
           time_in_seconds: null
-        - exerciseId: 1
+        - exerciseId: 9876234-1234-1234-1234-123456789012
           exerciseSet: 2
           reps: 7
           weight: 80
           time_in_seconds: null
-        - exerciseId: 1
+        - exerciseId: 9876234-1234-1234-1234-123456789012
           exerciseSet: 3
           reps: 6
           weight: 80
@@ -2256,7 +2297,7 @@ components:
 
     UpdateExerciseFromWorkout:
       value:
-        exerciseId: 1
+        exerciseId: 9876234-1234-1234-1234-123456789012
         exerciseSet: 2
         reps: 7
         weight: 80
@@ -2274,7 +2315,7 @@ components:
 
     AddExerciseToWorkoutTemplate:
       value:
-        exerciseId: 2
+        exerciseId: 9876234-1234-1234-1234-123456789012
         exerciseOrder: 6
         exerciseSets: 4
 
@@ -2282,3 +2323,7 @@ components:
       value:
         newExerciseOrder: 6
         exerciseSets: 4
+
+    ReqBodyUpdateWorkoutExample:
+      value:
+        description: New description

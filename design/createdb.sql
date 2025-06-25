@@ -7,7 +7,8 @@ CREATE TABLE subscriptions (
   description TEXT NOT NULL,
   base_price_in_eur_cents INTEGER NOT NULL,
   name VARCHAR(60) NOT NULL,
-  description_internal TEXT
+  description_internal TEXT,
+  is_public BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE users (
@@ -93,7 +94,7 @@ CREATE TABLE payments (
   subscription_id UUID NOT NULL REFERENCES subscriptions(id),
   amount_in_eur REAL NOT NULL,
   stripe_subscription_id TEXT,
-  next_payment_date DATE,
+  next_payment_date TIMESTAMP,
   marked_for_cancel BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL
 );

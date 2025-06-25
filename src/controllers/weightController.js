@@ -1,18 +1,25 @@
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const dbWeights = require("../db/weights");
+const { Weight, User } = require("../models");
 
 /////////////////////
 // READ OPERATIONS
 exports.getAllWeightsForUserId = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
-  const user = await dbWeights.selectAllWeightsForUser(userId);
 
-  if (user === undefined) {
+  const user = await User.findByPk(userId, {
+    include: {
+      model: Weight,
+      as: "weights",
+    },
+    order: [[{ model: Weight, as: "weights" }, "date", "ASC"]],
+  });
+
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
 
-  res.status(200).json(user);
+  res.status(200).json(user.weights);
 });
 
 /////////////////////
@@ -20,13 +27,27 @@ exports.getAllWeightsForUserId = catchAsync(async (req, res, next) => {
 exports.createNewWeightForUserId = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const weightExists = await dbWeights.weightExists(userId, req.body.date);
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+  const currentWeight = await Weight.findOne({
+    where: {
+      user_id: user.id,
+      date: req.body.date,
+    },
+  });
 
-  if (weightExists) {
+  if (currentWeight) {
     return next(new AppError("Weight already exists for that date", 409));
   }
 
-  const newWeight = await dbWeights.addNewWeight(userId, req.body);
+  const newWeight = await Weight.create({
+    user_id: user.id,
+    date: req.body.date,
+    weight: req.body.weight,
+  });
+
   return res.status(201).json(newWeight);
 });
 
@@ -35,14 +56,28 @@ exports.createNewWeightForUserId = catchAsync(async (req, res, next) => {
 exports.updateWeightForUserId = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const weightExists = await dbWeights.weightExists(userId, req.body.date);
-
-  if (!weightExists) {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+  const currentWeight = await Weight.findOne({
+    where: {
+      user_id: user.id,
+      date: req.body.date,
+    },
+  });
+  if (!currentWeight) {
     return next(new AppError("Weight does not exist for that date", 404));
   }
+  const updatedWeight = await Weight.update(req.body, {
+    where: {
+      user_id: user.id,
+      date: req.body.date,
+    },
+    returning: true,
+  });
 
-  const updatedWeight = await dbWeights.updateWeight(userId, req.body);
-  return res.status(200).json(updatedWeight);
+  return res.status(200).json(updatedWeight[1][0]);
 });
 
 /////////////////////

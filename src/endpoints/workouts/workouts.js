@@ -4,10 +4,8 @@ const workoutController = require("../../controllers/workoutController.js");
 const workoutsValidators = require("../../validators/workouts.js");
 const {
   validateIntegerParameter,
-  validateStringParameter,
   validateUUIDParameter,
 } = require("../../validators/generalPurpose.js");
-const dbWorkouts = require("../../db/workouts.js");
 const mw = require("../../utils/middleware.js");
 
 const router = express.Router();
@@ -15,10 +13,6 @@ const router = express.Router();
 // ==================================
 // ========== GET requests ==========
 // ==================================
-
-// Get all workouts
-// TODO later PROTECT THIS ROUTE IF THE ENDPOINT IS NEEDED
-//router.get('/', workoutController.getAllWorkouts);
 
 // Truncate test table
 router.get("/truncate", workoutController.truncateTestTable);
@@ -34,27 +28,29 @@ router.get(
 );
 
 // Get last workouts of a template by user
-// TODO HACER TESTS. SE USA EN REACT, PERO NO ESTÁ TESTEADO
 router.get(
   "/last/:templateId/user/:userId/:numberOfWorkouts",
   validateUUIDParameter("templateId"),
   validateUUIDParameter("userId"),
   validateIntegerParameter("numberOfWorkouts"),
   mw.checkWorkoutTemplateExistsById,
+  mw.checkUserExistsById,
   mw.authenticatedUser,
   mw.loggedUserIdEqualsUserIdInRequest,
+  mw.workoutTemplateBelongsToLoggedInORCommonUser,
   workoutController.getLastWorkoutsFromATemplateByUserId
 );
 
 // Get last workout of a template by user
-// TODO HACER TESTS. SE USA EN REACT, PERO NO ESTÁ TESTEADO
 router.get(
   "/last/:templateId/user/:userId",
   validateUUIDParameter("templateId"),
   validateUUIDParameter("userId"),
   mw.checkWorkoutTemplateExistsById,
+  mw.checkUserExistsById,
   mw.authenticatedUser,
   mw.loggedUserIdEqualsUserIdInRequest,
+  mw.workoutTemplateBelongsToLoggedInORCommonUser,
   workoutController.getLastSingleWorkoutFromTemplateByUserId
 );
 
@@ -69,7 +65,6 @@ router.get(
 );
 
 // Get all workouts from a template
-// TODO test EP
 router.get(
   "/all/:templateId",
   validateUUIDParameter("templateId"),
@@ -88,6 +83,8 @@ router.post(
   "/",
   workoutsValidators.validateCreateWorkoutParams,
   mw.authenticatedUser,
+  mw.checkWorkoutTemplateExistsById,
+  mw.workoutTemplateBelongsToLoggedInORCommonUser,
   workoutController.createWorkout
 );
 

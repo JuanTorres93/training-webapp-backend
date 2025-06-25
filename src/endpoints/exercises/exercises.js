@@ -13,8 +13,8 @@ const router = express.Router();
 // ==================================
 
 // Get all exercises
-// TODO protect this route?
-router.get("/", exerciseController.getAllExercises);
+// TODO remove this route?
+// router.get("/", exerciseController.getAllExercises);
 
 // Truncate test table
 router.get("/truncate", exerciseController.truncateTestTable);
@@ -27,7 +27,6 @@ router.get(
 );
 
 // Get exercise by id
-// TODO TEST 401 response case
 router.get(
   "/:exerciseId",
   validateUUIDParameter("exerciseId"),

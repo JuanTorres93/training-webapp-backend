@@ -2,7 +2,6 @@ const express = require("express");
 
 const templatesController = require("../../controllers/workoutTemplateController.js");
 const workoutsTemplatesValidators = require("../../validators/workoutsTemplates.js");
-const dbWorkoutsTemplates = require("../../db/workoutsTemplates.js");
 const {
   validateIntegerParameter,
   validateUUIDParameter,
@@ -14,13 +13,6 @@ const router = express.Router();
 // ==================================
 // ========== GET requests ==========
 // ==================================
-
-// Get all workouts templates
-// TODO modify spec to need authenticated user
-//router.get('/',
-//    mw.authenticatedUser,
-//    templatesController.getAllTemplates
-//);
 
 // Truncate test table
 router.get("/truncate", templatesController.truncateTestTable);

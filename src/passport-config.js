@@ -6,12 +6,11 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 // TODO Page must be deployed for LinkedIn login to be implemented (package already installed)
 
 const oautCodes = require("./oauthCodes");
-const { query } = require("./db/index");
 const hashing = require("./hashing");
-const dbUser = require("./db/users");
 const Email = require("./utils/email");
+const { User } = require("./models");
 
-const localStrategy = new LocalStrategy((username, password, done) => {
+const localStrategy = new LocalStrategy(async (username, password, done) => {
   // username and password are the credentials sent in the body of a POST request
   // done is a callback function whose purpose is to supply an authenticated user to
   // Passport if a user is authenticated. The logic within the anonymous function follows
@@ -26,67 +25,39 @@ const localStrategy = new LocalStrategy((username, password, done) => {
   // 1. An error or null if no error is found.
   // 2. A user or false if no user is found.
 
-  // Everything is selected in order for query to return a standar JS object and not
-  // a weird one in the shape of: { row: '(76,testUser,test@uuuser.com,,,)' }
-  // In addition, password is needed to be retrieved from db in order to compare it
-  // with the one submitted by the user.
-  const q = "SELECT * FROM users WHERE username = $1;";
-  const params = [username];
-
-  query(q, params, async (error, results) => {
-    if (error) return done(error);
-
-    const userObject = results.rows[0];
-
-    if (!userObject) return done(null, false);
-
-    if (userObject) {
-      const email = userObject.email;
-      const userWasCreatedWithOAuth = await dbUser.selectUserRegisteredByOAuth(
-        email
-      );
-
-      if (userWasCreatedWithOAuth) {
-        return done(error, false, {
-          msg: "User registered via other platform",
-        });
-      }
-    }
-
-    // If passwords do not match, then return no user.
-    // trim is included because I detected that my specific database
-    // was including some extra whitespaces at the end, leading to never
-    // be able to log in the user.
-    if (
-      !(await hashing.comparePlainTextToHash(
-        password,
-        userObject.password.trim()
-      ))
-    )
-      return done(null, false);
-
-    // Actual user info to be send
-    // TODO IMPORTANT SECURITY. I DON'T KNOW WHAT THIS DOES. I THOUGHT THIS TO BE
-    // THE RETURN VALUE WHEN LOGGING, BUT WHEN TESTING IT SEEMS TO BE THE VALUE
-    // RETURNED BY deserializUser function
-
-    // TODO IMPORTANT: IF SOMETHING IS UPDATED HERE, CHANGE IT ALSO IN THE
-    // resetPassword FUNCTION IN userController.js
-    const user = {
-      id: userObject.id,
-      username: userObject.username,
-      email: userObject.email,
-      subscription_id: userObject.subscription_id,
-      last_name: userObject.last_name,
-      img: userObject.img,
-      second_last_name: userObject.second_last_name,
-      is_premium: userObject.is_premium,
-      is_early_adopter: userObject.is_early_adopter,
-      created_at: userObject.created_at,
-    };
-
-    return done(null, user);
+  const user = await User.scope("sensitiveScope").findOne({
+    where: {
+      username,
+    },
   });
+
+  if (!user) return done(null, false);
+
+  // TODO IMPORTANT check if OAuth registration and login still works
+  const userWasCreatedWithOAuth = user.oauth_registration;
+
+  if (userWasCreatedWithOAuth) {
+    const error = new Error("User registered via other platform");
+
+    return done(error, false, {
+      code: user.oauth_registration,
+      // TODO check if msg can be deleted
+      msg: "User registered via other platform",
+    });
+  }
+
+  // If passwords do not match, then return no user.
+  // trim is included because I detected that my specific database
+  // was including some extra whitespaces at the end, leading to never
+  // be able to log in the user.
+  if (!(await hashing.comparePlainTextToHash(password, user.password.trim())))
+    return done(null, false);
+
+  // Actual user info to be send
+  // TODO IMPORTANT SECURITY. I DON'T KNOW WHAT THIS DOES. I THOUGHT THIS TO BE
+  // THE RETURN VALUE WHEN LOGGING, BUT WHEN TESTING IT SEEMS TO BE THE VALUE
+  // RETURNED BY deserializUser function
+  return done(null, user);
 });
 
 const googleStrategy = new GoogleStrategy(
@@ -101,11 +72,22 @@ const googleStrategy = new GoogleStrategy(
     try {
       const email = profile.emails[0].value;
 
-      const user = await dbUser.selectUserByEmail(email);
+      const user = await User.findOne({
+        where: {
+          email,
+        },
+      });
 
       if (user) {
-        const userWasCreatedWithOAuth =
-          await dbUser.selectUserRegisteredByOAuth(email);
+        const userWasCreatedWithOAuth = (
+          await User.findOne({
+            attributes: ["oauth_registration"],
+            where: {
+              email,
+            },
+          })
+        ).oauth_registration;
+
         if (userWasCreatedWithOAuth) {
           return done(null, user);
         } else {
@@ -114,7 +96,7 @@ const googleStrategy = new GoogleStrategy(
       }
 
       // I think this is not needed
-      const emailInUse = await dbUser.checkEmailInUse(email);
+      const emailInUse = await User.checkEmailInUse(email);
 
       if (emailInUse) {
         return done(null, false, { msg: "Email already in use" });
@@ -130,7 +112,7 @@ const googleStrategy = new GoogleStrategy(
         const state = req.query.state; // Ej: "lang:es"
         const lang = state?.split(":")[1] || "es";
 
-        const newUser = await dbUser.registerNewUser({
+        const newUser = await User.create({
           username,
           email,
           password,
@@ -140,9 +122,6 @@ const googleStrategy = new GoogleStrategy(
           language: lang,
           created_at: new Date().toISOString(),
         });
-
-        // TODO DELETE THESE DEBUG LOGS
-        console.log("USER CREATED");
 
         // Send welcome email
         if (
@@ -173,26 +152,14 @@ const serializeUser = (req, user, done) => {
   done(null, serializeData);
 };
 
-const deserializeUser = (serializedData, done) => {
-  const q = "SELECT * FROM users WHERE id = $1;";
-  const params = [serializedData.id];
+const deserializeUser = async (serializedData, done) => {
+  const user = await User.findByPk(serializedData.id);
 
-  query(q, params, (error, results) => {
-    if (error) return done(error);
+  if (!user) {
+    return done(new Error("User not found"));
+  }
 
-    const userObject = results.rows[0];
-
-    const user = {
-      id: userObject.id,
-      username: userObject.username,
-      email: userObject.email,
-      last_name: userObject.last_name,
-      second_last_name: userObject.second_last_name,
-      img: userObject.img,
-    };
-
-    return done(null, user);
-  });
+  return done(null, user);
 };
 
 // ===== Use defined strategies =====

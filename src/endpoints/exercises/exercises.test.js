@@ -1,122 +1,117 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
-    request,
-    BASE_ENDPOINT,
-    newUserReq,
-    successfulPostRequest,
-    setUp,
-} = require('./testsSetup');
-const { query } = require('../../db/index');
+  request,
+  BASE_ENDPOINT,
+  newUserReq,
+  successfulPostRequest,
+  expectedExerciseProperties,
+  setUp,
+} = require("./testsSetup");
+const actions = require("../../utils/test_utils/actions.js");
+const { UUIDRegex } = require("../testCommon.js");
+
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
 
 describe(`${BASE_ENDPOINT}`, () => {
-    describe('post requests', () => {
-        describe('happy path', () => {
-            let response;
-            let newUser;
+  describe("post requests", () => {
+    describe("happy path", () => {
+      let response;
+      let newUser;
 
-            beforeAll(async () => {
-                const setUpInfo = await setUp();
-                newUser = setUpInfo.newUser;
+      beforeAll(async () => {
+        const setUpInfo = await setUp();
+        newUser = setUpInfo.newUser;
 
-                // login user
-                await request.post('/login').send({
-                    username: newUserReq.username,
-                    password: newUserReq.password,
-                });
+        // login user
+        await actions.loginUser(request, newUserReq);
 
-                response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
-            });
+        response = await request
+          .post(BASE_ENDPOINT)
+          .send(successfulPostRequest);
+      });
 
-            afterAll(async () => {
-                // logout user
-                await request.get('/logout');
-            });
+      afterAll(async () => {
+        // logout user
+        await actions.logoutUser(request);
+      });
 
-            it("returns exercise object", () => {
-                expect(response.body).toHaveProperty('id');
-                expect(response.body).toHaveProperty('name');
-                expect(response.body).toHaveProperty('description');
-            });
+      it(
+        "returns exercise object",
+        factory.checkCorrectResource(
+          () => response.body,
+          expectedExerciseProperties
+        )
+      );
 
-            it('id is UUID', () => {
-                const id = response.body.id;
-                const regex = /[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/;
-                expect(id).toMatch(regex);
-            })
+      it("id is UUID", () => {
+        const id = response.body.id;
+        expect(id).toMatch(UUIDRegex);
+      });
 
-            it('returns 201 status code', () => {
-                expect(response.statusCode).toStrictEqual(201);
-            });
+      it(
+        "returns 201 status code",
+        factory.checkStatusCode(() => response, 201)
+      );
 
-            it('also updates users_exercises table', () => {
-                const q = "SELECT user_id, exercise_id from users_exercises WHERE exercise_id = $1;"
-                const params = [response.body.id];
-                query(q, params, (error, results) => {
-                    if (error) throw error;
-                    info = results.rows[0];
+      it("also updates users_exercises table", async () => {
+        const info2 = await sequelize.query(
+          "SELECT user_id, exercise_id FROM users_exercises WHERE exercise_id = :exerciseId",
+          {
+            replacements: { exerciseId: response.body.id },
+          }
+        );
 
-                    expect(info).not.toBeUndefined();
-                    expect(info.user_id).toStrictEqual(newUser.id);
-                }, true);
-            });
-        });
+        expect(info2[0][0]).not.toBeUndefined();
+        expect(info2[0][0].user_id).toStrictEqual(newUser.id);
+        expect(info2[0][0].exercise_id).toStrictEqual(response.body.id);
 
-        describe('unhappy paths', () => {
-            let newUser;
-
-            beforeAll(async () => {
-                // Test's set up
-                const setUpInfo = await setUp();
-                newUser = setUpInfo.newUser;
-
-                // Ensure user is logged out
-                await request.get('/logout');
-            });
-
-            describe('400 error code when', () => {
-                it('mandatory parameter is missing', async () => {
-                    // name is missing
-                    let response = await request.post(BASE_ENDPOINT).send({
-                        description: "Smith",
-                    })
-
-                    expect(response.statusCode).toStrictEqual(400);
-                });
-            });
-
-            describe('401 error code when', () => {
-                it('user is not logged in', async () => {
-                    const response = await request.post(BASE_ENDPOINT).send(successfulPostRequest);
-                    expect(response.statusCode).toStrictEqual(401);
-                });
-            });
-        });
+        expect(info2[0][0].user_id).toMatch(UUIDRegex);
+        expect(info2[0][0].exercise_id).toMatch(UUIDRegex);
+      });
     });
 
-    describe('get requests', () => {
-        beforeAll(async () => {
-            await setUp();
-        });
+    describe("unhappy paths", () => {
+      let newUser;
 
-        describe("get all exercises", () => {
-            it("returns list", async () => {
-                const response = await request.get(BASE_ENDPOINT);
-                expect(Array.isArray(response.body)).toBe(true);
-            });
+      beforeAll(async () => {
+        // Test's set up
+        const setUpInfo = await setUp();
+        newUser = setUpInfo.newUser;
 
-            it("status code of 200", async () => {
-                const response = await request.get(BASE_ENDPOINT);
-                expect(response.statusCode).toStrictEqual(200);
-            });
+        // Ensure user is logged out
+        await actions.logoutUser(request);
+      });
 
-            it('exercise object has id, name, and description properties', async () => {
-                const response = await request.get(BASE_ENDPOINT);
+      describe("400 error code when", () => {
+        it(
+          "mandatory parameter is missing",
+          factory.checkUnhappyRequest(
+            request,
+            BASE_ENDPOINT,
+            {
+              // name is missing
+              description: "Smith",
+            },
+            400
+          )
+        );
+      });
 
-                const exerciseObject = response.body[0];
-
-                expect(exerciseObject).toHaveProperty('id');
-                expect(exerciseObject).toHaveProperty('name');
-                expect(exerciseObject).toHaveProperty('description');
-            });
-        });
+      describe("401 error code when", () => {
+        it(
+          "user is not logged in",
+          factory.checkUnhappyRequest(
+            request,
+            BASE_ENDPOINT,
+            successfulPostRequest,
+            401
+          )
+        );
+      });
     });
+  });
 });

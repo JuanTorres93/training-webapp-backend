@@ -13,8 +13,14 @@ const rateLimit = require("express-rate-limit");
 // My modules imports
 const AppError = require("./utils/appError.js");
 const globalErrorHandler = require("./controllers/errorController.js");
-const { getPool, getPoolClient } = require("./db/index.js");
+// TODO Borrar cuando se pase a Sequelize
+const { getPool } = require("./db/index.js");
 const config = require("./config.js");
+
+const { sequelize, Subscription } = require("./models");
+const {
+  initSubscriptions,
+} = require("./models/initializeDefaultValuesDatabase.js");
 
 // Routers imports
 const webhookApp = require("./endpoints/webhook/webhook.js");
@@ -30,6 +36,17 @@ const paymentsRouter = require("./endpoints/payments/payments.js");
 
 // Function to create the express app. Its main use is for testing
 const createApp = () => {
+  // Connect to and initialize database
+  (async () => {
+    try {
+      await sequelize.authenticate();
+      await initSubscriptions(Subscription);
+      console.log("Connection to DB has been established successfully.");
+    } catch (error) {
+      console.error("Unable to connect to the database:", error);
+    }
+  })();
+
   const appIsBeingTested = process.env.NODE_ENV === "test";
   // Create server and enable body parser in order not to import it
   // in every router
@@ -216,31 +233,27 @@ const createApp = () => {
         .filter((query) => query.length > 0);
 
     try {
-      const client = await getPoolClient(); // Get a client from the pool
-      try {
-        await client.query("BEGIN"); // Start transaction
-
-        const resultsWorkoutsIds = await client.query(
+      await sequelize.transaction(async (t) => {
+        // TODO IMPORTANT: Check that this periodic query still works
+        const resultsWorkoutsIds = await sequelize.query(
           deleteFromUsersWorkoutsQuery,
-          []
-        ); // Execute query within transaction
-        const workoutsIds = resultsWorkoutsIds.rows.map(
-          (row) => row.workout_id
+          {
+            transaction: t,
+          }
         );
 
+        const workoutsIds = resultsWorkoutsIds.map((row) => row.workout_id);
+
+        // Execute the second query for each workout ID
         for (const workoutId of workoutsIds) {
-          await client.query(deleteFromWorkoutsQuery, [workoutId]);
+          await sequelize.query(deleteFromWorkoutsQuery, {
+            replacements: [workoutId],
+            transaction: t,
+          });
         }
 
-        await client.query("COMMIT"); // Commit transaction
-
         console.log("Periodic query executed: remove empty workouts");
-      } catch (error) {
-        await client.query("ROLLBACK"); // Rollback transaction on error
-        throw error;
-      } finally {
-        client.release(); // Release client back to the pool
-      }
+      });
     } catch (err) {
       console.error("Error executing query:", err);
     }

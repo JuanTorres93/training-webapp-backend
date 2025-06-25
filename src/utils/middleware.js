@@ -1,18 +1,43 @@
-const dbUsers = require("../db/users");
-const dbExercises = require("../db/exercises");
-const dbWorkouts = require("../db/workouts");
-const dbWorkoutsTemplates = require("../db/workoutsTemplates");
-const dbSubscriptions = require("../db/subscriptions");
+const AppError = require("../utils/appError");
 const utils = require("./utils");
 const { validationResult } = require("express-validator");
 const hash = require("../hashing");
+const {
+  User,
+  Exercise,
+  Workout,
+  Subscription,
+  UserWorkouts,
+  WorkoutTemplate,
+  WorkoutTemplateExercises,
+} = require("../models");
+
+const _exerciseBelongsToUser = async (exerciseId, userId) => {
+  const exercise = await Exercise.findOne({
+    where: {
+      id: exerciseId,
+    },
+  });
+
+  const user = await User.findOne({
+    where: {
+      id: userId,
+    },
+  });
+
+  const exerciseBelongsToUser = await user.hasExercise(exercise);
+
+  return exerciseBelongsToUser;
+};
 
 const authenticatedUser = (req, res, next) => {
   try {
     const user = req.session.passport.user;
     next();
   } catch (error) {
-    return res.status(401).json({ msg: "Not logged in." });
+    return next(
+      new AppError("You must be logged in to access this resource.", 401)
+    );
   }
 };
 
@@ -31,7 +56,9 @@ const loggedUserIdEqualsUserIdInRequest = (req, res, next) => {
   ) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -43,7 +70,7 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
     ? req.params.exerciseId
     : req.body.exerciseId;
 
-  const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
+  const exerciseBelongsToUser = await _exerciseBelongsToUser(
     exerciseId,
     loggedUserId
   );
@@ -51,7 +78,9 @@ const exerciseBelongsToLoggedInUser = async (req, res, next) => {
   if (exerciseBelongsToUser) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -61,26 +90,34 @@ const exerciseBelongsToLoggedInORCommonUser = async (req, res, next) => {
   const exerciseId = req.params.exerciseId
     ? req.params.exerciseId
     : req.body.exerciseId;
-  const exerciseBelongsToUser = await dbExercises.exerciseBelongsToUser(
+
+  const exerciseBelongsToUser = await _exerciseBelongsToUser(
     exerciseId,
     loggedUserId
   );
+
   if (exerciseBelongsToUser) {
     return next();
   }
+
   // Two steps to avoid unnecessary queries to the database if the logged in user owns the exercise
-  const commonUser = await dbUsers.selectUserByEmail(
-    process.env.DB_COMMON_USER_EMAIL
-  );
+  const commonUser = await User.findOne({
+    where: {
+      email: process.env.DB_COMMON_USER_EMAIL,
+    },
+  });
   const commonUserId = commonUser.id;
-  const exerciseBelongsToCommonUser = await dbExercises.exerciseBelongsToUser(
+  const exerciseBelongsToCommonUser = await _exerciseBelongsToUser(
     exerciseId,
     commonUserId
   );
   if (exerciseBelongsToCommonUser) {
     return next();
   }
-  return res.status(403).json({ msg: "Not authorized" });
+
+  return next(
+    new AppError("You are not authorized to access this resource.", 403)
+  );
 };
 
 const workoutBelongsToLoggedInUser = async (req, res, next) => {
@@ -94,10 +131,12 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
   let workoutBelongsToUser;
 
   try {
-    workoutBelongsToUser = await dbWorkouts.workoutBelongsToUser(
-      workoutId,
-      loggedUserId
-    );
+    workoutBelongsToUser = await UserWorkouts.findOne({
+      where: {
+        user_id: loggedUserId,
+        workout_id: workoutId,
+      },
+    });
   } catch (error) {
     console.log(error);
   }
@@ -105,7 +144,9 @@ const workoutBelongsToLoggedInUser = async (req, res, next) => {
   if (workoutBelongsToUser) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -117,16 +158,19 @@ const workoutTemplateBelongsToLoggedInUser = async (req, res, next) => {
     ? req.params.templateId
     : req.body.templateId;
 
-  const workoutTemplateBelongsToUser =
-    await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-      templateId,
-      loggedUserId
-    );
+  const workoutTemplateBelongsToUser = await WorkoutTemplate.findOne({
+    where: {
+      user_id: loggedUserId,
+      id: templateId,
+    },
+  });
 
   if (workoutTemplateBelongsToUser) {
     next();
   } else {
-    return res.status(403).json({ msg: "Not authorized" });
+    return next(
+      new AppError("You are not authorized to access this resource.", 403)
+    );
   }
 };
 
@@ -136,35 +180,43 @@ const workoutTemplateBelongsToLoggedInORCommonUser = async (req, res, next) => {
 
   const templateId = req.params.templateId
     ? req.params.templateId
-    : req.body.templateId;
+    : req.body.templateId
+    ? req.body.templateId
+    : req.body.template_id;
 
-  const workoutTemplateBelongsToUser =
-    await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-      templateId,
-      loggedUserId
-    );
+  const workoutTemplateBelongsToUser = await WorkoutTemplate.findOne({
+    where: {
+      user_id: loggedUserId,
+      id: templateId,
+    },
+  });
 
   if (workoutTemplateBelongsToUser) {
     return next();
   }
 
   // Two steps to avoid unnecessary queries to the database if the logged in user owns the template
-  const commonUser = await dbUsers.selectUserByEmail(
-    process.env.DB_COMMON_USER_EMAIL
-  );
+  const commonUser = await User.findOne({
+    where: {
+      email: process.env.DB_COMMON_USER_EMAIL,
+    },
+  });
   const commonUserId = commonUser.id;
 
-  const workoutTemplateBelongsToCommonUser =
-    await dbWorkoutsTemplates.workoutTemplateBelongsToUser(
-      templateId,
-      commonUserId
-    );
+  const workoutTemplateBelongsToCommonUser = await WorkoutTemplate.findOne({
+    where: {
+      user_id: commonUserId,
+      id: templateId,
+    },
+  });
 
   if (workoutTemplateBelongsToCommonUser) {
     return next();
   }
 
-  return res.status(403).json({ msg: "Not authorized" });
+  return next(
+    new AppError("You are not authorized to access this resource.", 403)
+  );
 };
 
 // This function is an example of how authorization can be implemented.
@@ -193,11 +245,11 @@ const processIntegerURLParameter = (category) => {
       intId = parseInt(id);
     } catch (error) {
       console.log(error);
-      return res.status(400).json({ msg: "Invalid id" });
+      return next(new AppError("Invalid id", 400));
     }
 
     if (Number.isNaN(intId)) {
-      return res.status(400).json({ msg: "Invalid id" });
+      return next(new AppError("Invalid id", 400));
     }
 
     req[`${category}Id`] = intId;
@@ -244,15 +296,15 @@ const checkUserEmailAndAliasAlreadyExist = async (req, res, next) => {
   // IMPORTANT: This middleware must be called after validating user parameter
   const { username, email } = req.body;
 
-  const emailInUse = (await dbUsers.checkEmailInUse(email)) === true;
-
-  if (emailInUse) {
+  // TODO Refactor these two to use AppError. Do it when testing front too. I think
+  // I used the msg property in the response to show the error
+  if (await User.checkEmailInUse(email)) {
     return res.status(409).json({
       msg: "Email already in use",
     });
   }
 
-  if ((await dbUsers.checkAliasInUse(username)) === true) {
+  if ((await User.checkUsernameInUse(username)) === true) {
     return res.status(409).json({
       msg: "Alias already in use",
     });
@@ -269,12 +321,14 @@ const checkUserExistsById = async (req, res, next) => {
     ? req.body.userId
     : req.session.passport.user.id;
 
-  const user = await dbUsers.selectUserById(userId);
+  const user = await User.findOne({
+    where: {
+      id: userId,
+    },
+  });
 
   if (!user) {
-    return res.status(404).json({
-      msg: "User not found",
-    });
+    return next(new AppError("User not found", 404));
   }
 
   next();
@@ -286,12 +340,14 @@ const checkExerciseExistsById = async (req, res, next) => {
     ? req.params.exerciseId
     : req.body.exerciseId;
 
-  const exercise = await dbExercises.selectExerciseById(exerciseId);
+  const exercise = await Exercise.findOne({
+    where: {
+      id: exerciseId,
+    },
+  });
 
   if (!exercise) {
-    return res.status(404).json({
-      msg: "Exercise not found",
-    });
+    return next(new AppError("Exercise not found", 404));
   }
 
   next();
@@ -303,12 +359,14 @@ const checkWorkoutExistsById = async (req, res, next) => {
     ? req.params.workoutId
     : req.body.workoutId;
 
-  const workout = await dbWorkouts.selectworkoutById(workoutId);
+  const workout = await Workout.findOne({
+    where: {
+      id: workoutId,
+    },
+  });
 
   if (!workout) {
-    return res.status(404).json({
-      msg: "Workout not found",
-    });
+    return next(new AppError("Workout not found", 404));
   }
 
   next();
@@ -319,13 +377,15 @@ const checkSubscriptionExistsById = async (req, res, next) => {
   const subscriptionId = req.params.subscriptionId
     ? req.params.subscriptionId
     : req.body.subscriptionId;
-  const subscription = await dbSubscriptions.selectSuscriptionById(
-    subscriptionId
-  );
+
+  const subscription = await Subscription.findOne({
+    where: {
+      id: subscriptionId,
+    },
+  });
+
   if (!subscription) {
-    return res.status(404).json({
-      msg: "Subscription not found",
-    });
+    return next(new AppError("Subscription not found", 404));
   }
   next();
 };
@@ -342,7 +402,7 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     ? req.params.exerciseSet
     : req.body.exerciseSet;
 
-  const workout = await dbWorkouts.selectworkoutById(workoutId);
+  const workout = await Workout.getWorkoutByIdSpec(workoutId);
   const exercises = workout.exercises;
 
   const setExists =
@@ -351,9 +411,12 @@ const checkExerciseSetExistsInWorkout = async (req, res, next) => {
     }).length > 0;
 
   if (!setExists) {
-    return res.status(404).json({
-      msg: `Exercise with id ${exerciseId} does not contain set ${exerciseSet}`,
-    });
+    return next(
+      new AppError(
+        `Exercise with id ${exerciseId} does not contain set ${exerciseSet}`,
+        404
+      )
+    );
   }
 
   next();
@@ -363,16 +426,18 @@ const checkWorkoutTemplateExistsById = async (req, res, next) => {
   // IMPORTANT: This middleware must be called after validating templateId parameter
   const templateId = req.params.templateId
     ? req.params.templateId
-    : req.body.templateId;
+    : req.body.templateId
+    ? req.body.templateId
+    : req.body.template_id;
 
-  const template = await dbWorkoutsTemplates.selectWorkoutTemplateById(
-    templateId
-  );
+  const template = await WorkoutTemplate.findOne({
+    where: {
+      id: templateId,
+    },
+  });
 
   if (!template) {
-    return res.status(404).json({
-      msg: "Template not found",
-    });
+    return next(new AppError("Template not found", 404));
   }
 
   next();
@@ -391,16 +456,21 @@ const checkExerciseOrderExistsInWorkoutTemplate = async (req, res, next) => {
     : req.body.exerciseOrder;
 
   const exerciseInWorkoutTemplateExists =
-    await dbWorkoutsTemplates.checkExerciseInWorkoutTemplateExists(
-      templateId,
-      exerciseId,
-      exerciseOrder
-    );
+    await WorkoutTemplateExercises.findOne({
+      where: {
+        workout_template_id: templateId,
+        exercise_id: exerciseId,
+        exercise_order: exerciseOrder,
+      },
+    });
 
   if (!exerciseInWorkoutTemplateExists) {
-    return res.status(404).json({
-      msg: `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId} in the order ${exerciseOrder}`,
-    });
+    return next(
+      new AppError(
+        `Exercise with id ${exerciseId} does not exist in workout template with id ${templateId} in the order ${exerciseOrder}`,
+        404
+      )
+    );
   }
 
   next();
@@ -422,10 +492,9 @@ const passwordEqualsPasswordConfirm = (req, res, next) => {
   const { password, passwordConfirm } = req.body;
 
   if (password !== passwordConfirm) {
-    return res.status(400).json({
-      status: "fail",
-      message: "Password and password confirm do not match",
-    });
+    return next(
+      new AppError("Password and password confirm do not match", 400)
+    );
   }
 
   next();

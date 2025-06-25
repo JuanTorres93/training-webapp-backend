@@ -1,8 +1,8 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-const subscriptionsDb = require("../db/subscriptions.js");
-const paymentsDb = require("../db/payments.js");
-const usersDb = require("../db/users.js");
+const catchAsync = require("../utils/catchAsync.js");
+const AppError = require("../utils/appError.js");
+const { Payment, Subscription, User } = require("../models");
 const { langSeparator } = require("../config.js");
 
 const Email = require("../utils/email.js");
@@ -11,9 +11,11 @@ const Email = require("../utils/email.js");
 exports.getCheckoutSession = async (req, res, next) => {
   try {
     // 1) Get the subscription type
-    const subscription = await subscriptionsDb.selectSuscriptionById(
-      req.params.subscriptionId
-    );
+    const subscription = await Subscription.findOne({
+      where: {
+        id: req.params.subscriptionId,
+      },
+    });
 
     if (!subscription) {
       //   return next(new AppError("No tour found with that ID", 404));
@@ -123,12 +125,13 @@ const createPayment = async (
   nextPaymentDate,
   stripeSubscriptionId
 ) => {
-  await paymentsDb.createPayment({
-    userId,
-    subscriptionId,
-    amountInEur,
-    nextPaymentDate,
-    stripeSubscriptionId,
+  await Payment.create({
+    user_id: userId,
+    subscription_id: subscriptionId,
+    amount_in_eur: amountInEur,
+    next_payment_date: nextPaymentDate,
+    stripe_subscription_id: stripeSubscriptionId,
+    // marked_for_cancel: false,
   });
 };
 
@@ -205,7 +208,10 @@ exports.webhookCheckout = async (req, res, next) => {
 
     // Update the subscription in the database
     try {
-      await subscriptionsDb.updateUserSubscription(userId, subscriptionId);
+      await User.update(
+        { subscription_id: subscription.id },
+        { where: { id: userId } }
+      );
     } catch (error) {
       console.log("error");
       console.log(error);
@@ -284,8 +290,9 @@ exports.webhookCheckout = async (req, res, next) => {
       const stripeSubscriptionId = data.object.id;
 
       try {
-        await paymentsDb.markStripeSubscriptionAsCancelled(
-          stripeSubscriptionId
+        await Payment.markForCancel(
+          stripeSubscriptionId,
+          true // Mark the subscription for cancelation
         );
       } catch (error) {
         console.log("error");
@@ -307,7 +314,10 @@ exports.webhookCheckout = async (req, res, next) => {
       new Email(user).sendSubscriptionResumed();
 
       try {
-        await paymentsDb.markStripeSubscriptionAsResumed(stripeSubscriptionId);
+        await Payment.markForCancel(
+          stripeSubscriptionId,
+          false // Unmark the subscription for cancelation
+        );
       } catch (error) {
         console.log("error");
         console.log(error);
@@ -326,16 +336,17 @@ exports.webhookCheckout = async (req, res, next) => {
     // access metadata specified in the checkout session
     const userId = subscription.metadata.userId;
     try {
-      const expiredSubscriptionId = (
-        await subscriptionsDb.selectExpiredSubscription()
-      ).id;
+      const expiredSubscription = await Subscription.findOne({
+        where: { type: "EXPIRED" },
+      });
+      const expiredSubscriptionId = expiredSubscription.id;
       // Add payment of 0; and null stripeSubscriptionId and nextPaymentDate
       await createPayment(userId, expiredSubscriptionId, 0, null, null);
 
       // Update the user subscription in the database to expired
-      await subscriptionsDb.updateUserSubscription(
-        userId,
-        expiredSubscriptionId
+      await User.update(
+        { subscription_id: expiredSubscriptionId },
+        { where: { id: userId } }
       );
     } catch (error) {
       console.log("error");
@@ -351,35 +362,29 @@ exports.webhookCheckout = async (req, res, next) => {
   res.status(200).json({ received: true });
 };
 
-exports.getLastPaymentForLoggedUser = async (req, res, next) => {
+exports.getLastPaymentForLoggedUser = catchAsync(async (req, res, next) => {
   const userId = req.session.passport.user.id;
 
-  try {
-    const payment = await paymentsDb.getUserLastPayment(userId);
+  const payment = await Payment.findOne({
+    where: { user_id: userId },
+    order: [["created_at", "DESC"]],
+  });
 
-    if (!payment) {
-      return res.status(404).json({
-        status: "fail",
-        message: "No payment found for this user",
-      });
-    }
-
-    res.status(200).json(payment);
-  } catch (error) {
-    console.log("error");
-    console.log(error);
-    return res.status(400).json({
+  if (!payment) {
+    return res.status(404).json({
       status: "fail",
-      message: error.message,
+      message: "No payment found for this user",
     });
   }
-};
 
-exports.cancelSubscription = async (req, res, next) => {
+  res.status(200).json(payment);
+});
+
+exports.cancelSubscription = catchAsync(async (req, res, next) => {
   const userId = req.session.passport.user.id;
 
   // Get the subscription for the user
-  const stripeSubscriptionId = await paymentsDb.getUserStripeSubscriptionId(
+  const stripeSubscriptionId = await Payment.findUserStripeSubscriptionId(
     userId
   );
 
@@ -408,13 +413,13 @@ exports.cancelSubscription = async (req, res, next) => {
       message: error.message,
     });
   }
-};
+});
 
-exports.resumeSubscription = async (req, res, next) => {
+exports.resumeSubscription = catchAsync(async (req, res, next) => {
   const userId = req.session.passport.user.id;
 
   // Get the subscription for the user
-  const stripeSubscriptionId = await paymentsDb.getUserStripeSubscriptionId(
+  const stripeSubscriptionId = await Payment.findUserStripeSubscriptionId(
     userId
   );
 
@@ -443,4 +448,4 @@ exports.resumeSubscription = async (req, res, next) => {
       message: error.message,
     });
   }
-};
+});

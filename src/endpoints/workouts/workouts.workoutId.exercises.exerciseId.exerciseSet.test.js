@@ -1,172 +1,202 @@
+const factory = require("../../utils/test_utils/factory.js");
 const {
-    BASE_ENDPOINT,
-    OTHER_USER_ALIAS,
-    request,
-    newUserReq,
-    initExercisesTableInDb,
-    addWorkoutsAndExercises,
-    getExercisesIds,
-    setUp,
-} = require('./testsSetup');
+  BASE_ENDPOINT,
+  OTHER_USER_ALIAS,
+  request,
+  newUserReq,
+  exercises,
+  addWorkoutsAndExercises,
+  assertExerciseInWorkoutSwaggerSpec,
+  getExercisesIds,
+  setUp,
+} = require("./testsSetup");
+const actions = require("../../utils/test_utils/actions.js");
 
-describe(`${BASE_ENDPOINT}` + '/{workoutId}/exercises/{exerciseId}/{exerciseSet}', () => {
-    describe('delete requests', () => {
-        let user;
-        let workout;
-        let initialExercise;
-        let exercisesIds = {};
+const { sequelize } = require("../../models");
+afterAll(async () => {
+  // Close the database connection after all tests
+  await sequelize.close();
+});
 
+describe(
+  `${BASE_ENDPOINT}` + "/{workoutId}/exercises/{exerciseId}/{exerciseSet}",
+  () => {
+    describe("delete requests", () => {
+      let user;
+      let workout;
+      let exerciseToDelete;
+      let exercisesIds = {};
+
+      beforeAll(async () => {
+        // Test's set up
+        const setupInfo = await setUp();
+        user = setupInfo.user;
+        await actions.fillExercisesTable(request, newUserReq, exercises);
+
+        try {
+          exercisesIds = await getExercisesIds();
+        } catch (error) {
+          console.log(error);
+        }
+
+        const { pushResponse } = await addWorkoutsAndExercises(
+          user.id,
+          exercisesIds
+        );
+        const workoutId = pushResponse.body.id;
+
+        // login user
+        await actions.loginUser(request, newUserReq);
+
+        workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
+        workout = workout.body;
+        exerciseToDelete = workout.exercises[0];
+
+        // logout user
+        await actions.logoutUser(request);
+      });
+
+      describe("unhappy path", () => {
         beforeAll(async () => {
-            // Test's set up
-            const setupInfo = await setUp();
-            user = setupInfo.user;
-            await initExercisesTableInDb();
+          // Ensure user is logged out
+          await actions.loginUser(request, newUserReq);
+          await actions.logoutUser(request);
+        });
 
-            try {
-                exercisesIds = await getExercisesIds();
-            } catch (error) {
-                console.log(error);
-            }
+        describe("returns 400 error code when", () => {
+          it("workoutId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
+              BASE_ENDPOINT +
+                `/TEST_PARAM` +
+                `/exercises/${exerciseToDelete.id}/1`,
+              "delete"
+            );
 
-            const { pushResponse } = await addWorkoutsAndExercises(user.id, exercisesIds);
-            const workoutId = pushResponse.body.id;
+            await checkURLParamIsNotUUID();
+          });
 
-            // login user
-            await request.post('/login').send({
-                username: newUserReq.username,
-                password: newUserReq.password,
+          it("exerciseId is not UUID", async () => {
+            const checkURLParamIsNotUUID = factory.checkURLParamIsNotUUID(
+              request,
+              BASE_ENDPOINT + `/${workout.id}` + `/exercises/TEST_PARAM/1`,
+              "delete"
+            );
+
+            await checkURLParamIsNotUUID();
+          });
+
+          it("exerciseSet is not positive integer", async () => {
+            const checkURLParamIsNotPositiveInteger =
+              factory.checkURLParamIsNotInteger(
+                request,
+                BASE_ENDPOINT +
+                  `/${workout.id}` +
+                  `/exercises/${exerciseToDelete.id}/TEST_PARAM`,
+                "delete"
+              );
+
+            await checkURLParamIsNotPositiveInteger();
+          });
+        });
+
+        describe("401 response when", () => {
+          it("user is not logged in", async () => {
+            const response = await request.delete(
+              BASE_ENDPOINT +
+                `/${workout.id}/exercises/${exerciseToDelete.id}/1`
+            );
+            expect(response.statusCode).toStrictEqual(401);
+          });
+        });
+
+        describe("403 response when", () => {
+          it("trying to delete exercise on another user's workout", async () => {
+            // login other user
+            await actions.loginUser(request, {
+              username: OTHER_USER_ALIAS,
+              password: newUserReq.password,
             });
 
-            workout = await request.get(BASE_ENDPOINT + `/${workoutId}`);
-            workout = workout.body;
-            initialExercise = workout.exercises[0];
+            const response = await request.delete(
+              BASE_ENDPOINT +
+                `/${workout.id}/exercises/${exerciseToDelete.id}/1`
+            );
 
             // logout user
-            await request.get('/logout');
+            await actions.logoutUser(request);
+            expect(response.statusCode).toStrictEqual(403);
+          });
         });
 
-        describe('unhappy path', () => {
-            beforeAll(async () => {
-                // Ensure user is logged out
-                await request.post('/login').send({
-                    username: newUserReq.username,
-                    password: newUserReq.password,
-                });
-                await request.get('/logout');
-            });
+        describe("404 response when", () => {
+          it("workoutid is valid but workout with that id does not exist", async () => {
+            // valid UUID that is unlikely to be in the db
+            const uuid = "00000000-0000-0000-0000-000000000000";
+            const response = await request.delete(
+              BASE_ENDPOINT + "/" + uuid + `/exercises/${exerciseToDelete.id}/1`
+            );
+            expect(response.statusCode).toStrictEqual(404);
+          });
 
-            describe('returns 400 error code when', () => {
-                it('exerciseset is string', async () => {
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/${initialExercise.id}/wrongId`
-                    );
-                    expect(response.statusCode).toStrictEqual(400);
-                });
+          it("exerciseId is valid but exercise with that id does not exist", async () => {
+            // Valid UUID but (probably) not existing in the database
+            const uuid = "00000000-0000-0000-0000-000000000000";
+            const response = await request.delete(
+              BASE_ENDPOINT + `/${workout.id}` + `/exercises/${uuid}/1`
+            );
+            expect(response.statusCode).toStrictEqual(404);
+          });
 
-                it('exerciseset is boolean', async () => {
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/${initialExercise.id}/true`
-                    );
-                    expect(response.statusCode).toStrictEqual(400);
-                });
+          it("exerciseSet is valid but exercise with that set does not exist", async () => {
+            const response = await request.delete(
+              BASE_ENDPOINT +
+                `/${workout.id}` +
+                `/exercises/${exerciseToDelete.id}/1111`
+            );
 
-                it('exerciseset is not positive', async () => {
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/${initialExercise.id}/-23`
-                    );
-                    expect(response.statusCode).toStrictEqual(400);
-                });
-            });
+            expect(response.statusCode).toStrictEqual(404);
+          });
+        });
+      });
 
-            describe('401 response when', () => {
-                it('user is not logged in', async () => {
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
-                    )
-                    expect(response.statusCode).toStrictEqual(401);
-                });
-            });
+      describe("happy path", () => {
+        let response;
 
-            describe('403 response when', () => {
-                it('trying to delete exercise on another user\'s workout', async () => {
-                    // login other user
-                    await request.post('/login').send({
-                        username: OTHER_USER_ALIAS,
-                        password: newUserReq.password,
-                    });
+        beforeAll(async () => {
+          // login user
+          await actions.loginUser(request, newUserReq);
 
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
-                    )
-
-                    // logout user
-                    await request.get('/logout');
-                    expect(response.statusCode).toStrictEqual(403);
-                });
-            });
-
-            describe('404 response when', () => {
-                it('workoutid is valid but workout with that id does not exist', async () => {
-                    // valid UUID that is unlikely to be in the db
-                    const uuid = '00000000-0000-0000-0000-000000000000';
-                    const response = await request.delete(
-                        BASE_ENDPOINT + '/' + uuid + `/exercises/${initialExercise.id}/1`
-                    );
-                    expect(response.statusCode).toStrictEqual(404);
-                });
-
-                it('exerciseId is valid but exercise with that id does not exist', async () => {
-                    // Valid UUID but (probably) not existing in the database
-                    const uuid = '00000000-0000-0000-0000-000000000000';
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/${uuid}/1`
-                    );
-                    expect(response.statusCode).toStrictEqual(404);
-                });
-
-                it('exerciseSet is valid but exercise with that set does not exist', async () => {
-                    const response = await request.delete(
-                        BASE_ENDPOINT + `/${workout.id}` + `/exercises/${initialExercise.id}/1111`
-                    );
-
-                    expect(response.statusCode).toStrictEqual(404);
-                });
-            });
+          response = await request.delete(
+            BASE_ENDPOINT + `/${workout.id}/exercises/${exerciseToDelete.id}/1`
+          );
         });
 
-        describe('happy path', () => {
-            let response;
-
-            beforeAll(async () => {
-                // login user
-                await request.post('/login').send({
-                    username: newUserReq.username,
-                    password: newUserReq.password,
-                });
-
-                response = await request.delete(
-                    BASE_ENDPOINT + `/${workout.id}/exercises/${initialExercise.id}/1`
-                )
-            });
-
-            afterAll(async () => {
-                // logout user
-                await request.get('/logout');
-            });
-
-            it("status code of 200", async () => {
-                expect(response.statusCode).toStrictEqual(200);
-            });
-
-            it('returns deleted exercise', () => {
-                const deletedExercise = response.body;
-
-                expect(deletedExercise.exerciseId).toStrictEqual(initialExercise.id);
-                expect(deletedExercise.exerciseSet).toStrictEqual(initialExercise.set);
-                expect(deletedExercise.reps).toStrictEqual(initialExercise.reps);
-                expect(deletedExercise.weight).toStrictEqual(initialExercise.weight);
-                expect(deletedExercise.time_in_seconds).toStrictEqual(initialExercise.time_in_seconds);
-            });
+        afterAll(async () => {
+          // logout user
+          await actions.logoutUser(request);
         });
+
+        it("status code of 200", async () => {
+          expect(response.statusCode).toStrictEqual(200);
+        });
+
+        it("returns deleted exercise", () => {
+          const deletedExercise = response.body;
+
+          assertExerciseInWorkoutSwaggerSpec(deletedExercise);
+
+          expect(deletedExercise.exerciseId).toStrictEqual(exerciseToDelete.id);
+          expect(deletedExercise.exerciseSet).toStrictEqual(
+            exerciseToDelete.set
+          );
+          expect(deletedExercise.reps).toStrictEqual(exerciseToDelete.reps);
+          expect(deletedExercise.weight).toStrictEqual(exerciseToDelete.weight);
+          expect(deletedExercise.time_in_seconds).toStrictEqual(
+            exerciseToDelete.time_in_seconds
+          );
+        });
+      });
     });
-});
+  }
+);

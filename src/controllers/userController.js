@@ -1,8 +1,10 @@
 const crypto = require("crypto");
 
+const { Op } = require("sequelize");
+const { sequelize, User, Subscription, Payment } = require("../models");
+
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const dbUsers = require("../db/users");
 const Email = require("../utils/email");
 const hash = require("../hashing");
 
@@ -10,7 +12,12 @@ const hash = require("../hashing");
 // READ OPERATIONS
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await dbUsers.selectAllUsers();
+  // NOTE: Not used nor tested
+  const users = await User.findAll({
+    attributes: {
+      exclude: ["password", "password_reset_token", "password_reset_expires"],
+    },
+  });
 
   res.status(200).send(users);
 });
@@ -18,9 +25,9 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 exports.getUserById = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const user = await dbUsers.selectUserById(userId);
+  const user = await User.findByPk(userId);
 
-  if (user === undefined) {
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
 
@@ -28,35 +35,89 @@ exports.getUserById = catchAsync(async (req, res, next) => {
 });
 
 exports.getEverythingFromUserInTestEnv = catchAsync(async (req, res, next) => {
+  const appIsBeingTested = process.env.NODE_ENV === "test";
+
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Nothing in users.",
+    });
+  }
+
   const { userId } = req.params;
 
-  const user = await dbUsers.testDbSelectEverythingFromUserId(userId);
+  const user = await User.scope("sensitiveScope").findByPk(userId);
 
-  if (user === undefined) {
+  // Avoid toJSON() method being called automatically
+  // which would remove sensitive fields
+  const userAllData = {
+    ...user.get(),
+  };
+
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
 
-  res.status(200).json(user);
+  res.status(200).json(userAllData);
 });
 
 //////////////////////////
 // CREATE OPERATIONS
 
 exports.registerNewUser = catchAsync(async (req, res, next) => {
-  const createdUser = await dbUsers.registerNewUser(req.body);
+  const resultNewUser = await sequelize.transaction(async (t) => {
+    // Get subscription ID
+    const freeTrialSubscription = await Subscription.findOne({
+      where: { type: "FREE_TRIAL" },
+    });
+    let subscriptionId;
+
+    if (freeTrialSubscription) {
+      subscriptionId = freeTrialSubscription.id;
+    } else {
+      subscriptionId = req.body.subscription_id;
+    }
+
+    // Create the new user
+    const newUser = await User.create(
+      {
+        ...req.body,
+        subscription_id: subscriptionId,
+      },
+      { transaction: t }
+    );
+
+    const endFreeTrialDate = new Date();
+    // Add 1 month to the current date
+    endFreeTrialDate.setMonth(endFreeTrialDate.getMonth() + 1);
+
+    // Create a payment record for the free trial
+    await Payment.create(
+      {
+        user_id: newUser.id,
+        subscription_id: subscriptionId,
+        amount_in_eur: 0, // Free trial has no cost
+        next_payment_date: endFreeTrialDate,
+      },
+      { transaction: t }
+    );
+
+    return newUser;
+  });
 
   // Send email to the user if it is not a test environment
   // When testng the frontend, back is called as development, so
   // DB_HOST is used to discern if it is a test environment in that case
   if (
-    createdUser &&
+    resultNewUser &&
     process.env.NODE_ENV !== "test" &&
     process.env.DB_HOST !== "db-test-for-frontend"
   ) {
-    new Email(createdUser).sendWelcome();
+    new Email(resultNewUser).sendWelcome();
   }
 
-  return res.status(201).json(createdUser);
+  return res.status(201).json(resultNewUser);
 });
 
 //////////////////////////
@@ -64,22 +125,28 @@ exports.registerNewUser = catchAsync(async (req, res, next) => {
 
 exports.updateUserById = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
-  const { alias, email, password, last_name, second_last_name, img } = req.body;
 
-  const newUserInfo = {
-    alias,
-    email,
-    password,
-    last_name,
-    second_last_name,
-    img,
-  };
-
-  const updatedUser = await dbUsers.updateUser(userId, newUserInfo);
-
-  if (updatedUser === undefined) {
+  const user = await User.findByPk(userId);
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
+
+  const infoToUpdate = req.body;
+  // TODO IMPORTANT: Manage password updates separately
+  // // Filter sensitive fields
+  // const sensitiveFields = [
+  //   "password",
+  //   "password_reset_token",
+  //   "password_reset_expires",
+  // ];
+
+  // Object.keys(infoToUpdate).forEach((key) => {
+  //   if (sensitiveFields.includes(key)) {
+  //     delete infoToUpdate[key];
+  //   }
+  // });
+
+  const updatedUser = await user.update(infoToUpdate);
 
   res.status(200).json(updatedUser);
 });
@@ -90,13 +157,39 @@ exports.updateUserById = catchAsync(async (req, res, next) => {
 exports.deleteUserById = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const deletedUser = await dbUsers.deleteUser(userId);
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
 
-  res.status(200).json(deletedUser);
+  await sequelize.transaction(async (t) => {
+    // TODO IMPORTANT: Espero que haya más errores aquí conforme
+    // vaya implementando más sequelize
+    // Delete all payments associated with the user
+    await Payment.destroy({
+      where: { user_id: userId },
+      transaction: t,
+    });
+
+    // Delete the user
+    await user.destroy({ transaction: t });
+  });
+
+  res.status(200).json(user);
 });
 
 exports.truncateTestTable = catchAsync(async (req, res, next) => {
-  const truncatedTable = await dbUsers.truncateTableTest();
+  const appIsBeingTested = process.env.NODE_ENV === "test";
+
+  if (!appIsBeingTested) {
+    // Generic response for attackers
+    return res.status(200).json({
+      status: "success",
+      message: "Truncated users.",
+    });
+  }
+
+  await sequelize.query("TRUNCATE TABLE users RESTART IDENTITY CASCADE");
 
   res.status(200).send(truncatedTable);
 });
@@ -105,9 +198,13 @@ exports.truncateTestTable = catchAsync(async (req, res, next) => {
 // FORGOT PASSWORD
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // TODO IMPORTANT: Check from FRONTEND all of password reset flow
+
   // 1) Get user based on POSTed email
   const { email } = req.body;
-  const user = await dbUsers.selectUserByEmail(email);
+  const user = await User.findOne({
+    where: { email: email },
+  });
 
   if (!user) {
     return next(new AppError("There is no user with email address.", 404));
@@ -116,9 +213,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 2) Generate the random reset token
 
   const { resetToken, resetTokenForDB, passwordResetExpires } =
-    dbUsers.createPasswordResetToken();
+    User.createPasswordResetToken();
 
-  await dbUsers.updateResetPasswordToken(
+  await User.updateResetPasswordToken(
     user.id,
     resetTokenForDB,
     passwordResetExpires
@@ -132,7 +229,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       language
     );
   } catch (error) {
-    await dbUsers.updateResetPasswordToken(user.id, null, null);
+    await User.updateResetPasswordToken(user.id, null, null);
+
     return next(
       new AppError(
         "There was an error sending the reset password email. Try again later!",
@@ -154,7 +252,14 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-  const user = await dbUsers.selectUserByResetToken(hashedToken);
+  const user = await User.findOne({
+    where: {
+      password_reset_token: hashedToken,
+      password_reset_expires: {
+        [sequelize.Op.gt]: new Date(), // Check if the token has not expired
+      },
+    },
+  });
 
   // 2) If token has not expired, and there is a user,
   // set the new password
@@ -163,7 +268,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   const newPassword = req.body.password;
   const hashedNewPassword = await hash.plainTextHash(newPassword);
 
-  await dbUsers.updateUserPassword(user.id, hashedNewPassword);
+  await User.updateUserPassword(user.id, hashedNewPassword);
 
   // 3) TODO Update changedPasswordAt property for the user
 
