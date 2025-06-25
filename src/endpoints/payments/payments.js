@@ -29,6 +29,7 @@ router.get(
 );
 
 router.get(
+  // IMPORTANT NOTE: Not tested
   "/cancel-subscription",
   mw.authenticatedUser,
   mw.checkUserExistsById,
@@ -36,6 +37,7 @@ router.get(
 );
 
 router.get(
+  // IMPORTANT NOTE: Not tested
   "/resume-subscription",
   mw.authenticatedUser,
   mw.checkUserExistsById,
